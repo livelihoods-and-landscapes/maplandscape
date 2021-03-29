@@ -102,6 +102,7 @@ app_server <- function(input, output, session) {
     reactiveValues(
       data_file = data.frame(),
       map_drawn = 0,
+      tmap_drawn = 0,
       joined_df = list()
     )
 
@@ -1227,11 +1228,11 @@ app_server <- function(input, output, session) {
 
   # add spatial data to Tonga map
   observe({
-    req(tonga_active_df(), input$tonga_map_layer)
-
+    req(tonga_active_df())
+    
     # map takes reactive dependency on user specified layer and colour
-    tonga_map_layer <- input$tonga_map_layer
-    map_colour <- input$tonga_map_colour
+    tonga_map_layer <- isolate(input$tonga_map_layer)
+    map_colour <- isolate(input$tonga_map_colour)
 
     if ("sf" %in% class(tonga_active_df()) &
       is.atomic(tonga_active_df()[[tonga_map_layer]]) &
@@ -1241,6 +1242,7 @@ app_server <- function(input, output, session) {
       # don't draw legend if plot id or zone is selected
       if (tonga_map_layer == "zone" | 
           tonga_map_layer == "plot_id") {
+        data_file$tmap_drawn <- 1
         add_layers_leaflet(
           map_object = "tonga_leafmap",
           map_active_df = tonga_active_df(),
@@ -1252,6 +1254,7 @@ app_server <- function(input, output, session) {
           waiter = tonga_map_waiter
         )
       } else {
+        data_file$tmap_drawn <- 1
         add_layers_leaflet_legend(
           map_object = "tonga_leafmap",
           map_active_df = tonga_active_df(),
@@ -1262,6 +1265,96 @@ app_server <- function(input, output, session) {
           map_line_colour = "blue",
           waiter = tonga_map_waiter
         )
+      }
+    }
+  })
+  
+  # update colour
+  observeEvent(input$tonga_map_colour, {
+    req(tonga_active_df())
+    
+    if (data_file$tmap_drawn == 1) {
+      # map takes reactive dependency on user specified layer and colour
+      tonga_map_layer <- input$tonga_map_layer
+      map_colour <- input$tonga_map_colour
+      
+      if ("sf" %in% class(tonga_active_df()) &
+          is.atomic(tonga_active_df()[[tonga_map_layer]]) &
+          nrow(tonga_active_df()) > 0 &
+          input$tonga_data_view == "t_map") {
+        
+        # don't draw legend if plot id or zone is selected
+        if (tonga_map_layer == "zone" | 
+            tonga_map_layer == "plot_id") {
+          data_file$tmap_drawn <- 1
+          add_layers_leaflet_no_zoom(
+            map_object = "tonga_leafmap",
+            map_active_df = tonga_active_df(),
+            map_var = tonga_map_layer,
+            map_colour = map_colour,
+            opacity = 0.8,
+            map_line_width = 0.25,
+            map_line_colour = "blue",
+            waiter = tonga_map_waiter
+          )
+        } else {
+          data_file$tmap_drawn <- 1
+          add_layers_leaflet_legend_no_zoom(
+            map_object = "tonga_leafmap",
+            map_active_df = tonga_active_df(),
+            map_var = tonga_map_layer,
+            map_colour = map_colour,
+            opacity = 0.8,
+            map_line_width = 0.25,
+            map_line_colour = "blue",
+            waiter = tonga_map_waiter
+          )
+        }
+      }
+    }
+  })
+  
+  # update layer
+  observeEvent(input$tonga_map_layer, {
+    req(tonga_active_df())
+    
+    if (data_file$tmap_drawn == 1) {
+      # map takes reactive dependency on user specified layer and colour
+      tonga_map_layer <- input$tonga_map_layer
+      map_colour <- input$tonga_map_colour
+      
+      if ("sf" %in% class(tonga_active_df()) &
+          is.atomic(tonga_active_df()[[tonga_map_layer]]) &
+          nrow(tonga_active_df()) > 0 &
+          input$tonga_data_view == "t_map") {
+        
+        # don't draw legend if plot id or zone is selected
+        if (tonga_map_layer == "zone" | 
+            tonga_map_layer == "plot_id") {
+          data_file$tmap_drawn <- 1
+          add_layers_leaflet_no_zoom(
+            map_object = "tonga_leafmap",
+            map_active_df = tonga_active_df(),
+            map_var = tonga_map_layer,
+            map_colour = map_colour,
+            opacity = 0.8,
+            map_line_width = 0.25,
+            map_line_colour = "blue",
+            waiter = tonga_map_waiter
+          )
+        } else {
+          data_file$tmap_drawn <- 1
+          add_layers_leaflet_legend_no_zoom(
+            map_object = "tonga_leafmap",
+            map_active_df = tonga_active_df(),
+            map_var = tonga_map_layer,
+            map_colour = map_colour,
+            opacity = 0.8,
+            map_line_width = 0.25,
+            map_line_colour = "blue",
+            waiter = tonga_map_waiter
+          )
+        }
       }
     }
   })
@@ -1396,6 +1489,7 @@ app_server <- function(input, output, session) {
     choices <- choices[!(choices %in% "plot_id")]
     choices <- choices[!(choices %in% "goem")]
     choices <- choices[!(choices %in% "geometry")]
+    choices <- choices[!(choices %in% "layer_id")]
     
     updateSelectInput(
       session,
