@@ -370,11 +370,14 @@ app_ui <- function(request) {
         "Admin",
         sidebarLayout(
           sidebarPanel(
-            fileInput(
-              "qa_data",
-              "Select .gpkg or .zip file(s)",
-              accept = ".gpkg"
-            ),
+            
+            mod_get_layers_ui(
+              id = "edit_data", 
+              label = "Select .gpkg or .zip file(s)", 
+              multiple = FALSE, 
+              accept = c(".gpkg")
+              ),
+            
 
             shiny::tags$br(),
           ),
