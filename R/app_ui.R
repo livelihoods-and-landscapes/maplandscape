@@ -14,6 +14,7 @@ app_ui <- function(request) {
   tagList(
     # Leave this function for adding external resources
     golem_add_external_resources(),
+    # List the first level UI elements here
     navbarPage(
       theme = bslib::bs_theme(bootswatch = "flatly"),
       "",
@@ -207,8 +208,6 @@ app_ui <- function(request) {
         ),
       ),
 
-
-      # Map UI ------------------------------------------------------------------
       tabPanel(
         "Map",
         tags$style(
@@ -271,7 +270,6 @@ app_ui <- function(request) {
         )
       ),
 
-      # Charts ------------------------------------------------------------------
       tabPanel(
         "Charts",
 
@@ -357,7 +355,7 @@ app_ui <- function(request) {
         )
       ),
 
-# Tonga Map ---------------------------------------------------------------
+      # Tonga Map ---------------------------------------------------------------
 
       tabPanel(
         "Tonga Map",
@@ -405,7 +403,6 @@ app_ui <- function(request) {
                 id = "tonga_label_vars",
                 label = "Popup labels"
               )
-              
             ),
 
             conditionalPanel(
@@ -531,6 +528,8 @@ app_ui <- function(request) {
         )
       ),
 
+      # Docs tab ----------------------------------------------------------------
+
       tabPanel(
         "Documentation",
         fixedPage(
@@ -539,14 +538,11 @@ app_ui <- function(request) {
               "About",
               tags$div(
                 style = "padding-top: 10px;
-                         padding-right: 10px;
-                         padding-bottom: 10px;
-                         padding-left: 10px;",
+                                padding-right: 10px;
+                                padding-bottom: 10px;
+                                padding-left: 10px;",
 
-                tags$h2(
-                  "About",
-                  style = "text-align:left;"
-                ),
+                tags$h2("About", style = "text-align:left;"),
 
                 tags$br(),
 
@@ -583,9 +579,9 @@ app_ui <- function(request) {
               "Docs",
               tags$div(
                 style = "padding-top: 10px;
-                         padding-right: 10px;
-                         padding-bottom: 10px;
-                         padding-left: 10px;",
+                                padding-right: 10px;
+                                padding-bottom: 10px;
+                                padding-left: 10px;",
               ),
               tags$div(HTML("Documentation and vignettes for <em>map.landscape</em> can be found <a href='https://livelihoods-and-landscapes.com/maplandscape' target='_blank'>here</a>"))
             )

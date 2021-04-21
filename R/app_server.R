@@ -16,22 +16,22 @@ app_server <- function(input, output, session) {
   observeEvent(input$enter, {
     updateNavbarPage(session, "navbar", selected = "Data")
   })
-
-
+  
+  
   # Data Sync ---------------------------------------------------------------
-
+  
   # sync forms with database / template
   sync_waiter <- waiter::Waiter$new(
     html = sync_screen,
     color = "rgba(44,62,80,.6)"
   )
-
+  
   # select template db to sync forms to
   template <- mod_get_layers_server(id = "template_db")
-
+  
   # forms to sync to template db
   forms <- mod_get_layers_server(id = "forms_db")
-
+  
   # returns 4 element list
   # element 1 is file name and path to temporary geopackage
   # element 2 is date time string for creation of temporary geopackage
@@ -39,23 +39,23 @@ app_server <- function(input, output, session) {
   # element 4 is a log file
   gpkg_path <- reactive({
     req(template(), forms())
-
+    
     sync_waiter$show()
     gpkg_path <- sync_forms(template = template(), forms = forms())
     sync_waiter$hide()
     gpkg_path
   })
-
+  
   # download raw synced data as a zip file
   output$download_sync_forms <- downloadHandler(
     filename = function() {
       req(gpkg_path()[[1]])
-
+      
       paste("synced_forms_", gpkg_path()[[2]], ".zip", sep = "")
     },
     content = function(file) {
       req(gpkg_path()[[1]])
-
+      
       zip(
         zipfile = file,
         files = c(gpkg_path()[[1]], gpkg_path()[[4]]),
@@ -64,7 +64,7 @@ app_server <- function(input, output, session) {
     },
     contentType = "application/zip"
   )
-
+  
   # sync forms modal
   observeEvent(input$sync_forms, {
     showModal(
@@ -93,31 +93,30 @@ app_server <- function(input, output, session) {
       )
     )
   })
-
+  
   # Data Upload -------------------------------------------------------------
-
+  
   # Upload data and select active layer
   # reactiveValues object to hold dataframe of layers a user can select as the active layer
   data_file <-
     reactiveValues(
       data_file = data.frame(),
       map_drawn = 0,
-      tmap_drawn = 0,
       joined_df = list()
     )
-
+  
   # add synced files to app
   sync_file <- reactive({
     req(gpkg_path()[[1]], input$add_synced_forms)
-
+    
     sync_file <- gpkg_path()[[3]]
     sync_file
   })
-
+  
   # update reactiveValues object holding dataframe of layers a user can select as active layer
   observe({
     req(sync_file())
-
+    
     sync_file <- isolate(sync_file())
     isolate({
       df <- dplyr::bind_rows(data_file$data_file, sync_file)
@@ -129,15 +128,15 @@ app_server <- function(input, output, session) {
       data_file$data_file <- df
     })
   })
-
+  
   # user uploaded files
   # return table of files and file paths of data loaded to the server
   upload_file <- mod_get_layers_server(id = "qfield_data")
-
+  
   # update reactiveValues object holding dataframe of layers a user can select as active layer
   observe({
     req(upload_file())
-
+    
     upload_file <- isolate(upload_file())
     isolate({
       df <- dplyr::bind_rows(data_file$data_file, upload_file)
@@ -149,7 +148,7 @@ app_server <- function(input, output, session) {
       data_file$data_file <- df
     })
   })
-
+  
   # select one table as active layer from files loaded to the server
   observe({
     df <- data_file$data_file
@@ -159,63 +158,63 @@ app_server <- function(input, output, session) {
     choices <- c(choices, nm_jdf)
     updateSelectInput(session, "active_layer", choices = choices)
   })
-
+  
   # active df - use this df for summarising and generating raw tables for display
   active_df <- reactive({
     req(input$active_layer)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$active_layer)) {
       active_df <- data_file$joined_df[[input$active_layer]]
     } else {
       active_df <- read_tables(df, input$active_layer)
     }
-
+    
     active_df
   })
-
+  
   # render active df as raw data table
   mod_render_dt_server(id = "data_raw", dt = active_df)
-
+  
   # Summary Tables ----------------------------------------------------------
-
+  
   # Select input for grouping and summarising variables
   grouping_vars <-
     mod_multiple_input_server(id = "grouping_var", m_df = active_df)
-
+  
   # filter out selected grouping variables in list of variables which can be summarised
   s_active_df <- reactive({
     req(active_df(), grouping_vars())
-
+    
     tmp_df <- active_df() %>%
       select_if(is.numeric)
     choices <- names(tmp_df)
     s_intersect <- intersect(choices, grouping_vars())
     choices <- choices[!choices %in% s_intersect]
-
+    
     choices
   })
-
+  
   summarising_vars <-
     mod_multiple_input_server(id = "summarising_var", m_df = s_active_df)
-
+  
   # perform group by and summarise operation
   summarised_df <- reactive({
     req(active_df())
-
+    
     summarised_df <-
       group_by_summarise(active_df(), grouping_vars(), summarising_vars())
-
+    
     summarised_df
   })
-
+  
   # render summarised_df as data table
   mod_render_dt_server(id = "data_summary", dt = summarised_df)
-
+  
   # Joining Tables ----------------------------------------------------------
-
+  
   observe({
     df <- data_file$data_file
     joined_df <- data_file$joined_df
@@ -223,75 +222,69 @@ app_server <- function(input, output, session) {
     nm_jdf <- names(joined_df)
     choices <- c(choices, nm_jdf)
     data_file$table_left <- choices
-
+    
     updateSelectInput(session, "table_left", choices = choices)
   })
-
+  
   left_df <- reactive({
     req(input$table_left)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$table_left)) {
       left_df <- isolate(data_file$joined_df[[input$table_left]])
     } else {
       left_df <- read_tables(df, input$table_left)
     }
-
+    
     left_df
   })
-
+  
   observe({
     df <- data_file$table_left
-
+    
     choices <- unique(df)
     choices <- choices[choices != input$table_left]
-
+    
     updateSelectInput(session, "table_right", choices = choices)
   })
-
+  
   right_df <- reactive({
     req(input$table_right)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$table_right)) {
       right_df <- isolate(data_file$joined_df[[input$table_right]])
     } else {
       right_df <- read_tables(df, input$table_right)
     }
-
+    
     right_df
   })
-
+  
   # update select input for table left primary key
   p_key <-
-    mod_multiple_input_server(
-      id = "joining_p_key_left", 
-      m_df = left_df
-      )
-
+    mod_multiple_input_server(id = "joining_p_key_left", m_df = left_df)
+  
   # update select input for table right foreign key
   f_key <-
-    mod_multiple_input_server(
-      id = "joining_f_key_right", 
-      m_df = right_df
-      )
-
+    mod_multiple_input_server(id = "joining_f_key_right", m_df = right_df)
+  
   join_waiter <- waiter::Waiter$new(
     html = join_screen,
     color = "rgba(44,62,80,.6)"
   )
-
+  
   # join left table to right table
   observeEvent(input$table_join_button, {
     req(left_df(), right_df(), input$key_join_type)
-
+    
     join_waiter$show()
     if (input$key_join_type == "col_inner" |
-      input$key_join_type == "col_left") {
+        input$key_join_type == "col_left") {
       joined_table <-
         join_tables(
           left_df(),
@@ -302,10 +295,10 @@ app_server <- function(input, output, session) {
         )
     }
     join_waiter$hide()
-
+    
     data_file$joined_df[[input$join_tbl_name]] <- joined_table
   })
-
+  
   # select tables for spatial joins
   observe({
     df <- data_file$data_file
@@ -314,68 +307,68 @@ app_server <- function(input, output, session) {
     nm_jdf <- names(joined_df)
     choices <- c(choices, nm_jdf)
     data_file$spatial_table_left <- choices
-
+    
     updateSelectInput(session, "spatial_table_left", choices = choices)
   })
-
+  
   spatial_left_df <- reactive({
     req(input$spatial_table_left)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$spatial_table_left)) {
       left_df <- isolate(data_file$joined_df[[input$spatial_table_left]])
     } else {
       left_df <- read_tables(df, input$spatial_table_left)
     }
-
+    
     shinyFeedback::feedbackWarning(
       "spatial_table_left",
       !("sf" %in% class(left_df)),
       "Not a spatial layer"
     )
-
+    
     left_df
   })
-
+  
   observe({
     req(input$spatial_table_left)
     df <- data_file$spatial_table_left
-
+    
     choices <- unique(df)
     choices <- choices[choices != input$spatial_table_left]
-
+    
     updateSelectInput(session, "spatial_table_right", choices = choices)
   })
-
+  
   spatial_right_df <- reactive({
     req(input$spatial_table_right)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$spatial_table_right)) {
       right_df <-
         isolate(data_file$joined_df[[input$spatial_table_right]])
     } else {
       right_df <- read_tables(df, input$spatial_table_right)
     }
-
+    
     shinyFeedback::feedbackWarning(
       "spatial_table_right",
       !("sf" %in% class(right_df)),
       "Not a spatial layer"
     )
-
+    
     right_df
   })
-
+  
   spatial_join_waiter <- waiter::Waiter$new(
     html = join_screen,
     color = "rgba(44,62,80,.6)"
   )
-
+  
   # join left table to right table
   observeEvent(input$spatial_join_button, {
     req(
@@ -385,12 +378,12 @@ app_server <- function(input, output, session) {
       "sf" %in% class(spatial_right_df()),
       input$spatial_join_type
     )
-
+    
     spatial_join_waiter$show()
     if ("sf" %in% class(spatial_left_df()) &
-      "sf" %in% class(spatial_right_df()) &
-      input$spatial_join_type == "spatial_inner" |
-      input$spatial_join_type == "spatial_left") {
+        "sf" %in% class(spatial_right_df()) &
+        input$spatial_join_type == "spatial_inner" |
+        input$spatial_join_type == "spatial_left") {
       joined_table <-
         spatial_join_tables(
           spatial_left_df(),
@@ -399,12 +392,12 @@ app_server <- function(input, output, session) {
         )
     }
     spatial_join_waiter$hide()
-
+    
     data_file$joined_df[[input$spjoin_tbl_name]] <- joined_table
   })
-
+  
   # Filter Rows -------------------------------------------------------------
-
+  
   # filter modal
   observeEvent(input$filter, {
     showModal(
@@ -445,8 +438,8 @@ app_server <- function(input, output, session) {
       )
     )
   })
-
-
+  
+  
   # select tables for row filtering
   observe({
     df <- data_file$data_file
@@ -454,33 +447,33 @@ app_server <- function(input, output, session) {
     choices <- unique(df$layer_disp_name_idx)
     nm_jdf <- names(joined_df)
     choices <- c(choices, nm_jdf)
-
+    
     updateSelectInput(session, "table_filter", choices = choices)
   })
-
-
+  
+  
   filter_df <- reactive({
     req(input$table_filter)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$table_filter)) {
       filter_df <- isolate(data_file$joined_df[[input$table_filter]])
     } else {
       filter_df <- read_tables(df, input$table_filter)
     }
-
+    
     filter_df
   })
-
+  
   # execute filter and add filtered table to active layers
   observeEvent(input$execute_filter, {
     req(filter_df())
     req(input$filter_conditions)
-
+    
     filter_df <- isolate(filter_df())
-
+    
     filter_expr <- tryCatch(
       error = function(cnd) {
         NULL
@@ -494,7 +487,7 @@ app_server <- function(input, output, session) {
           )
       }
     )
-
+    
     filter_out <- tryCatch(
       error = function(cnd) {
         NULL
@@ -503,14 +496,14 @@ app_server <- function(input, output, session) {
         filter_out <- eval(filter_expr)
       }
     )
-
+    
     if (length(filter_out) > 0) {
       data_file$joined_df[[input$filter_tbl_name]] <- filter_out
     }
   })
-
+  
   # Add Columns -------------------------------------------------------------
-
+  
   # add column modal
   observeEvent(input$add_column, {
     showModal(
@@ -534,7 +527,7 @@ app_server <- function(input, output, session) {
       )
     )
   })
-
+  
   # select table to add column to
   observe({
     df <- data_file$data_file
@@ -542,25 +535,25 @@ app_server <- function(input, output, session) {
     choices <- unique(df$layer_disp_name_idx)
     nm_jdf <- names(joined_df)
     choices <- c(choices, nm_jdf)
-
+    
     updateSelectInput(session, "table_mutate", choices = choices)
   })
-
+  
   mutate_df <- reactive({
     req(input$table_mutate)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$table_mutate)) {
       mutate_df <- isolate(data_file$joined_df[[input$table_mutate]])
     } else {
       mutate_df <- read_tables(df, input$table_mutate)
     }
-
+    
     mutate_df
   })
-
+  
   # execute mutate and add column to selected table
   observeEvent(input$execute_mutate, {
     req(mutate_df())
@@ -569,7 +562,7 @@ app_server <- function(input, output, session) {
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
     col_name <- input$col_name
-
+    
     mutate_expr <- tryCatch(
       error = function(cnd) {
         NULL
@@ -583,7 +576,7 @@ app_server <- function(input, output, session) {
           )
       }
     )
-
+    
     mutate_out <- tryCatch(
       error = function(cnd) {
         NULL
@@ -592,7 +585,7 @@ app_server <- function(input, output, session) {
         mutate_out <- eval(mutate_expr)
       }
     )
-
+    
     if (length(mutate_out) > 0) {
       if (any(jdf == input$table_mutate)) {
         data_file$joined_df[[input$table_mutate]] <- mutate_out
@@ -616,9 +609,9 @@ app_server <- function(input, output, session) {
       }
     }
   })
-
+  
   # Data Download -----------------------------------------------------------
-
+  
   # Date stamp for downloading files
   dt <- reactive({
     d <- Sys.time()
@@ -626,7 +619,7 @@ app_server <- function(input, output, session) {
     d <- stringr::str_replace(d, " ", "-")
     d
   })
-
+  
   # download raw data
   output$download_data_raw <- downloadHandler(
     filename = function() {
@@ -634,11 +627,11 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       req(active_df())
-
+      
       readr::write_csv(active_df(), file)
     }
   )
-
+  
   # download summarised data
   output$download_data_summarised <- downloadHandler(
     filename = function() {
@@ -646,13 +639,13 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       req(summarised_df())
-
+      
       readr::write_csv(summarised_df(), file)
     }
   )
-
+  
   # Web Map -----------------------------------------------------------------
-
+  
   # Map options
   # update select input for mapping layer
   observe({
@@ -663,25 +656,25 @@ app_server <- function(input, output, session) {
     choices <- c(choices, nm_jdf)
     updateSelectInput(session, "map_active_layer", choices = choices)
   })
-
+  
   # active df - use this df for rendering on web map
   map_active_df <- reactive({
     req(input$map_active_layer)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$map_active_layer)) {
       map_active_df <-
         isolate(data_file$joined_df[[input$map_active_layer]])
     } else {
       map_active_df <- read_tables(df, input$map_active_layer)
     }
-
+    
     if (nrow(map_active_df) > 0) {
       map_active_df$layer_id <- as.character(1:nrow(map_active_df))
     }
-
+    
     if (nrow(map_active_df) > 5000) {
       map_active_df <- map_active_df[1:5000, ]
       id <-
@@ -691,39 +684,33 @@ app_server <- function(input, output, session) {
           type = c("warning")
         )
     }
-
+    
     # show warning if map active layer has no records
     shinyFeedback::feedbackWarning(
       "map_active_layer",
       !(nrow(map_active_df) > 0),
       "Not updating options - no records in selected table"
     )
-
+    
     # show warning if map active layer is not spatial (class sf)
     shinyFeedback::feedbackWarning(
       "map_active_layer",
       !("sf" %in% class(map_active_df)),
       "Not updating options - not a spatial layer"
     )
-
+    
     # don't update options if selected layer has no records
     req(nrow(map_active_df) > 0, "sf" %in% class(map_active_df))
-
+    
     map_active_df
   })
-
+  
   map_var <-
-    mod_single_input_server(
-      id = "map_var", 
-      s_df = map_active_df
-      )
-
+    mod_single_input_server(id = "map_var", s_df = map_active_df)
+  
   label_vars <-
-    mod_multiple_input_server(
-      id = "label_vars", 
-      m_df = map_active_df
-      )
-
+    mod_multiple_input_server(id = "label_vars", m_df = map_active_df)
+  
   # Create web map
   output$web_map <- leaflet::renderLeaflet({
     base_map <- leaflet::leaflet() %>%
@@ -746,24 +733,24 @@ app_server <- function(input, output, session) {
         activeColor = "#3D535D",
         completedColor = "#7D4479"
       )
-
+    
     base_map
   })
-
+  
   map_waiter <- waiter::Waiter$new(
     html = map_screen,
     color = "rgba(44,62,80,.6)"
   )
-
+  
   # add spatial data to map
   observeEvent(input$create_map, {
     req(map_active_df())
-
+    
     # map_active_df <- isolate(map_active_df())
-
+    
     if ("sf" %in% class(map_active_df()) &
-      is.atomic(map_active_df()[[map_var()]]) &
-      nrow(map_active_df()) > 0) {
+        is.atomic(map_active_df()[[map_var()]]) &
+        nrow(map_active_df()) > 0) {
       data_file$map_drawn <- 1
       print(data_file$map_drawn)
       add_layers_leaflet(
@@ -778,15 +765,15 @@ app_server <- function(input, output, session) {
       )
     }
   })
-
+  
   # update opacity
   observeEvent(input$opacity, {
     req(map_active_df())
-
+    
     if (data_file$map_drawn == 1) {
       if ("sf" %in% class(map_active_df()) &
-        is.atomic(map_active_df()[[map_var()]]) &
-        nrow(map_active_df()) > 0) {
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
         add_layers_leaflet_no_zoom(
           map_object = "web_map",
           map_active_df = map_active_df(),
@@ -800,15 +787,15 @@ app_server <- function(input, output, session) {
       }
     }
   })
-
+  
   # update colour
   observeEvent(input$map_colour, {
     req(map_active_df())
-
+    
     if (data_file$map_drawn == 1) {
       if ("sf" %in% class(map_active_df()) &
-        is.atomic(map_active_df()[[map_var()]]) &
-        nrow(map_active_df()) > 0) {
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
         add_layers_leaflet_no_zoom(
           map_object = "web_map",
           map_active_df = map_active_df(),
@@ -822,37 +809,37 @@ app_server <- function(input, output, session) {
       }
     }
   })
-
+  
   # add popup labels
   observe({
     leaflet::leafletProxy("web_map") %>% clearPopups()
-
+    
     # capture click events
     # event_shape captures a user click on a shape object
     # event_marker captures a user click on a marker object
     event_shape <- input$web_map_shape_click
     event_marker <- input$web_map_marker_click
-
+    
     # if a user has not clicked on a marker or object leave event as null if a
     # user has clicked on a shape or marker update event and pass it into
     # fct_add_popups to create popup for clicked object
     event <- NULL
-
+    
     if (!is.null(event_shape)) {
       event <- event_shape
     }
-
+    
     if (!is.null(event_marker)) {
       event <- event_marker
     }
-
+    
     if (is.null(event)) {
       return()
     }
-
+    
     isolate({
       req(label_vars())
-
+      
       content <-
         add_popups(
           in_df = map_active_df,
@@ -860,34 +847,34 @@ app_server <- function(input, output, session) {
           label_vars = label_vars
         )
       print(content)
-
+      
       leaflet::leafletProxy("web_map") %>%
         leaflet::addPopups(event$lng, event$lat, content, layerId = event$id)
     })
   })
-
+  
   # add legend on top of leaflet object
   observe({
     req(map_active_df())
-
+    
     if ("sf" %in% class(map_active_df()) &
-      is.atomic(map_active_df()[[map_var()]]) &
-      nrow(map_active_df()) > 0) {
+        is.atomic(map_active_df()[[map_var()]]) &
+        nrow(map_active_df()) > 0) {
       # make map active layer epsg 4326
       # make this an if statement
       map_df <- map_active_df() %>%
         sf::st_transform(4326)
-
+      
       bbox <- sf::st_bbox(map_df) %>%
         as.vector()
-
+      
       if (class(map_df[[map_var()]]) != "numeric" &
-        class(map_df[[map_var()]]) != "integer") {
+          class(map_df[[map_var()]]) != "integer") {
         pal <- leaflet::colorFactor(input$map_colour, map_df[[map_var()]])
       } else {
         pal <- leaflet::colorNumeric(input$map_colour, map_df[[map_var()]])
       }
-
+      
       if (input$legend == TRUE) {
         leaflet::leafletProxy("web_map") %>%
           leaflet::clearControls() %>%
@@ -903,15 +890,15 @@ app_server <- function(input, output, session) {
       }
     }
   })
-
-
+  
+  
   # Charts ------------------------------------------------------------------
-
+  
   resize_waiter <- waiter::Waiter$new(
     html = resize_screen,
     color = "rgba(44,62,80,.6)"
   )
-
+  
   # Map options
   # update select input for mapping layer
   observe({
@@ -922,116 +909,116 @@ app_server <- function(input, output, session) {
     choices <- c(choices, nm_jdf)
     updateSelectInput(session, "chart_active_layer", choices = choices)
   })
-
+  
   # active df - use this df for rendering chart
   chart_active_df <- reactive({
     req(input$chart_active_layer)
-
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
-
+    
     if (any(jdf == input$chart_active_layer)) {
       chart_active_df <-
         isolate(data_file$joined_df[[input$chart_active_layer]])
     } else {
       chart_active_df <- read_tables(df, input$chart_active_layer)
     }
-
+    
     head(chart_active_df)
     chart_active_df
   })
-
+  
   # histogram variable selection
   hist_choices <- reactive({
     req(chart_active_df())
-
+    
     tmp_df <- chart_active_df() %>%
       select_if(is.numeric)
     choices <- names(tmp_df)
     print(choices)
-
+    
     choices
   })
-
+  
   hist_x_axis_vars <-
     mod_single_input_server(id = "hist_x_axis_var", s_df = hist_choices)
-
+  
   # scatter plot variable selection
   scatter_choices <- reactive({
     req(chart_active_df())
-
+    
     tmp_df <- chart_active_df() %>%
       select_if(is.numeric)
     choices <- names(tmp_df)
     print(choices)
-
+    
     choices
   })
-
+  
   scatter_x_axis_vars <-
     mod_single_input_server(id = "scatter_x_axis_var", s_df = scatter_choices)
-
+  
   scatter_y_axis_vars <-
     mod_single_input_server(id = "scatter_y_axis_var", s_df = scatter_choices)
-
+  
   # bar plot variables
   col_grouping_var <-
     mod_single_input_server(id = "col_grouping_var", s_df = chart_active_df)
-
+  
   # filter out selected grouping variables in list of variables which can be summarised
   col_active_df <- reactive({
     req(chart_active_df(), col_grouping_var())
-
+    
     tmp_df <- chart_active_df() %>%
       select_if(is.numeric)
     choices <- names(tmp_df)
     s_intersect <- intersect(choices, col_grouping_var())
     choices <- choices[!choices %in% s_intersect]
-
+    
     choices
   })
-
+  
   col_summarising_var <-
     mod_single_input_server(id = "col_summarising_var", s_df = col_active_df)
-
+  
   # perform group by and summarise operation for bar plot
   col_summarised_df <- reactive({
     req(chart_active_df())
     chart_data()
-
+    
     col_summarising_var <- isolate(col_summarising_var())
     col_grouping_var <- isolate(col_grouping_var())
-
+    
     if (input$bar_plot_type == "count_records") {
       col_summarising_var <- NULL
     }
-
+    
     col_group_df <-
       group_by_summarise(chart_active_df(), col_grouping_var, col_summarising_var)
-
+    
     col_group_df
   })
-
+  
   # make chart take reactive dependency on action button
   chart_data <- eventReactive(input$create_chart, {
     print("draw chart")
   })
-
+  
   output$chart <- renderPlot(
     {
       chart_data()
-
+      
       lab_font_size <- isolate(input$lab_font)
       axis_font_size <- isolate(input$axis_font)
       x_lab <- isolate(input$x_axis_label)
       y_lab <- isolate(input$y_axis_label)
       chart_type <- isolate(input$plotType)
       bar_plot_type <- isolate(input$bar_plot_type)
-
+      
       if (chart_type == "histogram") {
         binwidth <- isolate(input$binwidth)
         hist_x_var <- isolate(hist_x_axis_vars())
-
+        
         chart <-
           ggplot2::ggplot(isolate(chart_active_df()), ggplot2::aes(.data[[hist_x_var]])) +
           ggplot2::geom_histogram(
@@ -1058,7 +1045,7 @@ app_server <- function(input, output, session) {
         scatter_x_var <- isolate(scatter_x_axis_vars())
         scatter_y_var <- isolate(scatter_y_axis_vars())
         point <- isolate(input$scatter_point_size)
-
+        
         chart <-
           ggplot2::ggplot(
             isolate(chart_active_df()),
@@ -1082,7 +1069,7 @@ app_server <- function(input, output, session) {
           )
       } else if (chart_type == "bar plot") {
         bar_x_var <- isolate(col_summarised_df()[, 1])
-
+        
         if (bar_plot_type == "count_records") {
           bar_y_var <- isolate(col_summarised_df()[, 2])
         } else if (bar_plot_type == "sum_values") {
@@ -1090,7 +1077,7 @@ app_server <- function(input, output, session) {
         } else if (bar_plot_type == "mean") {
           bar_y_var <- isolate(col_summarised_df()[, 2])
         }
-
+        
         col_chart_df <- data.frame(bar_x_var, bar_y_var)
         chart <-
           ggplot2::ggplot(
@@ -1114,7 +1101,7 @@ app_server <- function(input, output, session) {
             axis.title.y = ggplot2::element_text(size = lab_font_size)
           )
       }
-
+      
       chart
     },
     height = function() {
@@ -1125,6 +1112,9 @@ app_server <- function(input, output, session) {
 
 # Tonga Map ---------------------------------------------------------------
   
+  data_file_tonga <- reactiveValues(
+    tmap_drawn = 0
+    )
   # select one table as active layer
   observe({
     df <- input$tonga_data
@@ -1136,20 +1126,20 @@ app_server <- function(input, output, session) {
         tonga_crops <- sf::st_read(input$tonga_data$datapath, layer = "tonga-crops")
         sf::st_crs(tonga_crops) <- 4326
         
-        data_file$tonga_crop_survey_raw <- tonga_crops
-        data_file$tonga_crop_survey_block <- crop_survey_zonal_stats(tonga_block, tonga_crops)
-        data_file$tonga_crop_survey_village <- crop_survey_zonal_stats(tonga_village, tonga_crops)
-        data_file$tonga_crop_survey_district <- crop_survey_zonal_stats(tonga_district, tonga_crops)
+        data_file_tonga$tonga_crop_survey_raw <- tonga_crops
+        data_file_tonga$tonga_crop_survey_block <- crop_survey_zonal_stats(tonga_block, tonga_crops)
+        data_file_tonga$tonga_crop_survey_village <- crop_survey_zonal_stats(tonga_village, tonga_crops)
+        data_file_tonga$tonga_crop_survey_district <- crop_survey_zonal_stats(tonga_district, tonga_crops)
       }
 
       if ("vavau-crops" %in% tonga_data_tmp) {
         vavau_crops <- sf::st_read(input$tonga_data$datapath, layer = "vavau-crops")
         sf::st_crs(vavau_crops) <- 4326
         
-        data_file$vavau_crop_survey_raw <- vavau_crops
-        data_file$vavau_crop_survey_block <- crop_survey_zonal_stats(vavau_block, vavau_crops)
-        data_file$vavau_crop_survey_village <- crop_survey_zonal_stats(vavau_village, vavau_crops)
-        data_file$vavau_crop_survey_district <- crop_survey_zonal_stats(vavau_district, vavau_crops)
+        data_file_tonga$vavau_crop_survey_raw <- vavau_crops
+        data_file_tonga$vavau_crop_survey_block <- crop_survey_zonal_stats(vavau_block, vavau_crops)
+        data_file_tonga$vavau_crop_survey_village <- crop_survey_zonal_stats(vavau_village, vavau_crops)
+        data_file_tonga$vavau_crop_survey_district <- crop_survey_zonal_stats(vavau_district, vavau_crops)
       }
     }
   })
@@ -1159,19 +1149,19 @@ app_server <- function(input, output, session) {
     req(input$tonga_layers)
 
     if (input$tonga_layers == "Tonga crop survey (raw)") {
-      tdf <- data_file$tonga_crop_survey_raw
+      tdf <- data_file_tonga$tonga_crop_survey_raw
     }
 
     if (input$tonga_layers == "Tonga crop survey (block)") {
-      tdf <- data_file$tonga_crop_survey_block
+      tdf <- data_file_tonga$tonga_crop_survey_block
     }
 
     if (input$tonga_layers == "Tonga crop survey (village)") {
-      tdf <- data_file$tonga_crop_survey_village
+      tdf <- data_file_tonga$tonga_crop_survey_village
     }
 
     if (input$tonga_layers == "Tonga crop survey (district)") {
-      tdf <- data_file$tonga_crop_survey_district
+      tdf <- data_file_tonga$tonga_crop_survey_district
     }
     
     # add layer id for leaflet
@@ -1188,6 +1178,8 @@ app_server <- function(input, output, session) {
   
   # Tonga Map --------------------------------------------------------
   # select one table as active layer from files loaded to the server
+  
+  
   observe({
     req(input$tonga_data)
     
@@ -1242,7 +1234,7 @@ app_server <- function(input, output, session) {
       # don't draw legend if plot id or zone is selected
       if (tonga_map_layer == "zone" | 
           tonga_map_layer == "plot_id") {
-        data_file$tmap_drawn <- 1
+        data_file_tonga$tmap_drawn <- 1
         add_layers_leaflet(
           map_object = "tonga_leafmap",
           map_active_df = tonga_active_df(),
@@ -1254,7 +1246,7 @@ app_server <- function(input, output, session) {
           waiter = tonga_map_waiter
         )
       } else {
-        data_file$tmap_drawn <- 1
+        data_file_tonga$tmap_drawn <- 1
         add_layers_leaflet_legend(
           map_object = "tonga_leafmap",
           map_active_df = tonga_active_df(),
@@ -1273,7 +1265,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$tonga_map_colour, {
     req(tonga_active_df())
     
-    if (data_file$tmap_drawn == 1) {
+    if (data_file_tonga$tmap_drawn == 1) {
       # map takes reactive dependency on user specified layer and colour
       tonga_map_layer <- input$tonga_map_layer
       map_colour <- input$tonga_map_colour
@@ -1298,7 +1290,7 @@ app_server <- function(input, output, session) {
             waiter = tonga_map_waiter
           )
         } else {
-          data_file$tmap_drawn <- 1
+          data_file_tonga$tmap_drawn <- 1
           add_layers_leaflet_legend_no_zoom(
             map_object = "tonga_leafmap",
             map_active_df = tonga_active_df(),
@@ -1318,7 +1310,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$tonga_map_layer, {
     req(tonga_active_df())
     
-    if (data_file$tmap_drawn == 1) {
+    if (data_file_tonga$tmap_drawn == 1) {
       # map takes reactive dependency on user specified layer and colour
       tonga_map_layer <- input$tonga_map_layer
       map_colour <- input$tonga_map_colour
@@ -1331,7 +1323,7 @@ app_server <- function(input, output, session) {
         # don't draw legend if plot id or zone is selected
         if (tonga_map_layer == "zone" | 
             tonga_map_layer == "plot_id") {
-          data_file$tmap_drawn <- 1
+          data_file_tonga$tmap_drawn <- 1
           add_layers_leaflet_no_zoom(
             map_object = "tonga_leafmap",
             map_active_df = tonga_active_df(),
@@ -1343,7 +1335,7 @@ app_server <- function(input, output, session) {
             waiter = tonga_map_waiter
           )
         } else {
-          data_file$tmap_drawn <- 1
+          data_file_tonga$tmap_drawn <- 1
           add_layers_leaflet_legend_no_zoom(
             map_object = "tonga_leafmap",
             map_active_df = tonga_active_df(),
