@@ -102,7 +102,8 @@ app_server <- function(input, output, session) {
     reactiveValues(
       data_file = data.frame(),
       map_drawn = 0,
-      joined_df = list()
+      joined_df = list(),
+      edit_data_file = data.frame()
     )
   
   # add synced files to app
@@ -1531,5 +1532,28 @@ app_server <- function(input, output, session) {
   )
 
 # END ---------------------------------------------------------------------
+  
+
+# Admin - data cleaning ---------------------------------------------------
+
+  # user uploaded files for data cleaning / editing
+  # return table of files and file paths of data loaded to the server
+  upload_edit_file <- mod_get_layers_server(id = "edit_data")
+  
+  # update reactiveValues object holding dataframe of layers a user can select as active layer
+  observe({
+    req(upload_edit_file())
+    
+    upload_edit_file <- isolate(upload_edit_file())
+    isolate({
+      df <- dplyr::bind_rows(data_file$edit_data_file, upload_edit_file)
+      # unique number id next to each layer to catch uploads of tables with same name
+      rows <- nrow(df)
+      row_idx <- 1:rows
+      df$layer_disp_name_idx <-
+        paste0(df$layer_disp_name, "_", row_idx, sep = "")
+      data_file$data_file <- df
+    })
+  })  
   
 }
