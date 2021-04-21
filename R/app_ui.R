@@ -355,8 +355,6 @@ app_ui <- function(request) {
         )
       ),
 
-      # Tonga Map ---------------------------------------------------------------
-
       tabPanel(
         "Tonga Map",
         shinyFeedback::useShinyFeedback(),
