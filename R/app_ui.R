@@ -67,6 +67,8 @@ app_ui <- function(request) {
         )
       ),
 
+      # Data Tab ----------------------------------------------------------------
+
       tabPanel(
         "Data",
         waiter::use_waiter(),
@@ -208,6 +210,9 @@ app_ui <- function(request) {
         ),
       ),
 
+
+      # Map Tab -----------------------------------------------------------------
+
       tabPanel(
         "Map",
         tags$style(
@@ -269,6 +274,9 @@ app_ui <- function(request) {
           )
         )
       ),
+
+
+      # Charts Tab --------------------------------------------------------------
 
       tabPanel(
         "Charts",
@@ -354,6 +362,15 @@ app_ui <- function(request) {
           )
         )
       ),
+
+
+      # Admin Tab ---------------------------------------------------------------
+
+      tabPanel(
+        "Admin",
+      ),
+
+      # Docs Tab ----------------------------------------------------------------
 
       tabPanel(
         "Documentation",
