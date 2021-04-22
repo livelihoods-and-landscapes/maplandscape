@@ -378,8 +378,9 @@ app_ui <- function(request) {
               accept = c(".gpkg")
               ),
             
-
             shiny::tags$br(),
+            
+            selectInput("edit_layer", "Select layer to edit", choices = NULL),
           ),
 
           mainPanel(tabsetPanel(

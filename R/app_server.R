@@ -1130,8 +1130,29 @@ app_server <- function(input, output, session) {
       row_idx <- 1:rows
       df$layer_disp_name_idx <-
         paste0(df$layer_disp_name, "_", row_idx, sep = "")
-      data_file$data_file <- df
+      data_file$edit_data_file <- df
     })
   })  
+  
+  # select one table as editing layer from GeoPackage loaded for editing
+  observe({
+    df <- data_file$edit_data_file
+    choices <- unique(df$layer_disp_name_idx)
+    updateSelectInput(session, "edit_layer", choices = choices)
+  })
+  
+  # editing df - use this df editing records
+  edit_df <- reactive({
+    req(input$edit_layer)
+    
+    df <- isolate(data_file$edit_data_file)
+
+    edit_df <- read_tables(df, input$edit_layer)
+    
+    edit_df
+  })
+  
+  # render active df as raw data table
+  mod_render_dt_server(id = "edit_data_dt", dt = edit_df)
   
 }
