@@ -177,7 +177,7 @@ app_server <- function(input, output, session) {
   })
   
   # render active df as raw data table
-  mod_render_dt_server(id = "data_raw", dt = active_df)
+  mod_render_dt_server(id = "data_raw", dt = active_df, editable = FALSE)
   
   # Summary Tables ----------------------------------------------------------
   
@@ -212,7 +212,7 @@ app_server <- function(input, output, session) {
   })
   
   # render summarised_df as data table
-  mod_render_dt_server(id = "data_summary", dt = summarised_df)
+  mod_render_dt_server(id = "data_summary", dt = summarised_df, editable = FALSE)
   
   # Joining Tables ----------------------------------------------------------
   
@@ -1152,7 +1152,7 @@ app_server <- function(input, output, session) {
     edit_df
   })
   
-  # render active df as raw data table
-  mod_render_dt_server(id = "edit_data_dt", dt = edit_df)
+  # render editable layer as raw data table
+  mod_render_dt_server(id = "edit_data_dt", dt = edit_df, editable = TRUE)
   
 }

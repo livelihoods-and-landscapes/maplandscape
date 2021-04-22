@@ -381,6 +381,8 @@ app_ui <- function(request) {
             shiny::tags$br(),
             
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
+            
+            textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
           ),
 
           mainPanel(tabsetPanel(
