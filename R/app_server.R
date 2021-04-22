@@ -103,7 +103,8 @@ app_server <- function(input, output, session) {
       data_file = data.frame(),
       map_drawn = 0,
       joined_df = list(),
-      edit_data_file = data.frame()
+      edit_data_file = data.frame(),
+      tmp_edits = data.frame()
     )
   
   # add synced files to app
@@ -1146,13 +1147,69 @@ app_server <- function(input, output, session) {
     req(input$edit_layer)
     
     df <- isolate(data_file$edit_data_file)
-
     edit_df <- read_tables(df, input$edit_layer)
-    
-    edit_df
+    edit_df 
   })
   
-  # render editable layer as raw data table
+  # render editable layer as a data table
   mod_render_dt_server(id = "edit_data_dt", dt = edit_df, editable = TRUE)
+  
+  # sync forms with database / template
+  delete_waiter <- waiter::Waiter$new(
+    html = delete_screen,
+    color = "rgba(44,62,80,.6)"
+  )
+  
+  # delete selected rows from GeoPackage
+  observeEvent(input$delete_records, {
+    delete_waiter$show()
+    selected_rows <- input$`edit_data_dt-data_table_rows_selected`
+    id_str <- input$row_id
+    edit_df_colnames <- colnames(edit_df())
+    # layer that is edited prior to any deletions - keep to preserve row indexes
+    pre_edit_df <- edit_df() 
+    
+    if (length(selected_rows) > 0) {
+      # find column in edit_df that stores row ids
+      id_col <- stringr::str_detect(edit_df_colnames, id_str)
+      id_col <- edit_df_colnames[id_col]
+      for (i in selected_rows){
+        id_to_delete <- pre_edit_df[i, ][[id_col]]
+        # get layers
+        edit_gpkg <- data_file$edit_data_file
+        layers <- unique(edit_gpkg$layer_disp_name_idx)
+        #iterate over layers, delete row, and sync changes to GeoPackage
+        for (ii in layers) {
+          tmp_edit_df <- read_tables(isolate(data_file$edit_data_file), ii)
+          tmp_edit_df_colnames <- colnames(tmp_edit_df)
+          tmp_edit_df_id_col <- stringr::str_detect(tmp_edit_df_colnames, id_str)
+          tmp_edit_df_id_col <- tmp_edit_df_colnames[tmp_edit_df_id_col]
+          tmp_edit_df <- tmp_edit_df %>%
+            dplyr::filter(.data[[tmp_edit_df_id_col]] != id_to_delete)
+          write_tables(tmp_edit_df, isolate(data_file$edit_data_file), ii)
+          
+        }
+      }
+      
+    }
+    delete_waiter$hide()
+  })
+  
+  # sync forms with database / template
+  edit_waiter <- waiter::Waiter$new(
+    html = edit_screen,
+    color = "rgba(44,62,80,.6)"
+  )
+  
+  # record edits before updating GeoPackage
+  observeEvent(input$`edit_data_dt-data_table_cell_edit`, {
+    browser()
+    tmp_edits <- data_file$tmp_edits
+    edited_rows <- input$`edit_data_dt-data_table_cell_edit`
+    tmp_edits <- dplyr::bind_rows(tmp_edits, edited_rows)
+    data_file$tmp_edits <- tmp_edits
+  })
+  
+  
   
 }

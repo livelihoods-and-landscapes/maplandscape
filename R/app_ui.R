@@ -383,6 +383,12 @@ app_ui <- function(request) {
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
             
             textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
+            
+            actionButton("save_edits", "save edits"),
+            
+            shiny::tags$br(),
+            
+            actionButton("delete_records", "delete records"),
           ),
 
           mainPanel(tabsetPanel(
