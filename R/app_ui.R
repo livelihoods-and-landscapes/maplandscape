@@ -378,17 +378,15 @@ app_ui <- function(request) {
               accept = c(".gpkg")
               ),
             
-            shiny::tags$br(),
+            tags$br(),
             
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
             
             textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
             
-            actionButton("save_edits", "save edits"),
+            actionButton("save_edits", "save edits", class = "btn-primary m-2"),
             
-            shiny::tags$br(),
-            
-            actionButton("delete_records", "delete records"),
+            actionButton("delete_records", "delete records", class = "btn-primary m-2"),
           ),
 
           mainPanel(tabsetPanel(
@@ -422,7 +420,7 @@ app_ui <- function(request) {
               "Table",
               value = "edit_table",
 
-              shiny::tags$br(),
+              tags$br(),
 
               hr(),
 
