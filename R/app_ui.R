@@ -387,6 +387,8 @@ app_ui <- function(request) {
             actionButton("save_edits", "save edits", class = "btn-primary m-2"),
             
             actionButton("delete_records", "delete records", class = "btn-primary m-2"),
+            
+            downloadButton("download_edits", "download edits", class = "btn-primary m-2")
           ),
 
           mainPanel(tabsetPanel(
