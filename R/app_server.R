@@ -1214,66 +1214,79 @@ app_server <- function(input, output, session) {
   observeEvent(input$save_edits, {
     # layer that is edited prior to any edits 
     browser()
-    pre_edit_df <- edit_df() 
+    df_to_edit <- edit_df() 
     
-    if ("sf" %in% class(pre_edit_df)) { 
-      edit_df_not_sf <- pre_edit_df %>%
+    if ("sf" %in% class(df_to_edit)) { 
+      df_to_edit_not_sf <- df_to_edit %>%
         sf::st_drop_geometry()
     } else {
-      edit_df_not_sf <- pre_edit_df
+      df_to_edit_not_sf <- df_to_edit
     }
     
     # edits
     tmp_edits <- data_file$tmp_edits
+    
     if (nrow(tmp_edits > 0)){
-      # loop over edits
-      for (i in 1:nrow(tmp_edits)){
-        
-        invalid_from_user <- "no"
-        # get column type
-        col_idx <- tmp_edits[i, 2]
-        row_idx <- tmp_edits[i, 1]
-        col_type <- class(edit_df_not_sf[, col_idx])
-        from_user <- tmp_edits[i, 3]
-        # cast edit to column type
-        if ("character" %in% col_type) {
-          try(
-            from_user <- as.character(from_user)
-          )
-        } else if ("numeric" %in% col_type) {
-          try(
-            from_user <- as.numeric(from_user)
-          )
-        } else if ("integer" %in% col_type) {
-          try(
-            from_user <- as.integer(from_user)
-          )
-        } else if ("double" %in% col_type) {
-          try(
-            from_user <- as.double(from_user)
-          )
-        } else if ("logical" %in% col_type) {
-          try(
-            from_user <- as.logical(from_user)
-          )
-        } else if ("POSIXct" %in% col_type) {
-          try(
-            from_user <- as.POSIXct(from_user)
-          )
-        } else {
-          from_user <- "user supplied value and data frame column type do not match"
-          invalid_from_user <- "yes"
-        }
-        # update column value
-        if (invalid_from_user == "no") {
-          try(
-            pre_edit_df[row_idx, col_idx] <- from_user
-          )
-        }
-        
-      }
-      write_tables(pre_edit_df, isolate(data_file$edit_data_file), input$edit_layer)
+      df_to_edit <- edit_data_frame(
+        tmp_edits, 
+        df_to_edit, 
+        df_to_edit_not_sf
+        ) 
+      write_tables(df_to_edit, isolate(data_file$edit_data_file), input$edit_layer)
     }
+    
+    # reset edits object to empty after applying them GeoPackage
+    data_file$tmp_edits <- data.frame()
+    
+    # if (nrow(tmp_edits > 0)){
+    #   # loop over edits
+    #   for (i in 1:nrow(tmp_edits)){
+    #     
+    #     invalid_from_user <- "no"
+    #     # get column type
+    #     col_idx <- tmp_edits[i, 2]
+    #     row_idx <- tmp_edits[i, 1]
+    #     col_type <- class(edit_df_not_sf[, col_idx])
+    #     from_user <- tmp_edits[i, 3]
+    #     # cast edit to column type
+    #     if ("character" %in% col_type) {
+    #       try(
+    #         from_user <- as.character(from_user)
+    #       )
+    #     } else if ("numeric" %in% col_type) {
+    #       try(
+    #         from_user <- as.numeric(from_user)
+    #       )
+    #     } else if ("integer" %in% col_type) {
+    #       try(
+    #         from_user <- as.integer(from_user)
+    #       )
+    #     } else if ("double" %in% col_type) {
+    #       try(
+    #         from_user <- as.double(from_user)
+    #       )
+    #     } else if ("logical" %in% col_type) {
+    #       try(
+    #         from_user <- as.logical(from_user)
+    #       )
+    #     } else if ("POSIXct" %in% col_type) {
+    #       try(
+    #         from_user <- as.POSIXct(from_user)
+    #       )
+    #     } else {
+    #       from_user <- "user supplied value and data frame column type do not match"
+    #       invalid_from_user <- "yes"
+    #     }
+    #     # update column value
+    #     if (invalid_from_user == "no") {
+    #       try(
+    #         pre_edit_df[row_idx, col_idx] <- from_user
+    #       )
+    #     }
+    #     
+    #   }
+    #   write_tables(pre_edit_df, isolate(data_file$edit_data_file), input$edit_layer)
+    # }
     
   })
   
