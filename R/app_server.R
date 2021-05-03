@@ -1289,12 +1289,24 @@ app_server <- function(input, output, session) {
 
     if (nrow(tmp_edits) > 0) {
       edit_waiter$show()
-      df_to_edit <- edit_data_frame(
+      edits <- edit_data_frame(
         tmp_edits,
         df_to_edit,
-        df_to_edit_not_sf
+        df_to_edit_not_sf,
+        input$edit_layer
       )
+      df_to_edit <- edits[[1]]
       write_tables(df_to_edit, isolate(data_file$edit_data_file), input$edit_layer)
+      edits_log <- edits[[2]]
+      for (i in edits_log){
+        readr::write_lines(
+          i,
+          data_file$edit_log,
+          sep = "\n",
+          na = "NA",
+          append = TRUE
+        )
+      }
       edit_waiter$hide()
     }
 
@@ -1304,7 +1316,6 @@ app_server <- function(input, output, session) {
 
   # apply edits and update GeoPackage upon change in editing layer
   observeEvent(input$edit_layer, {
-
     # layer that is edited prior to any edits
     df_to_edit <- edit_df()
 
@@ -1320,12 +1331,24 @@ app_server <- function(input, output, session) {
 
     if (nrow(tmp_edits) > 0) {
       edit_waiter$show()
-      df_to_edit <- edit_data_frame(
+      edits <- edit_data_frame(
         tmp_edits,
         df_to_edit,
-        df_to_edit_not_sf
+        df_to_edit_not_sf,
+        input$edit_layer
       )
+      df_to_edit <- edits[[1]]
       write_tables(df_to_edit, isolate(data_file$edit_data_file), input$edit_layer)
+      edits_log <- edits[[2]]
+      for (i in edits_log){
+        readr::write_lines(
+          i,
+          data_file$edit_log,
+          sep = "\n",
+          na = "NA",
+          append = TRUE
+        )
+      }
       edit_waiter$hide()
     }
 
