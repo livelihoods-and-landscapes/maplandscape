@@ -12,7 +12,6 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
   
   # loop over edits
   for (i in 1:nrow(tmp_edits)) {
-    browser()
     invalid_from_user <- "no"
     # get column type
     col_idx <- tmp_edits[i, 2]
