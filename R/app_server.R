@@ -107,7 +107,9 @@ app_server <- function(input, output, session) {
       tmp_edits = data.frame(),
       edit_log = NULL,
       flush_deletes = 1,
-      flush_edits = 1
+      flush_edits = 1,
+      flush_geometry_edits = 1,
+      event_tmp = NULL
     )
 
   # add synced files to app
@@ -1162,6 +1164,7 @@ app_server <- function(input, output, session) {
     req(input$edit_layer)
     req(data_file$flush_deletes)
     req(data_file$flush_edits)
+    req(data_file$flush_geometry_edits)
 
     df <- isolate(data_file$edit_data_file)
     edit_df <- read_tables(df, input$edit_layer)
@@ -1259,9 +1262,14 @@ app_server <- function(input, output, session) {
     }
     
     event <- event$id
+    data_file$event_tmp <- as.numeric(event)
     edit_df <- isolate(edit_df())
     feature <- edit_df[as.numeric(event), ]
     feature$layer_id <- 1
+    
+    # get bounding box for the map
+    bbox <- sf::st_bbox(feature) %>%
+      as.vector()
     
     # add editing feature to map
     output$edit_zoommap <- leaflet::renderLeaflet({
@@ -1272,7 +1280,7 @@ app_server <- function(input, output, session) {
           options = providerTileOptions(maxZoom = 17),
           group = "ESRI Satellite"
         ) %>%
-        leaflet::setView(0, 0, 3) %>%
+        leaflet::fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>%
         leaflet::addLayersControl(
           baseGroups = c("OSM (default)", "ESRI Satellite"),
           options = leaflet::layersControlOptions(collapsed = FALSE),
@@ -1285,6 +1293,12 @@ app_server <- function(input, output, session) {
         ) %>% 
         leaflet.extras::addDrawToolbar(
           targetGroup = "feature",
+          polylineOptions = FALSE,
+          polygonOptions = FALSE,
+          circleOptions = FALSE,
+          rectangleOptions = FALSE,
+          markerOptions = FALSE,
+          circleMarkerOptions = FALSE,
           editOptions = leaflet.extras::editToolbarOptions())
       zoom_map
     })
@@ -1303,14 +1317,53 @@ app_server <- function(input, output, session) {
 
   # Edited Features
   observeEvent(input$edit_zoommap_draw_edited_features, {
-
+    req(edit_df())
     edits <- input$edit_zoommap_draw_edited_features
     # convert return from leaflet.draw to json so it can be read by st_read
-    edits_to_json <- jsonlite::toJSON(x, auto_unbox=TRUE, force=TRUE, digits = NA)
+    edits_to_json <- jsonlite::toJSON(edits, auto_unbox=TRUE, force=TRUE, digits = NA)
     edits_to_sf <- sf::st_read(edits_to_json)
     
+    edit_df <- edit_df()
+    colnames <- colnames(edit_df)
+    row_to_edit <- data_file$event_tmp
     
+    if ("sf" %in% class(edit_df)){
+      
+      if ("geom" %in% colnames){
+        geom <- edits_to_sf$geometry
+        edit_df[row_to_edit, ]$geom <- geom
+      }
+      
+      if ("geometry" %in% colnames){
+        geom <- edits_to_sf$geometry
+        edit_df[row_to_edit, ]$geometry <- geom
+      }
+      
+    }
     
+    write_tables(edit_df, isolate(data_file$edit_data_file), input$edit_layer)
+    data_file$flush_geometry_edits <- data_file$flush_geometry_edits + 1
+    data_file$event_tmp <- NULL
+    
+  })
+  
+  observeEvent(input$edit_zoommap_draw_deleted_features, {
+    req(edit_df())
+    deletes <- input$edit_zoommap_draw_deleted_features
+    deletes_to_json <- jsonlite::toJSON(deletes, auto_unbox=TRUE, force=TRUE, digits = NA)
+    deletes_to_sf <- sf::st_read(deletes_to_json)
+    
+    edit_df <- edit_df()
+    row_to_delete <- data_file$event_tmp
+    
+    if (nrow(deletes_to_sf) > 0) {
+      edit_df <- edit_df %>%
+        dplyr::filter(dplyr::row_number() != row_to_delete)
+      write_tables(edit_df, isolate(data_file$edit_data_file), input$edit_layer)
+      data_file$flush_geometry_edits <- data_file$flush_geometry_edits + 1
+    }
+    
+    data_file$event_tmp <- NULL
   })
   
   # sync forms with database / template
