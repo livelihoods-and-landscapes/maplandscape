@@ -17,7 +17,6 @@
 #'
 
 add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, opacity, map_line_width, map_line_colour, waiter) {
-  
   supported_geometries <- c("POINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON")
 
   if ("sf" %in% class(map_active_df) & is.atomic(map_active_df[[map_var]]) & nrow(map_active_df) > 0) {
@@ -27,7 +26,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
     # make this an if statement
     map_df <- map_active_df %>%
       sf::st_transform(4326)
-    
+
     # get geometry type of map active layer
     geometry_type <- sf::st_geometry_type(map_df, by_geometry = FALSE)
 
@@ -43,7 +42,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
       } else {
         pal <- leaflet::colorNumeric(map_colour, map_df[[map_var]])
       }
-      
+
       # draw polygon layers
       if (geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON") {
         proxy_map <- leaflet::leafletProxy(map_object, data = map_df) %>%
@@ -110,9 +109,9 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
           ) %>%
           leaflet::fitBounds(bbox[1], bbox[2], bbox[3], bbox[4])
       }
-    proxy_map
+      proxy_map
     }
   }
-  
+
   waiter$hide()
 }

@@ -370,53 +370,52 @@ app_ui <- function(request) {
         "Admin",
         sidebarLayout(
           sidebarPanel(
-            
             mod_get_layers_ui(
-              id = "edit_data", 
-              label = "Select .gpkg or .zip file(s)", 
-              multiple = FALSE, 
+              id = "edit_data",
+              label = "Select .gpkg or .zip file(s)",
+              multiple = FALSE,
               accept = c(".gpkg")
-              ),
-            
+            ),
+
             tags$br(),
-            
+
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
-            
+
             textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
-            
+
             actionButton("save_edits", "save edits", class = "btn-primary m-2"),
-            
+
             actionButton("delete_records", "delete records", class = "btn-primary m-2"),
-            
+
             downloadButton("download_edits", "download edits", class = "btn-primary m-2")
           ),
 
           mainPanel(tabsetPanel(
             type = "tabs",
-            id = "tonga_data_view",
+            id = "edit_data_view",
 
-            # tabPanel(
-            #   "Map",
-            #   value = "edit_map",
-            # 
-            #   tags$style(
-            #     type = "text/css",
-            #     "#tonga_leafmap {height: calc(100vh - 135px) !important;}",
-            #     "body {
-            #               margin: 0;
-            #               padding: 0;
-            #            }",
-            #     ".leaflet-popup-content-wrapper {background-color: #ecf0f1}",
-            #     # fill map to height of container;  https://stackoverflow.com/questions/36469631/how-to-get-leaflet-for-r-use-100-of-shiny-dashboard-height/36471739#36471739
-            #     ".leaflet-map-pane { z-index: auto; }",
-            #     ".shiny-notification {
-            #              position:fixed;
-            #              top: calc(50%);
-            #              left: calc(50%);
-            #            }"
-            #   ),
-            #   leafletOutput("edit_leafmap"),
-            # ),
+            tabPanel(
+              "Map",
+              value = "edit_map",
+
+              tags$style(
+                type = "text/css",
+                "#edit_leafmap {height: calc(100vh - 135px) !important;}",
+                "body {
+                          margin: 0;
+                          padding: 0;
+                       }",
+                ".leaflet-popup-content-wrapper {background-color: #ecf0f1}",
+                # fill map to height of container;  https://stackoverflow.com/questions/36469631/how-to-get-leaflet-for-r-use-100-of-shiny-dashboard-height/36471739#36471739
+                ".leaflet-map-pane { z-index: auto; }",
+                ".shiny-notification {
+                         position:fixed;
+                         top: calc(50%);
+                         left: calc(50%);
+                       }"
+              ),
+              leafletOutput("edit_leafmap"),
+            ),
 
             tabPanel(
               "Table",

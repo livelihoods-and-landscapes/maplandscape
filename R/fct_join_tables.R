@@ -14,7 +14,7 @@
 #'   not need to have the same names but the order of the keys matters.
 #' @param fk A character vector of foreign keys. The primary and foreign keys do
 #'   not need to have the same names but the order of the keys matters.
-#' @param j_type A string specifying the type of join to perform. 
+#' @param j_type A string specifying the type of join to perform.
 #'
 #' @return \code{j_df} A table joined on primary and foreign keys. Will be of
 #'   class \code{sf} (i.e. spatial features) if f_left is spatial and of class
@@ -22,7 +22,6 @@
 
 join_tables <- function(f_left, f_right, j_type, pk, fk) {
   if (j_type == "col_inner") {
-    
     if (length(fk) == length(pk)) {
       by <- c()
       for (i in 1:length(pk)) {
@@ -30,32 +29,30 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
         by <- c(by, tmp_name)
       }
     }
-    
+
     # force joining table to be a dataframe
     # when using a join operation on an sf object the other table must be non-spatial
     f_right <- f_right %>%
       as.data.frame()
-    
+
     # make all pk and fk character type for joining
     for (p in pk) {
       pkk <- p
       f_left[[pkk]] <- as.character(f_left[[pkk]])
     }
-    
+
     for (f in fk) {
       fkk <- f
       f_right[[fkk]] <- as.character(f_right[[fkk]])
     }
-    
+
     j_df <- tryCatch(
       error = function(cnd) NULL,
       dplyr::inner_join(f_left, f_right, by = by, na_matches = "never")
     )
-    
+
     j_df
-    
   } else if (j_type == "col_left") {
-    
     if (length(fk) == length(pk)) {
       by <- c()
       for (i in 1:length(pk)) {
@@ -63,30 +60,29 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
         by <- c(by, tmp_name)
       }
     }
-    
+
     # force joining table to be a dataframe
     # when using a join operation on an sf object the other table must be non-spatial
     f_right <- f_right %>%
       as.data.frame()
-    
+
     # make all pk and fk character type for joining
     for (p in pk) {
       pkk <- p
       f_left[[pkk]] <- as.character(f_left[[pkk]])
-
     }
     print(str(f_left))
-    
+
     for (f in fk) {
       fkk <- f
       f_right[[fkk]] <- as.character(f_right[[fkk]])
     }
-    
+
     j_df <- tryCatch(
       error = function(cnd) NULL,
       dplyr::left_join(f_left, f_right, by = by, na_matches = "never")
     )
 
     j_df
-  } 
+  }
 }

@@ -1171,6 +1171,148 @@ app_server <- function(input, output, session) {
   # render editable layer as a data table
   mod_render_dt_server(id = "edit_data_dt", dt = edit_df, editable = TRUE)
 
+  # add editing layer to map
+  output$edit_leafmap <- leaflet::renderLeaflet({
+    base_map <- leaflet::leaflet() %>%
+      leaflet::addTiles(group = "OSM (default)") %>%
+      leaflet::addProviderTiles(
+        providers$Esri.WorldImagery,
+        options = providerTileOptions(maxZoom = 17),
+        group = "ESRI Satellite"
+      ) %>%
+      leaflet::setView(0, 0, 3) %>%
+      leaflet::addLayersControl(
+        baseGroups = c("OSM (default)", "ESRI Satellite"),
+        options = leaflet::layersControlOptions(collapsed = FALSE),
+        position = c("bottomright")
+      ) %>%
+      leaflet::addMeasure(
+        position = "bottomright",
+        primaryLengthUnit = "meters",
+        primaryAreaUnit = "sqmeters",
+        activeColor = "#3D535D",
+        completedColor = "#7D4479"
+      )
+
+    base_map
+  })
+  
+  
+
+  # add spatial data to edit map
+  observe({
+    req(edit_df())
+
+    # add layerID to edit_df - this to identify features that a user clicks
+    edit_df <- edit_df()
+    if (nrow(edit_df) > 0) {
+      edit_df$layer_id <- as.character(1:nrow(edit_df))
+    }
+
+    edit_layer <- isolate(input$edit_layer)
+
+    if ("sf" %in% class(edit_df) &
+      nrow(edit_df) > 0 &
+      input$edit_data_view == "edit_map") {
+      edit_map_proxy <- add_layers_leaflet(
+        map_object = "edit_leafmap",
+        map_active_df = edit_df,
+        map_var = edit_layer,
+        map_colour = "#00ffff",
+        opacity = 0.75,
+        map_line_width = 0.15,
+        map_line_colour = "blue",
+        waiter = map_waiter
+      )
+    }
+
+    # show warning if edit is not spatial (class sf)
+    shinyFeedback::feedbackWarning(
+      "edit_layer",
+      !("sf" %in% class(edit_df)),
+      "Not a spatial layer"
+    )
+  })
+  
+  # listen for user clicking a feature to edit
+  observe({
+    # capture click events
+    # event_shape captures a user click on a shape object
+    # event_marker captures a user click on a marker object
+    event_shape <- input$edit_leafmap_shape_click
+    event_marker <- input$edit_leafmap_marker_click
+    
+    # if a user has not clicked on a marker or object leave event as null if a
+    # user has clicked on a shape or marker update event and pass it into
+    event <- NULL
+    
+    if (!is.null(event_shape)) {
+      event <- event_shape
+    }
+    
+    if (!is.null(event_marker)) {
+      event <- event_marker
+    }
+    
+    if (is.null(event)) {
+      return()
+    }
+    
+    event <- event$id
+    edit_df <- isolate(edit_df())
+    feature <- edit_df[as.numeric(event), ]
+    feature$layer_id <- 1
+    
+    # add editing feature to map
+    output$edit_zoommap <- leaflet::renderLeaflet({
+      zoom_map <- leaflet::leaflet() %>%
+        leaflet::addTiles(group = "OSM (default)") %>%
+        leaflet::addProviderTiles(
+          providers$Esri.WorldImagery,
+          options = providerTileOptions(maxZoom = 17),
+          group = "ESRI Satellite"
+        ) %>%
+        leaflet::setView(0, 0, 3) %>%
+        leaflet::addLayersControl(
+          baseGroups = c("OSM (default)", "ESRI Satellite"),
+          options = leaflet::layersControlOptions(collapsed = FALSE),
+          position = c("bottomright")
+        ) %>%
+        addPolygons(
+          data = feature,
+          group = "feature",
+          layerId = feature$layer_id
+        ) %>% 
+        leaflet.extras::addDrawToolbar(
+          targetGroup = "feature",
+          editOptions = leaflet.extras::editToolbarOptions())
+      zoom_map
+    })
+    
+    showModal(
+      modalDialog(
+        tags$h4("Edit feature"),
+        leafletOutput("edit_zoommap"),
+        modalButton("close"),
+        easyClose = TRUE,
+        footer = NULL
+      )
+    )
+    
+  })
+
+  # Edited Features
+  observeEvent(input$edit_zoommap_draw_edited_features, {
+
+    edits <- input$edit_zoommap_draw_edited_features
+    # convert return from leaflet.draw to json so it can be read by st_read
+    edits_to_json <- jsonlite::toJSON(x, auto_unbox=TRUE, force=TRUE, digits = NA)
+    edits_to_sf <- sf::st_read(edits_to_json)
+    
+    
+    
+  })
+  
   # sync forms with database / template
   delete_waiter <- waiter::Waiter$new(
     html = delete_screen,
@@ -1301,7 +1443,7 @@ app_server <- function(input, output, session) {
       df_to_edit <- edits[[1]]
       write_tables(df_to_edit, isolate(data_file$edit_data_file), input$edit_layer)
       edits_log <- edits[[2]]
-      for (i in edits_log){
+      for (i in edits_log) {
         readr::write_lines(
           i,
           data_file$edit_log,
@@ -1344,7 +1486,7 @@ app_server <- function(input, output, session) {
       df_to_edit <- edits[[1]]
       write_tables(df_to_edit, isolate(data_file$edit_data_file), input$edit_layer)
       edits_log <- edits[[2]]
-      for (i in edits_log){
+      for (i in edits_log) {
         readr::write_lines(
           i,
           data_file$edit_log,
@@ -1370,7 +1512,7 @@ app_server <- function(input, output, session) {
     },
     content = function(file) {
       req(nrow(data_file$edit_data_file) >= 1)
-      
+
       dpath <- data_file$edit_data_file
       # row 1 should be the path the geopackage that is being edited as a user can only load and edit one geopackage at a time
       dpath <- dpath[1, ][["file_path"]]

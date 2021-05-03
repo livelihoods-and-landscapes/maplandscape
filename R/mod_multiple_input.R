@@ -20,14 +20,14 @@ mod_multiple_input_server <- function(id, m_df) {
   moduleServer(id, function(input, output, session) {
     observe({
       req(m_df())
-      
-      if (any(class(m_df()) == "data.frame" | class(m_df()) == "sf")) { 
+
+      if (any(class(m_df()) == "data.frame" | class(m_df()) == "sf")) {
         choices <- names(m_df())
-      } else if (class(m_df()) == "character" | class(m_df()) == "numeric" | class(m_df()) == "integer") {  
+      } else if (class(m_df()) == "character" | class(m_df()) == "numeric" | class(m_df()) == "integer") {
         choices <- m_df()
       } else {
         choices <- ""
-      } 
+      }
 
       updateSelectInput(session, "multiple_input", choices = choices, selected = NULL)
     })

@@ -7,9 +7,8 @@
 #'
 
 edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
-
   log <- c()
-  
+
   # loop over edits
   for (i in 1:nrow(tmp_edits)) {
 
@@ -80,7 +79,6 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
     if ((class(from_user) == "character") & (stringr::str_detect(from_user, "^error"))) {
       log_message <- paste0("row index: ", row_idx, " col index: ", col_idx, " - ", from_user, " (layer: ", layer, ")")
       log <- c(log, log_message)
-      
     } else {
       try(
         df_to_edit[row_idx, col_idx] <- from_user
