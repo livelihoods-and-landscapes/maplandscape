@@ -1175,8 +1175,6 @@ app_server <- function(input, output, session) {
 
   # delete selected rows from GeoPackage
   observeEvent(input$delete_records, {
-    browser()
-
     delete_waiter$show()
     selected_rows <- input$`edit_data_dt-data_table_rows_selected`
     id_str <- input$row_id

@@ -395,28 +395,28 @@ app_ui <- function(request) {
             type = "tabs",
             id = "tonga_data_view",
 
-            tabPanel(
-              "Map",
-              value = "edit_map",
-
-              tags$style(
-                type = "text/css",
-                "#tonga_leafmap {height: calc(100vh - 135px) !important;}",
-                "body {
-                          margin: 0;
-                          padding: 0;
-                       }",
-                ".leaflet-popup-content-wrapper {background-color: #ecf0f1}",
-                # fill map to height of container;  https://stackoverflow.com/questions/36469631/how-to-get-leaflet-for-r-use-100-of-shiny-dashboard-height/36471739#36471739
-                ".leaflet-map-pane { z-index: auto; }",
-                ".shiny-notification {
-                         position:fixed;
-                         top: calc(50%);
-                         left: calc(50%);
-                       }"
-              ),
-              leafletOutput("edit_leafmap"),
-            ),
+            # tabPanel(
+            #   "Map",
+            #   value = "edit_map",
+            # 
+            #   tags$style(
+            #     type = "text/css",
+            #     "#tonga_leafmap {height: calc(100vh - 135px) !important;}",
+            #     "body {
+            #               margin: 0;
+            #               padding: 0;
+            #            }",
+            #     ".leaflet-popup-content-wrapper {background-color: #ecf0f1}",
+            #     # fill map to height of container;  https://stackoverflow.com/questions/36469631/how-to-get-leaflet-for-r-use-100-of-shiny-dashboard-height/36471739#36471739
+            #     ".leaflet-map-pane { z-index: auto; }",
+            #     ".shiny-notification {
+            #              position:fixed;
+            #              top: calc(50%);
+            #              left: calc(50%);
+            #            }"
+            #   ),
+            #   leafletOutput("edit_leafmap"),
+            # ),
 
             tabPanel(
               "Table",

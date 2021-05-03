@@ -31,7 +31,6 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
     } else if ("numeric" %in% col_type) {
       from_user <- tryCatch(
         error = function(cnd) {
-          invalid_from_user <- "yes"
           "error casting user supplied value to numeric"
         },
         {
@@ -78,14 +77,15 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
       from_user <- "error user supplied value and data frame column type do not match"
     }
     # update column value
-    if ((class(from_user) == "character") & (stringr::str_detect(from_user, "^error", negate = TRUE))) {
+    if ((class(from_user) == "character") & (stringr::str_detect(from_user, "^error"))) {
+      log_message <- paste0("row index: ", row_idx, " col index: ", col_idx, " - ", from_user, " (layer: ", layer, ")")
+      log <- c(log, log_message)
+      
+    } else {
       try(
         df_to_edit[row_idx, col_idx] <- from_user
       )
       log_message <- paste0("row index: ", row_idx, " col index: ", col_idx, " user supplied edit written (layer: ", layer, ")")
-      log <- c(log, log_message)
-    } else {
-      log_message <- paste0("row index: ", row_idx, " col index: ", col_idx, " - ", from_user, " (layer: ", layer, ")")
       log <- c(log, log_message)
     }
   }
