@@ -105,7 +105,9 @@ app_server <- function(input, output, session) {
       joined_df = list(),
       edit_data_file = data.frame(),
       tmp_edits = data.frame(),
-      edit_log = NULL
+      edit_log = NULL,
+      flush_deletes = 1,
+      flush_edits = 1
     )
 
   # add synced files to app
@@ -1158,6 +1160,8 @@ app_server <- function(input, output, session) {
   # editing df - use this df editing records
   edit_df <- reactive({
     req(input$edit_layer)
+    req(data_file$flush_deletes)
+    req(data_file$flush_edits)
 
     df <- isolate(data_file$edit_data_file)
     edit_df <- read_tables(df, input$edit_layer)
@@ -1252,6 +1256,7 @@ app_server <- function(input, output, session) {
         }
       }
     }
+    data_file$flush_deletes <- data_file$flush_deletes + 1
     delete_waiter$hide()
   })
 
@@ -1310,6 +1315,7 @@ app_server <- function(input, output, session) {
 
     # reset edits object to empty after applying them GeoPackage
     data_file$tmp_edits <- data.frame()
+    data_file$flush_edits <- data_file$flush_edits + 1
   })
 
   # apply edits and update GeoPackage upon change in editing layer
@@ -1352,6 +1358,7 @@ app_server <- function(input, output, session) {
 
     # reset edits object to empty after applying them GeoPackage
     data_file$tmp_edits <- data.frame()
+    data_file$flush_edits <- data_file$flush_edits + 1
   })
 
   # download edited data as a zip file
