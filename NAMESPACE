@@ -3,6 +3,7 @@
 export(run_app)
 import(dplyr)
 import(leaflet)
+import(leaflet.extras)
 import(rlang)
 import(shiny)
 importFrom(config,get)
