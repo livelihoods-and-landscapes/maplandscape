@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Function reference • maplandscape</title>
+<title>Apply edits from user to layers in a GeoPackage — edit_data_frame • maplandscape</title>
 
 
 <!-- jquery -->
@@ -39,7 +39,8 @@
 
 
 
-<meta property="og:title" content="Function reference" />
+<meta property="og:title" content="Apply edits from user to layers in a GeoPackage — edit_data_frame" />
+<meta property="og:description" content="Apply edits from user to layers in a GeoPackage" />
 
 
 
@@ -58,7 +59,7 @@
   </head>
 
   <body data-spy="scroll" data-target="#toc">
-    <div class="container template-reference-index">
+    <div class="container template-reference-topic">
       <header>
       <div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -123,120 +124,42 @@
       </header>
 
 <div class="row">
-  <div class="contents col-md-9">
+  <div class="col-md-9 contents">
     <div class="page-header">
-      <h1>Reference</h1>
+    <h1>Apply edits from user to layers in a GeoPackage</h1>
+    <small class="dont-index">Source: <a href='https://github.com/livelihoods-and-landscapes/maplandscape/blob/master/R/fct_edit_data_frame.R'><code>R/fct_edit_data_frame.R</code></a></small>
+    <div class="hidden name"><code>edit_data_frame.Rd</code></div>
     </div>
 
-    <table class="ref-index">
+    <div class="ref-description">
+    <p>Apply edits from user to layers in a GeoPackage</p>
+    </div>
 
-    <colgroup>
-      
-      <col class="alias" />
-      <col class="title" />
-    </colgroup>
+    <pre class="usage"><span class='fu'>edit_data_frame</span><span class='op'>(</span><span class='va'>tmp_edits</span>, <span class='va'>df_to_edit</span>, <span class='va'>df_to_edit_not_sf</span>, <span class='va'>layer</span><span class='op'>)</span></pre>
 
-    <tbody>
-      <tr>
-        <th colspan="2">
-          <h2 id="section-all-functions" class="hasAnchor"><a href="#section-all-functions" class="anchor"></a>All functions</h2>
-          <p class="section-desc"></p>
-        </th>
-      </tr>
-      
-      
-    </tbody><tbody>
-      
-      
-      <tr>
-        
-        <td>
-          <p><code><a href="add_layers_leaflet.html">add_layers_leaflet()</a></code> </p>
-        </td>
-        <td><p>Add layer to <code>Leaflet</code> web map</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="add_layers_leaflet_no_zoom.html">add_layers_leaflet_no_zoom()</a></code> </p>
-        </td>
-        <td><p>Add layer to <code>Leaflet</code> web map - no zoom</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="add_popups.html">add_popups()</a></code> </p>
-        </td>
-        <td><p>Add popup label when feature is clicked on a <code>Leaflet</code> web map</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="edit_data_frame.html">edit_data_frame()</a></code> </p>
-        </td>
-        <td><p>Apply edits from user to layers in a GeoPackage</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="group_by_summarise.html">group_by_summarise()</a></code> </p>
-        </td>
-        <td><p>Group by and summarise</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="join_tables.html">join_tables()</a></code> </p>
-        </td>
-        <td><p>Join two tables or layers</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="list_layers.html">list_layers()</a></code> </p>
-        </td>
-        <td><p>Return layers from uploaded data</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="plant_number.html">plant_number()</a></code> </p>
-        </td>
-        <td><p>Compute plant number</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="read_tables.html">read_tables()</a></code> </p>
-        </td>
-        <td><p>Import a table - either spatial a table (i.e. a table in a GeoPackage) or csv file.</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="run_app.html">run_app()</a></code> </p>
-        </td>
-        <td><p>Run the Shiny Application</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="shannon_h_div.html">shannon_h_div()</a></code> </p>
-        </td>
-        <td><p>Compute Shannon's H diversity index</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="spatial_join_tables.html">spatial_join_tables()</a></code> </p>
-        </td>
-        <td><p>Spatial join of two tables or layers</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="sync_forms.html">sync_forms()</a></code> </p>
-        </td>
-        <td><p>Sync data collected using QField mobile GIS</p></td>
-      </tr><tr>
-        
-        <td>
-          <p><code><a href="write_tables.html">write_tables()</a></code> </p>
-        </td>
-        <td><p>Write a layer to a GeoPackage file</p></td>
-      </tr>
-    </tbody>
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>tmp_edits</th>
+      <td><p>Data frame recording user supplied edits (derived from editing DataTables object in the UI).</p></td>
+    </tr>
+    <tr>
+      <th>df_to_edit</th>
+      <td><p>Data frame or spatial data frame (sf) representing layer in GeoPacakge to apply user supplied edits to.</p></td>
+    </tr>
+    <tr>
+      <th>df_to_edit_not_sf</th>
+      <td><p>Data frame representing layer in GeoPackage with sf geometry object dropped.</p></td>
+    </tr>
+    <tr>
+      <th>layer</th>
+      <td><p>Name of layer that edits are being applied to.</p></td>
+    </tr>
     </table>
-  </div>
 
+
+  </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
       <h2 data-toc-skip>Contents</h2>

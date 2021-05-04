@@ -460,7 +460,7 @@ app_ui <- function(request) {
                 tags$br(),
 
                 tags$div(HTML("<em>map.landscape</em> forms part of workflow developed to map agricultural landscapes and record information about farm management and condition. 
-                       This workflow encompasses collecting geospatial data in the field using QField mobile GIS, Express server-side apps to support collating data collected on different mobile devices, and <em>map.landscape</em> for data processing and visualisation. 
+                       This workflow encompasses collecting geospatial data in the field using QField mobile GIS, server-side apps to support collating data collected on different mobile devices, and <em>map.landscape</em> for data processing and visualisation. 
                        <em>map.landscape</em> also includes some helper functions for characterising farm diversity.")),
 
                 tags$br(),
