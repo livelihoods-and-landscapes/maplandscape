@@ -1598,6 +1598,23 @@ app_server <- function(input, output, session) {
 
     df <- isolate(data_file$edit_data_file)
     edit_df <- read_tables(df, input$edit_layer)
+    
+    # check if layer to be edited is spatial
+    # if not spatial drop geometry and convert to dataframe
+    # if spatial transform to 4326 for leaflet 
+    if ("sf" %in% class(edit_df)) {
+      edit_layer_crs <- sf::st_crs(edit_df)
+    }
+    
+    if (is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
+      edit_df <- edit_df %>%
+        sf::st_drop_geometry() %>%
+        as.data.frame()
+    } else if (!is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
+      edit_df <- edit_df %>%
+        sf::st_transform(4326)
+    }
+    
     edit_df
   })
 
@@ -1641,7 +1658,7 @@ app_server <- function(input, output, session) {
     }
 
     edit_layer <- isolate(input$edit_layer)
-
+    
     # only render map if it is spatial (of class sf)
     if ("sf" %in% class(edit_df) &
       nrow(edit_df) > 0 &
