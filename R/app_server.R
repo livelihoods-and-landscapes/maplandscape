@@ -1380,7 +1380,8 @@ app_server <- function(input, output, session) {
       write_tables(edit_df, isolate(data_file$edit_data_file), input$edit_layer)
       data_file$flush_geometry_edits <- data_file$flush_geometry_edits + 1
     }
-
+    
+    data_file$map_edits_zoom <- data_file$map_edits_zoom + 1
     data_file$event_tmp <- NULL
   })
 
