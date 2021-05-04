@@ -4,12 +4,14 @@
 #'     DO NOT REMOVE.
 #' @import shiny
 #' @import leaflet
+#' @import leaflet.extras
 #' @importFrom dplyr select_if
 #'
 #' @noRd
 #'
 
 options(shiny.maxRequestSize = 5000 * 1024^2)
+# library(leaflet.extras)
 
 app_server <- function(input, output, session) {
   # move to data tab when action button pressed
@@ -109,7 +111,8 @@ app_server <- function(input, output, session) {
       flush_deletes = 1,
       flush_edits = 1,
       flush_geometry_edits = 1,
-      event_tmp = NULL
+      event_tmp = NULL,
+      map_edits_zoom = 0
     )
 
   # add synced files to app
@@ -1150,6 +1153,9 @@ app_server <- function(input, output, session) {
         )
       data_file$edit_log <- log
     })
+
+    # reset map zoom to new data's extent
+    data_file$map_edits_zoom <- 0
   })
 
   # select one table as editing layer from GeoPackage loaded for editing
@@ -1199,8 +1205,6 @@ app_server <- function(input, output, session) {
 
     base_map
   })
-  
-  
 
   # add spatial data to edit map
   observe({
@@ -1214,10 +1218,26 @@ app_server <- function(input, output, session) {
 
     edit_layer <- isolate(input$edit_layer)
 
+    # only render map if it is spatial (of class sf)
     if ("sf" %in% class(edit_df) &
       nrow(edit_df) > 0 &
-      input$edit_data_view == "edit_map") {
+      input$edit_data_view == "edit_map" &
+      data_file$map_edits_zoom == 0) {
       edit_map_proxy <- add_layers_leaflet(
+        map_object = "edit_leafmap",
+        map_active_df = edit_df,
+        map_var = edit_layer,
+        map_colour = "#00ffff",
+        opacity = 0.75,
+        map_line_width = 0.15,
+        map_line_colour = "blue",
+        waiter = map_waiter
+      )
+    } else if ("sf" %in% class(edit_df) &
+      nrow(edit_df) > 0 &
+      input$edit_data_view == "edit_map" &
+      data_file$map_edits_zoom > 0) {
+      edit_map_proxy <- add_layers_leaflet_no_zoom(
         map_object = "edit_leafmap",
         map_active_df = edit_df,
         map_var = edit_layer,
@@ -1236,7 +1256,7 @@ app_server <- function(input, output, session) {
       "Not a spatial layer"
     )
   })
-  
+
   # listen for user clicking a feature to edit
   observe({
     # capture click events
@@ -1244,33 +1264,33 @@ app_server <- function(input, output, session) {
     # event_marker captures a user click on a marker object
     event_shape <- input$edit_leafmap_shape_click
     event_marker <- input$edit_leafmap_marker_click
-    
+
     # if a user has not clicked on a marker or object leave event as null if a
     # user has clicked on a shape or marker update event and pass it into
     event <- NULL
-    
+
     if (!is.null(event_shape)) {
       event <- event_shape
     }
-    
+
     if (!is.null(event_marker)) {
       event <- event_marker
     }
-    
+
     if (is.null(event)) {
       return()
     }
-    
+
     event <- event$id
     data_file$event_tmp <- as.numeric(event)
     edit_df <- isolate(edit_df())
     feature <- edit_df[as.numeric(event), ]
     feature$layer_id <- 1
-    
+
     # get bounding box for the map
     bbox <- sf::st_bbox(feature) %>%
       as.vector()
-    
+
     # add editing feature to map
     output$edit_zoommap <- leaflet::renderLeaflet({
       zoom_map <- leaflet::leaflet() %>%
@@ -1286,11 +1306,11 @@ app_server <- function(input, output, session) {
           options = leaflet::layersControlOptions(collapsed = FALSE),
           position = c("bottomright")
         ) %>%
-        addPolygons(
+        leaflet::addPolygons(
           data = feature,
           group = "feature",
           layerId = feature$layer_id
-        ) %>% 
+        ) %>%
         leaflet.extras::addDrawToolbar(
           targetGroup = "feature",
           polylineOptions = FALSE,
@@ -1299,10 +1319,11 @@ app_server <- function(input, output, session) {
           rectangleOptions = FALSE,
           markerOptions = FALSE,
           circleMarkerOptions = FALSE,
-          editOptions = leaflet.extras::editToolbarOptions())
+          editOptions = leaflet.extras::editToolbarOptions()
+        )
       zoom_map
     })
-    
+
     showModal(
       modalDialog(
         tags$h4("Edit feature"),
@@ -1312,7 +1333,6 @@ app_server <- function(input, output, session) {
         footer = NULL
       )
     )
-    
   })
 
   # Edited Features
@@ -1320,53 +1340,51 @@ app_server <- function(input, output, session) {
     req(edit_df())
     edits <- input$edit_zoommap_draw_edited_features
     # convert return from leaflet.draw to json so it can be read by st_read
-    edits_to_json <- jsonlite::toJSON(edits, auto_unbox=TRUE, force=TRUE, digits = NA)
+    edits_to_json <- jsonlite::toJSON(edits, auto_unbox = TRUE, force = TRUE, digits = NA)
     edits_to_sf <- sf::st_read(edits_to_json)
-    
+
     edit_df <- edit_df()
     colnames <- colnames(edit_df)
     row_to_edit <- data_file$event_tmp
-    
-    if ("sf" %in% class(edit_df)){
-      
-      if ("geom" %in% colnames){
+
+    if ("sf" %in% class(edit_df)) {
+      if ("geom" %in% colnames) {
         geom <- edits_to_sf$geometry
         edit_df[row_to_edit, ]$geom <- geom
       }
-      
-      if ("geometry" %in% colnames){
+
+      if ("geometry" %in% colnames) {
         geom <- edits_to_sf$geometry
         edit_df[row_to_edit, ]$geometry <- geom
       }
-      
     }
-    
+
     write_tables(edit_df, isolate(data_file$edit_data_file), input$edit_layer)
+    data_file$map_edits_zoom <- data_file$map_edits_zoom + 1
     data_file$flush_geometry_edits <- data_file$flush_geometry_edits + 1
     data_file$event_tmp <- NULL
-    
   })
-  
+
   observeEvent(input$edit_zoommap_draw_deleted_features, {
     req(edit_df())
     deletes <- input$edit_zoommap_draw_deleted_features
-    deletes_to_json <- jsonlite::toJSON(deletes, auto_unbox=TRUE, force=TRUE, digits = NA)
+    deletes_to_json <- jsonlite::toJSON(deletes, auto_unbox = TRUE, force = TRUE, digits = NA)
     deletes_to_sf <- sf::st_read(deletes_to_json)
-    
+
     edit_df <- edit_df()
     row_to_delete <- data_file$event_tmp
-    
+
     if (nrow(deletes_to_sf) > 0) {
       edit_df <- edit_df %>%
         dplyr::filter(dplyr::row_number() != row_to_delete)
       write_tables(edit_df, isolate(data_file$edit_data_file), input$edit_layer)
       data_file$flush_geometry_edits <- data_file$flush_geometry_edits + 1
     }
-    
+
     data_file$event_tmp <- NULL
   })
-  
-  # sync forms with database / template
+
+
   delete_waiter <- waiter::Waiter$new(
     html = delete_screen,
     color = "rgba(44,62,80,.6)"
