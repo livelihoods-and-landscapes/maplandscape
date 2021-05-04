@@ -1598,14 +1598,14 @@ app_server <- function(input, output, session) {
 
     df <- isolate(data_file$edit_data_file)
     edit_df <- read_tables(df, input$edit_layer)
-    
+
     # check if layer to be edited is spatial
     # if not spatial drop geometry and convert to dataframe
-    # if spatial transform to 4326 for leaflet 
+    # if spatial transform to 4326 for leaflet
     if ("sf" %in% class(edit_df)) {
       edit_layer_crs <- sf::st_crs(edit_df)
     }
-    
+
     if (is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
       edit_df <- edit_df %>%
         sf::st_drop_geometry() %>%
@@ -1614,7 +1614,7 @@ app_server <- function(input, output, session) {
       edit_df <- edit_df %>%
         sf::st_transform(4326)
     }
-    
+
     edit_df
   })
 
@@ -1658,7 +1658,7 @@ app_server <- function(input, output, session) {
     }
 
     edit_layer <- isolate(input$edit_layer)
-    
+
     # only render map if it is spatial (of class sf)
     if ("sf" %in% class(edit_df) &
       nrow(edit_df) > 0 &
@@ -1821,7 +1821,7 @@ app_server <- function(input, output, session) {
       write_tables(edit_df, isolate(data_file$edit_data_file), input$edit_layer)
       data_file$flush_geometry_edits <- data_file$flush_geometry_edits + 1
     }
-    
+
     data_file$map_edits_zoom <- data_file$map_edits_zoom + 1
     data_file$event_tmp <- NULL
   })
@@ -1834,6 +1834,7 @@ app_server <- function(input, output, session) {
 
   # delete selected rows from GeoPackage
   observeEvent(input$delete_records, {
+    
     delete_waiter$show()
     selected_rows <- input$`edit_data_dt-data_table_rows_selected`
     id_str <- input$row_id
@@ -1860,53 +1861,59 @@ app_server <- function(input, output, session) {
       for (i in selected_rows) {
         # this is unique row id that defines row to be deleted
         id_to_delete <- pre_edit_df[i, ][[id_col]]
-        # get layers
-        edit_gpkg <- data_file$edit_data_file
-        layers <- unique(edit_gpkg$layer_disp_name_idx)
-        # iterate over layers, delete row, and sync changes to GeoPackage
-        for (ii in layers) {
-          tmp_edit_df <- read_tables(isolate(data_file$edit_data_file), ii)
-          tmp_edit_df_colnames <- colnames(tmp_edit_df)
-          tmp_edit_df_id_col <- stringr::str_detect(tmp_edit_df_colnames, id_str)
-          tmp_edit_df_id_col <- tmp_edit_df_colnames[tmp_edit_df_id_col]
 
-          if (length(tmp_edit_df_id_col) > 1) {
-            tmp_edit_df_id_col <- NULL
-            # write delete fail error message to log
-            readr::write_lines(
-              paste0("cannot delete row in layer: ", ii, " - cannot uniquely identify id column"),
-              data_file$edit_log,
-              sep = "\n",
-              na = "NA",
-              append = TRUE
-            )
-          } else if (length(tmp_edit_df_id_col) == 0) {
-            tmp_edit_df_id_col <- NULL
-            # write delete fail error message to log
-            readr::write_lines(
-              paste0("cannot delete row in layer: ", ii, " - id column missing"),
-              data_file$edit_log,
-              sep = "\n",
-              na = "NA",
-              append = TRUE
-            )
-          } else {
-            delete_message <- tryCatch(
-              error = function(cnd) paste0("cannot delete row-id: ", id_to_delete, "from layer: ", ii),
-              {
-                tmp_edit_df <- tmp_edit_df %>%
-                  dplyr::filter(.data[[tmp_edit_df_id_col]] != id_to_delete)
-                write_tables(tmp_edit_df, isolate(data_file$edit_data_file), ii)
-                paste0("deleted row-id: ", id_to_delete, "from layer: ", ii)
-              }
-            )
-            readr::write_lines(
-              delete_message,
-              data_file$edit_log,
-              sep = "\n",
-              na = "NA",
-              append = TRUE
-            )
+        # only delete rows if selected row-column is not null or NA
+        if (!is.na(id_to_delete) & !is.null(id_to_delete)) {
+          # get layers
+          edit_gpkg <- data_file$edit_data_file
+          layers <- unique(edit_gpkg$layer_disp_name_idx)
+          # iterate over layers, delete row, and sync changes to GeoPackage
+          for (ii in layers) {
+            tmp_edit_df <- read_tables(isolate(data_file$edit_data_file), ii)
+            tmp_edit_df_colnames <- colnames(tmp_edit_df)
+            tmp_edit_df_id_col <- stringr::str_detect(tmp_edit_df_colnames, id_str)
+            tmp_edit_df_id_col <- tmp_edit_df_colnames[tmp_edit_df_id_col]
+
+            if (length(tmp_edit_df_id_col) > 1) {
+              tmp_edit_df_id_col <- NULL
+              # write delete fail error message to log
+              readr::write_lines(
+                paste0("cannot delete row in layer: ", ii, " - cannot uniquely identify id column"),
+                data_file$edit_log,
+                sep = "\n",
+                na = "NA",
+                append = TRUE
+              )
+            } else if (length(tmp_edit_df_id_col) == 0) {
+              tmp_edit_df_id_col <- NULL
+              # write delete fail error message to log
+              readr::write_lines(
+                paste0("cannot delete row in layer: ", ii, " - id column missing"),
+                data_file$edit_log,
+                sep = "\n",
+                na = "NA",
+                append = TRUE
+              )
+            } else {
+              delete_message <- tryCatch(
+                error = function(cnd) paste0("cannot delete row-id: ", id_to_delete, "from layer: ", ii),
+                {
+                  # include | condition in filter as dplyr filter removes NA rows - this prevents that from occurring
+                  # this should not present unexpected behaviour as users are prevented from deleting NA rows
+                  tmp_edit_df <- tmp_edit_df %>%
+                    dplyr::filter(.data[[tmp_edit_df_id_col]] != id_to_delete | is.na(.data[[tmp_edit_df_id_col]]))
+                  write_tables(tmp_edit_df, isolate(data_file$edit_data_file), ii)
+                  paste0("deleted row-id: ", id_to_delete, "from layer: ", ii)
+                }
+              )
+              readr::write_lines(
+                delete_message,
+                data_file$edit_log,
+                sep = "\n",
+                na = "NA",
+                append = TRUE
+              )
+            }
           }
         }
       }
