@@ -28,9 +28,9 @@ mod_get_layers_server <- function(id) {
 
       n_file <- input$get_layers$datapath
       n_name <- input$get_layers$name
-      
+
       f_lyrs <- tryCatch(
-        error = function(cnd) NULL,  
+        error = function(cnd) NULL,
         purrr::map2(n_file, n_name, list_layers) %>%
           dplyr::bind_rows()
       )

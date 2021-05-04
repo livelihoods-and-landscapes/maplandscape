@@ -29,7 +29,6 @@
 
 
 sync_forms <- function(template, forms) {
-
   template_layers <- template$layers
   form_layers <- forms$layers
 
@@ -56,7 +55,7 @@ sync_forms <- function(template, forms) {
   out_gpkg[[2]] <- dt
 
   if (!rlang::is_empty(dplyr::intersect(template_layers, form_layers))) {
-    
+
     # create temporary geopackage file to write synced data to
     temp_gpkg <-
       fs::file_temp(
@@ -117,9 +116,8 @@ sync_forms <- function(template, forms) {
 
         # sync data in forms with matching tables to template
         for (k in 1:nrow(matched_forms)) {
-          
           print(matched_forms$layer_disp_name[k])
-          
+
           # read layer from geopackage or return an error message
           form_df <- tryCatch(
             error = function(cnd) paste0("could not load layer ", matched_forms$layer_disp_name[k]),
@@ -131,7 +129,7 @@ sync_forms <- function(template, forms) {
               )
             }
           )
-          
+
           form_colnames <- NULL
           # if sf object set geometry column name
           # if character object write error message to log
@@ -144,7 +142,8 @@ sync_forms <- function(template, forms) {
             # transform crs to match crs of corresponding table in template
             form_df <- form_df %>%
               sf::st_transform(crs = crs_template_df)
-            form_colnames <- colnames(form_df) }
+            form_colnames <- colnames(form_df)
+          }
           else if (any(class(form_df) == "data.frame")) {
             form_colnames <- colnames(form_df)
           } else if (any(class(form_df) == "character")) {
@@ -161,11 +160,11 @@ sync_forms <- function(template, forms) {
           if (any(class(template_df) == "sf") &
             any(class(form_df) == "sf") &
             !rlang::is_empty(dplyr::intersect(template_colnames, form_colnames))) {
-            
+
             # keep only matching columns in forms df
             col_match <- form_colnames[form_colnames %in% template_colnames]
             form_df <- form_df %>% dplyr::select(tidyselect::all_of(col_match))
-            
+
             template_df <-
               dplyr::bind_rows(
                 template_df %>% as.data.frame(),
@@ -175,18 +174,18 @@ sync_forms <- function(template, forms) {
           } else if (any(class(template_df) == "data.frame" &
             any(class(form_df) == "data.frame")) &
             !rlang::is_empty(dplyr::intersect(template_colnames, form_colnames))) {
-            
+
             # keep only matching columns in forms df
             col_match <- form_colnames[form_colnames %in% template_colnames]
             form_df <- form_df %>% dplyr::select(tidyselect::all_of(col_match))
-            
+
             template_df <- dplyr::bind_rows(template_df, form_df)
             template_df <-
               dplyr::distinct(template_df, .keep_all = TRUE)
           }
         }
       }
-      
+
       # write to temporary geopackage
       write_message <- NULL
       write_message <- tryCatch(
@@ -207,7 +206,6 @@ sync_forms <- function(template, forms) {
         na = "NA",
         append = TRUE
       )
-      
     }
   }
 

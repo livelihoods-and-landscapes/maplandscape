@@ -370,21 +370,29 @@ app_ui <- function(request) {
         "Admin",
         sidebarLayout(
           sidebarPanel(
-            
             mod_get_layers_ui(
-              id = "edit_data", 
-              label = "Select .gpkg or .zip file(s)", 
-              multiple = FALSE, 
+              id = "edit_data",
+              label = "Select .gpkg or .zip file(s)",
+              multiple = FALSE,
               accept = c(".gpkg")
-              ),
-            
+            ),
 
-            shiny::tags$br(),
+            tags$br(),
+
+            selectInput("edit_layer", "Select layer to edit", choices = NULL),
+
+            textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
+
+            actionButton("save_edits", "save edits", class = "btn-primary m-2"),
+
+            actionButton("delete_records", "delete records", class = "btn-primary m-2"),
+
+            downloadButton("download_edits", "download edits", class = "btn-primary m-2")
           ),
 
           mainPanel(tabsetPanel(
             type = "tabs",
-            id = "tonga_data_view",
+            id = "edit_data_view",
 
             tabPanel(
               "Map",
@@ -392,7 +400,7 @@ app_ui <- function(request) {
 
               tags$style(
                 type = "text/css",
-                "#tonga_leafmap {height: calc(100vh - 135px) !important;}",
+                "#edit_leafmap {height: calc(100vh - 135px) !important;}",
                 "body {
                           margin: 0;
                           padding: 0;
@@ -413,7 +421,7 @@ app_ui <- function(request) {
               "Table",
               value = "edit_table",
 
-              shiny::tags$br(),
+              tags$br(),
 
               hr(),
 

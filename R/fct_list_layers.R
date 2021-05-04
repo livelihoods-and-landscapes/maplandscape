@@ -16,7 +16,6 @@
 #'
 
 list_layers <- function(f_path, f_name) {
-
   f_type <- xfun::file_ext(f_path)
 
   if (f_type == "zip") {

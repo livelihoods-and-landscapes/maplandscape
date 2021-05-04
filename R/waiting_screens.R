@@ -19,3 +19,13 @@ resize_screen <- tagList(
   waiter::spin_flower(),
   h4("Resizing...")
 )
+
+delete_screen <- tagList(
+  waiter::spin_flower(),
+  h4("Removing rows...")
+)
+
+edit_screen <- tagList(
+  waiter::spin_flower(),
+  h4("Saving edits...")
+)

@@ -18,24 +18,24 @@
 #' @return The Shannon's H diversity score for each unit; returned as a numeric
 #'   vector.
 
-shannon_h_div <- function(...){
+shannon_h_div <- function(...) {
   vals <- list(...)
   df <- dplyr::bind_cols(vals)
-  
+
   # check only numeric vectors uploaded
   types <- purrr::map_df(df, class)
   if (any(types %in% c("numeric", "integer", "double")) == FALSE) {
     return
   }
-  
+
   # rescale all values to add up to 1
   # compute normaliser
   df[df == 0] <- 0.00001
   normaliser <- 1 / (rowSums(df, na.rm = TRUE))
   df_scaled <- df * normaliser
-  
+
   # compute Shannon's H
   sh <- rowSums(df_scaled * log(df_scaled)) * -1
-  
+
   sh
 }
