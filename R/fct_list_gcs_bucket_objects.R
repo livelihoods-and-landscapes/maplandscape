@@ -40,7 +40,7 @@ list_gcs_bucket_objects <- function(token, bucket) {
     kind <- try(res$kind)
 
     # check response is Google Cloud Storage object
-    # GCS will response is a JSON object with:
+    # GCS response is a JSON object with:
     # kind property - string and always "storage#objects" when listing bucket objects
     # items - list of objects
     # more info: https://cloud.google.com/storage/docs/json_api/v1/objects/list
