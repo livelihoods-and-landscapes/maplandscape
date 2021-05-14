@@ -85,6 +85,31 @@ app_ui <- function(request) {
             h4("Upload Data"),
 
             mod_get_layers_ui(id = "qfield_data", label = "Select .gpkg or .zip file(s)", multiple = TRUE, accept = c(".gpkg", ".zip", ".csv")),
+            
+            hr(style = "border-color: #2c3e50 !important;"),
+            
+            h4("Google Cloud Data"),
+            
+            # Google Cloud login button - show when there is not a valid token
+            uiOutput("login_warning"),
+            
+            uiOutput("login_button"),
+            
+            # name of Google Cloud Storage bucket to get GeoPackages from
+            textInput("gcs_bucket_name", "GCS bucket name", value = "", placeholder = ""),
+            
+            # get list of GeoPackages in Google Cloud Storage bucket
+            actionButton("list_google_files", "get GCS files", class="m-2"),
+            
+            selectInput(
+              "gcs_bucket_objects",
+              "Select object from GCS",
+              choices = NULL,
+              selected = NULL,
+              multiple = FALSE
+            ),
+            
+            hr(style = "border-color: #2c3e50 !important;"),
 
             selectInput("active_layer", "Select active layer", choices = NULL),
 

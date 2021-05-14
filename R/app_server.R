@@ -104,6 +104,7 @@ app_server <- function(input, output, session) {
       data_file = data.frame(),
       map_drawn = 0,
       joined_df = list(),
+      items = NULL,
       flush_filter_rows = 0,
       edit_data_file = data.frame(),
       tmp_edits = data.frame(),
@@ -159,6 +160,117 @@ app_server <- function(input, output, session) {
     })
   })
 
+  # Get GeoPackages from Google Cloud
+  
+  # display login with Google button if token is not valid
+  output$login_warning <- renderUI({
+    if (is.null(isolate(token()))) {
+      tags$p("WARNING: login with Google will reset app and current data will be lost")
+    } else {
+      return()
+    }
+  })
+  
+  output$login_button <- renderUI({
+    if (is.null(isolate(token()))) {
+      tags$a("Login with Google",
+             href = url,
+             class = "btn btn-outline-danger m-2"
+      )
+    } else {
+      return()
+    }
+  })
+  
+  ## Get token that can be used to make authenticated requests to Google Cloud Storage
+  token <- reactive({
+    
+    ## gets all the parameters in the URL. The auth code should be one of them.
+    pars <- shiny::parseQueryString(session$clientData$url_search)
+    
+    if (length(pars$code) > 0) {
+      ## extract the authorization code
+      # Manually create a token
+      token <- try(
+        httr::oauth2.0_token(
+          app = app,
+          endpoint = api,
+          credentials = httr::oauth2.0_access_token(api, app, pars$code),
+          cache = TRUE
+        )
+      )
+      if ("try-error" %in% class(token)) {
+        token <- NULL
+      }
+    } else {
+      token <- NULL
+    }
+    
+    token
+  })
+  
+  # get list of GeoPackages in Google Cloud Storage Bucket
+  observeEvent(input$list_google_files, {
+    req(token())
+    req(input$gcs_bucket_name)
+
+    items <- list_gcs_bucket_objects(token(), input$gcs_bucket_name)
+    
+    if ("no items returned" %in% items | is.null(items)) {
+      shiny::showNotification("no items returned from Google Cloud Storage query", type = "error", duration = 5)
+    } else {
+      data_file$items <- items
+    }
+    
+  })
+  
+  # update select input with list of objects in Google Cloud Storage bucket
+  observe({
+    data_file$items
+    
+    if (length(data_file$items) > 0 & !"no items returned" %in% data_file$items) {
+      updateSelectInput(
+        session,
+        "gcs_bucket_objects",
+        choices = data_file$items
+      )
+    }
+    
+  })
+  
+  # add user selected Google Cloud Storage object to list of layers
+  # write GeoPackage retrieved from Google Cloud Storage to data_file$data_file and unpack layers in GeoPackage
+  observe({
+    req(input$gcs_bucket_objects)
+    selected_gcs_object <- input$gcs_bucket_objects
+   
+    gcs_gpkg <- NULL
+    gcs_gpkg <- try(
+      get_gcs_object(token(), input$gcs_bucket_name, selected_gcs_object)
+    )
+    
+    f_lyrs <- NULL
+    
+    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & gcs_gpkg != "cannot load GeoPackage from Google Cloud Storage") {
+      f_lyrs <- tryCatch(
+        error = function(cnd) NULL,
+        purrr::map2(gcs_gpkg$f_path, gcs_gpkg$f_name, list_layers) %>%
+          dplyr::bind_rows()
+      )
+    }
+    
+    isolate({
+      df <- dplyr::bind_rows(data_file$data_file, f_lyrs)
+      # unique number id next to each layer to catch uploads of tables with same name
+      rows <- nrow(df)
+      row_idx <- 1:rows
+      df$layer_disp_name_idx <-
+        paste0(df$layer_disp_name, "_", row_idx, sep = "")
+      data_file$data_file <- df
+    })
+    
+  })
+  
   # select one table as active layer from files loaded to the server
   observe({
     df <- data_file$data_file
