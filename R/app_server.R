@@ -104,6 +104,7 @@ app_server <- function(input, output, session) {
       data_file = data.frame(),
       map_drawn = 0,
       joined_df = list(),
+      flush_filter_rows = 0,
       edit_data_file = data.frame(),
       tmp_edits = data.frame(),
       edit_log = NULL,
@@ -171,7 +172,10 @@ app_server <- function(input, output, session) {
   # active df - use this df for summarising and generating raw tables for display
   active_df <- reactive({
     req(input$active_layer)
-
+    
+    # update table after add column operation
+    update_table <- add_column_count()
+    
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
 
@@ -613,10 +617,19 @@ app_server <- function(input, output, session) {
               layer = layer,
               append = FALSE
             )
+            data_file$flush_filter_rows <- data_file$flush_filter_rows + 1
           }
         )
       }
     }
+  })
+  
+  # counter that is updated after each add column operation
+  # used to trigger re-render of data table
+  add_column_count <- reactive({
+    req(data_file$flush_filter_rows)
+    count <- data_file$flush_filter_rows
+    count
   })
 
   # Data Download -----------------------------------------------------------

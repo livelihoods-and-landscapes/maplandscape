@@ -5,10 +5,8 @@
 #' contains more than one table, each table and the path to that table will be
 #' recorded on a separate row of the returned tibble.
 #'
-#' @param f_path A character vector of file paths for GeoPackage(s) / csv / zip files
-#'   uploaded by the user.
-#' @param f_name A character vector of file names of GeoPackage(s) / csv / zip files
-#'   uploaded by the user.
+#' @param f_path A character vector of file paths for GeoPackage(s) uploaded by the user.
+#' @param f_name A character vector of file names of GeoPackage(s) uploaded by the user.
 #'
 #' @return A tibble with three columns: layers = table / layer name;
 #'   layer_disp_name = clean and informative table / layer name for select
