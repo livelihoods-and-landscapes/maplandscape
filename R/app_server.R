@@ -19,7 +19,6 @@ app_server <- function(input, output, session) {
     updateNavbarPage(session, "navbar", selected = "Data")
   })
 
-
   # Data Sync ---------------------------------------------------------------
 
   # sync forms with database / template
@@ -1120,22 +1119,22 @@ app_server <- function(input, output, session) {
     bg = "transparent"
   )
 
-# Tonga Map ---------------------------------------------------------------
-  
+  # Tonga Map ---------------------------------------------------------------
+
   data_file_tonga <- reactiveValues(
     tmap_drawn = 0
-    )
+  )
   # select one table as active layer
   observe({
     df <- input$tonga_data
 
     tonga_data_tmp <- try(sf::st_layers(input$tonga_data$datapath)$name)
-    
+
     if (class(tonga_data_tmp) != "try-error") {
       if ("tonga-crops" %in% tonga_data_tmp) {
         tonga_crops <- sf::st_read(input$tonga_data$datapath, layer = "tonga-crops")
         sf::st_crs(tonga_crops) <- 4326
-        
+
         data_file_tonga$tonga_crop_survey_raw <- tonga_crops
         data_file_tonga$tonga_crop_survey_block <- crop_survey_zonal_stats(tonga_block, tonga_crops)
         data_file_tonga$tonga_crop_survey_village <- crop_survey_zonal_stats(tonga_village, tonga_crops)
@@ -1145,7 +1144,7 @@ app_server <- function(input, output, session) {
       if ("vavau-crops" %in% tonga_data_tmp) {
         vavau_crops <- sf::st_read(input$tonga_data$datapath, layer = "vavau-crops")
         sf::st_crs(vavau_crops) <- 4326
-        
+
         data_file_tonga$vavau_crop_survey_raw <- vavau_crops
         data_file_tonga$vavau_crop_survey_block <- crop_survey_zonal_stats(vavau_block, vavau_crops)
         data_file_tonga$vavau_crop_survey_village <- crop_survey_zonal_stats(vavau_village, vavau_crops)
@@ -1154,7 +1153,7 @@ app_server <- function(input, output, session) {
     }
   })
 
-  # active df 
+  # active df
   tonga_active_df <- reactive({
     req(input$tonga_layers)
 
@@ -1173,7 +1172,7 @@ app_server <- function(input, output, session) {
     if (input$tonga_layers == "Tonga crop survey (district)") {
       tdf <- data_file_tonga$tonga_crop_survey_district
     }
-    
+
     # add layer id for leaflet
     if (!is.null(tdf)) {
       if (nrow(tdf) > 0) {
@@ -1182,17 +1181,17 @@ app_server <- function(input, output, session) {
           dplyr::mutate_if(is.numeric, round, 3)
       }
     }
-    
+
     tdf
   })
-  
+
   # Tonga Map --------------------------------------------------------
   # select one table as active layer from files loaded to the server
-  
-  
+
+
   observe({
     req(input$tonga_data)
-    
+
     df <- tonga_active_df()
     choices <- colnames(df)
     updateSelectInput(session,
@@ -1200,10 +1199,10 @@ app_server <- function(input, output, session) {
       choices = choices
     )
   })
-  
+
   tonga_label_vars <-
     mod_multiple_input_server(
-      id = "tonga_label_vars", 
+      id = "tonga_label_vars",
       m_df = tonga_active_df
     )
 
@@ -1225,13 +1224,13 @@ app_server <- function(input, output, session) {
         baseGroups = c("OSM (default)", "ESRI Satellite"),
         options = leaflet::layersControlOptions(collapsed = FALSE),
         position = c("bottomright")
-      ) 
+      )
   })
 
   # add spatial data to Tonga map
   observe({
     req(tonga_active_df())
-    
+
     # map takes reactive dependency on user specified layer and colour
     tonga_map_layer <- isolate(input$tonga_map_layer)
     map_colour <- isolate(input$tonga_map_colour)
@@ -1240,10 +1239,10 @@ app_server <- function(input, output, session) {
       is.atomic(tonga_active_df()[[tonga_map_layer]]) &
       nrow(tonga_active_df()) > 0 &
       input$tonga_data_view == "t_map") {
-      
+
       # don't draw legend if plot id or zone is selected
-      if (tonga_map_layer == "zone" | 
-          tonga_map_layer == "plot_id") {
+      if (tonga_map_layer == "zone" |
+        tonga_map_layer == "plot_id") {
         data_file_tonga$tmap_drawn <- 1
         add_layers_leaflet(
           map_object = "tonga_leafmap",
@@ -1270,24 +1269,24 @@ app_server <- function(input, output, session) {
       }
     }
   })
-  
+
   # update colour
   observeEvent(input$tonga_map_colour, {
     req(tonga_active_df())
-    
+
     if (data_file_tonga$tmap_drawn == 1) {
       # map takes reactive dependency on user specified layer and colour
       tonga_map_layer <- input$tonga_map_layer
       map_colour <- input$tonga_map_colour
-      
+
       if ("sf" %in% class(tonga_active_df()) &
-          is.atomic(tonga_active_df()[[tonga_map_layer]]) &
-          nrow(tonga_active_df()) > 0 &
-          input$tonga_data_view == "t_map") {
-        
+        is.atomic(tonga_active_df()[[tonga_map_layer]]) &
+        nrow(tonga_active_df()) > 0 &
+        input$tonga_data_view == "t_map") {
+
         # don't draw legend if plot id or zone is selected
-        if (tonga_map_layer == "zone" | 
-            tonga_map_layer == "plot_id") {
+        if (tonga_map_layer == "zone" |
+          tonga_map_layer == "plot_id") {
           data_file$tmap_drawn <- 1
           add_layers_leaflet_no_zoom(
             map_object = "tonga_leafmap",
@@ -1315,24 +1314,24 @@ app_server <- function(input, output, session) {
       }
     }
   })
-  
+
   # update layer
   observeEvent(input$tonga_map_layer, {
     req(tonga_active_df())
-    
+
     if (data_file_tonga$tmap_drawn == 1) {
       # map takes reactive dependency on user specified layer and colour
       tonga_map_layer <- input$tonga_map_layer
       map_colour <- input$tonga_map_colour
-      
+
       if ("sf" %in% class(tonga_active_df()) &
-          is.atomic(tonga_active_df()[[tonga_map_layer]]) &
-          nrow(tonga_active_df()) > 0 &
-          input$tonga_data_view == "t_map") {
-        
+        is.atomic(tonga_active_df()[[tonga_map_layer]]) &
+        nrow(tonga_active_df()) > 0 &
+        input$tonga_data_view == "t_map") {
+
         # don't draw legend if plot id or zone is selected
-        if (tonga_map_layer == "zone" | 
-            tonga_map_layer == "plot_id") {
+        if (tonga_map_layer == "zone" |
+          tonga_map_layer == "plot_id") {
           data_file_tonga$tmap_drawn <- 1
           add_layers_leaflet_no_zoom(
             map_object = "tonga_leafmap",
@@ -1360,38 +1359,38 @@ app_server <- function(input, output, session) {
       }
     }
   })
-  
+
   # add popup labels
   observe({
-    leaflet::leafletProxy("tonga_leafmap") %>% 
+    leaflet::leafletProxy("tonga_leafmap") %>%
       clearPopups()
-    
+
     # capture click events
     # event_shape captures a user click on a shape object
     # event_marker captures a user click on a marker object
     event_shape <- input$tonga_leafmap_shape_click
     event_marker <- input$tonga_leafmap_marker_click
-    
+
     # if a user has not clicked on a marker or object leave event as null if a
     # user has clicked on a shape or marker update event and pass it into
     # fct_add_popups to create popup for clicked object
     event <- NULL
-    
+
     if (!is.null(event_shape)) {
       event <- event_shape
     }
-    
+
     if (!is.null(event_marker)) {
       event <- event_marker
     }
-    
+
     if (is.null(event)) {
       return()
     }
-    
+
     isolate({
       req(tonga_label_vars())
-      
+
       content <-
         add_popups(
           in_df = tonga_active_df,
@@ -1399,13 +1398,14 @@ app_server <- function(input, output, session) {
           label_vars = tonga_label_vars
         )
       print(content)
-      
+
       leaflet::leafletProxy("tonga_leafmap") %>%
         leaflet::addPopups(
-          event$lng, 
-          event$lat, 
-          content, 
-          layerId = event$id)
+          event$lng,
+          event$lat,
+          content,
+          layerId = event$id
+        )
     })
   })
 
@@ -1415,40 +1415,40 @@ app_server <- function(input, output, session) {
       id = "tonga_table_layers",
       m_df = tonga_active_df
     )
-  
+
   tonga_table_df <- reactive({
-    
     if (is.null(tonga_table_vars())) {
       table_df <- tonga_active_df()
     } else {
       table_df <- tonga_active_df() %>%
         dplyr::select(tonga_table_vars())
     }
-      
+
     colnames <- colnames(table_df)
     # don't give user the option to select zones or geometry objects for plotting
-    
+
     if ("geometry" %in% colnames) {
       table_df <- table_df %>%
-        sf::st_drop_geometry() 
+        sf::st_drop_geometry()
     }
-    
+
     if ("geom" %in% colnames) {
       table_df <- table_df %>%
         sf::st_drop_geometry()
     }
-    
+
     if ("layer_id" %in% colnames) {
       table_df <- table_df %>%
         select(-c("layer_id"))
     }
-    
+
     table_df
   })
 
   mod_render_dt_server(
     id = "tonga_data_dt",
-    dt = tonga_table_df
+    dt = tonga_table_df,
+    editable = FALSE
   )
 
   # download tonga table data
@@ -1464,13 +1464,13 @@ app_server <- function(input, output, session) {
       readr::write_csv(tonga_active_df(), file)
     }
   )
-  
+
   # Tonga charts ------------------------------------------------------------
   tonga_chart_df <- reactive({
     req(input$tonga_layers != "Tonga crop survey (raw)")
-    
+
     tonga_layers <- input$tonga_layers
-    
+
     # return null dataframe if user has selected raw data
     if (tonga_layers != "Tonga crop survey (raw)") {
       t_chart_df <- tonga_active_df()
@@ -1480,10 +1480,10 @@ app_server <- function(input, output, session) {
 
     t_chart_df
   })
-  
+
   observe({
     req(input$tonga_data)
-    
+
     df <- tonga_chart_df()
     choices <- colnames(df)
     # don't give user the option to select zones or geometry objects for plotting
@@ -1492,58 +1492,54 @@ app_server <- function(input, output, session) {
     choices <- choices[!(choices %in% "goem")]
     choices <- choices[!(choices %in% "geometry")]
     choices <- choices[!(choices %in% "layer_id")]
-    
+
     updateSelectInput(
       session,
       "tonga_chart_layer",
       choices = choices
-      )
+    )
   })
-  
-  output$tonga_chart <- renderPlot({
-    req(tonga_chart_df(), input$tonga_chart_layer)
-    
-    # take a reactive dependency on user specified chart styling parameters
-    lab_font_size <- input$tonga_lab_font
-    axis_font_size <- input$tonga_axis_font
-    x_lab <- input$tonga_x_axis_label
-    y_lab <- input$tonga_y_axis_label 
-    tonga_chart_df <-  data.frame(tonga_chart_df())
-  
-    tonga_chart <- ggplot2::ggplot(
+
+  output$tonga_chart <- renderPlot(
+    {
+      req(tonga_chart_df(), input$tonga_chart_layer)
+
+      # take a reactive dependency on user specified chart styling parameters
+      lab_font_size <- input$tonga_lab_font
+      axis_font_size <- input$tonga_axis_font
+      x_lab <- input$tonga_x_axis_label
+      y_lab <- input$tonga_y_axis_label
+      tonga_chart_df <- data.frame(tonga_chart_df())
+
+      tonga_chart <- ggplot2::ggplot(
         tonga_chart_df,
         ggplot2::aes(.data[["zone"]], .data[[input$tonga_chart_layer]])
       ) +
-      ggplot2::geom_col(color = "#2c3e50", fill = "#2c3e50") +
-      ggplot2::xlab(x_lab) +
-      ggplot2::ylab(y_lab) +
-      ggplot2::theme(
-        plot.background = ggplot2::element_rect(fill = NA, colour = NA),
-        panel.background = ggplot2::element_rect(fill = NA, colour = "#2c3e50"),
-        axis.text.x = ggplot2::element_text(
-          angle = -45,
-          vjust = 1,
-          hjust = 0,
-          size = axis_font_size
-        ),
-        axis.text.y = ggplot2::element_text(size = axis_font_size),
-        axis.title.x = ggplot2::element_text(size = lab_font_size),
-        axis.title.y = ggplot2::element_text(size = lab_font_size)
-      )
-    
-    tonga_chart
+        ggplot2::geom_col(color = "#2c3e50", fill = "#2c3e50") +
+        ggplot2::xlab(x_lab) +
+        ggplot2::ylab(y_lab) +
+        ggplot2::theme(
+          plot.background = ggplot2::element_rect(fill = NA, colour = NA),
+          panel.background = ggplot2::element_rect(fill = NA, colour = "#2c3e50"),
+          axis.text.x = ggplot2::element_text(
+            angle = -45,
+            vjust = 1,
+            hjust = 0,
+            size = axis_font_size
+          ),
+          axis.text.y = ggplot2::element_text(size = axis_font_size),
+          axis.title.x = ggplot2::element_text(size = lab_font_size),
+          axis.title.y = ggplot2::element_text(size = lab_font_size)
+        )
 
-  },
-  height = function() {
-    input$tonga_chart_height
-  },
-  bg = "transparent"
+      tonga_chart
+    },
+    height = function() {
+      input$tonga_chart_height
+    },
+    bg = "transparent"
   )
 
-# END ---------------------------------------------------------------------
-  
-
-# Admin - data cleaning ---------------------------------------------------
   # Admin - data cleaning ---------------------------------------------------
 
   # user uploaded files for data cleaning / editing

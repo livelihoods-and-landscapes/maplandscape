@@ -32,7 +32,8 @@ Imports:
     pkgload,
     leaflet.extras,
     bslib,
-    jsonlite
+    jsonlite,
+    callr
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
