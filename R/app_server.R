@@ -104,6 +104,7 @@ app_server <- function(input, output, session) {
       data_file = data.frame(),
       map_drawn = 0,
       joined_df = list(),
+      buckets = NULL,
       items = NULL,
       flush_filter_rows = 0,
       edit_data_file = data.frame(),
@@ -161,7 +162,7 @@ app_server <- function(input, output, session) {
   })
 
   # Get GeoPackages from Google Cloud
-  
+
   # display login with Google button if token is not valid
   output$login_warning <- renderUI({
     if (is.null(isolate(token()))) {
@@ -170,24 +171,24 @@ app_server <- function(input, output, session) {
       return()
     }
   })
-  
+
   output$login_button <- renderUI({
     if (is.null(isolate(token()))) {
       tags$a("Login with Google",
-             href = url,
-             class = "btn btn-outline-danger m-2"
+        href = url,
+        class = "btn btn-outline-danger m-2"
       )
     } else {
       return()
     }
   })
-  
+
   ## Get token that can be used to make authenticated requests to Google Cloud Storage
   token <- reactive({
-    
+
     ## gets all the parameters in the URL. The auth code should be one of them.
     pars <- shiny::parseQueryString(session$clientData$url_search)
-    
+
     if (length(pars$code) > 0) {
       ## extract the authorization code
       # Manually create a token
@@ -205,29 +206,52 @@ app_server <- function(input, output, session) {
     } else {
       token <- NULL
     }
-    
+
     token
   })
-  
+
   # get list of GeoPackages in Google Cloud Storage Bucket
   observeEvent(input$list_google_files, {
     req(token())
+    req(input$gcs_project_id)
+    buckets <- list_gcs_buckets(token(), input$gcs_project_id)
+
+    if ("no items returned" %in% buckets | is.null(buckets)) {
+      shiny::showNotification("no buckets available in Google Cloud Storage", type = "error", duration = 5)
+    } else {
+      data_file$buckets <- buckets
+    }
+  })
+
+  # update select input with list of objects in Google Cloud Storage bucket
+  observe({
+    data_file$buckets
+
+    if (length(data_file$buckets) > 0 & !"no items returned" %in% data_file$buckets) {
+      updateSelectInput(
+        session,
+        "gcs_bucket_name",
+        choices = data_file$buckets
+      )
+    }
+  })
+
+  observe({
     req(input$gcs_bucket_name)
 
     items <- list_gcs_bucket_objects(token(), input$gcs_bucket_name)
-    
+
     if ("no items returned" %in% items | is.null(items)) {
       shiny::showNotification("no items returned from Google Cloud Storage query", type = "error", duration = 5)
     } else {
       data_file$items <- items
     }
-    
   })
-  
+
   # update select input with list of objects in Google Cloud Storage bucket
   observe({
     data_file$items
-    
+
     if (length(data_file$items) > 0 & !"no items returned" %in% data_file$items) {
       updateSelectInput(
         session,
@@ -235,22 +259,21 @@ app_server <- function(input, output, session) {
         choices = data_file$items
       )
     }
-    
   })
-  
+
   # add user selected Google Cloud Storage object to list of layers
   # write GeoPackage retrieved from Google Cloud Storage to data_file$data_file and unpack layers in GeoPackage
-  observe({
+  observeEvent(input$get_objects, {
     req(input$gcs_bucket_objects)
     selected_gcs_object <- input$gcs_bucket_objects
-   
+
     gcs_gpkg <- NULL
     gcs_gpkg <- try(
       get_gcs_object(token(), input$gcs_bucket_name, selected_gcs_object)
     )
-    
+
     f_lyrs <- NULL
-    
+
     if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & gcs_gpkg != "cannot load GeoPackage from Google Cloud Storage") {
       f_lyrs <- tryCatch(
         error = function(cnd) NULL,
@@ -258,7 +281,7 @@ app_server <- function(input, output, session) {
           dplyr::bind_rows()
       )
     }
-    
+
     isolate({
       df <- dplyr::bind_rows(data_file$data_file, f_lyrs)
       # unique number id next to each layer to catch uploads of tables with same name
@@ -268,9 +291,8 @@ app_server <- function(input, output, session) {
         paste0(df$layer_disp_name, "_", row_idx, sep = "")
       data_file$data_file <- df
     })
-    
   })
-  
+
   # select one table as active layer from files loaded to the server
   observe({
     df <- data_file$data_file
@@ -284,10 +306,10 @@ app_server <- function(input, output, session) {
   # active df - use this df for summarising and generating raw tables for display
   active_df <- reactive({
     req(input$active_layer)
-    
+
     # update table after add column operation
     update_table <- add_column_count()
-    
+
     df <- isolate(data_file$data_file)
     jdf <- isolate(names(data_file$joined_df))
 
@@ -735,7 +757,7 @@ app_server <- function(input, output, session) {
       }
     }
   })
-  
+
   # counter that is updated after each add column operation
   # used to trigger re-render of data table
   add_column_count <- reactive({
@@ -881,22 +903,40 @@ app_server <- function(input, output, session) {
     req(map_active_df())
 
     # map_active_df <- isolate(map_active_df())
-
-    if ("sf" %in% class(map_active_df()) &
-      is.atomic(map_active_df()[[map_var()]]) &
-      nrow(map_active_df()) > 0) {
-      data_file$map_drawn <- 1
-      print(data_file$map_drawn)
-      add_layers_leaflet(
-        map_object = "web_map",
-        map_active_df = map_active_df(),
-        map_var = map_var(),
-        map_colour = input$map_colour,
-        opacity = input$opacity,
-        map_line_width = input$map_line_width,
-        map_line_colour = input$map_line_colour,
-        waiter = map_waiter
-      )
+    if (data_file$map_drawn == 0) {
+      if ("sf" %in% class(map_active_df()) &
+        is.atomic(map_active_df()[[map_var()]]) &
+        nrow(map_active_df()) > 0) {
+        data_file$map_drawn <- 1
+        print(data_file$map_drawn)
+        add_layers_leaflet(
+          map_object = "web_map",
+          map_active_df = map_active_df(),
+          map_var = map_var(),
+          map_colour = input$map_colour,
+          opacity = input$opacity,
+          map_line_width = input$map_line_width,
+          map_line_colour = input$map_line_colour,
+          waiter = map_waiter
+        )
+      }
+    } else if (data_file$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+        is.atomic(map_active_df()[[map_var()]]) &
+        nrow(map_active_df()) > 0) {
+        data_file$map_drawn <- 1
+        print(data_file$map_drawn)
+        add_layers_leaflet_no_zoom(
+          map_object = "web_map",
+          map_active_df = map_active_df(),
+          map_var = map_var(),
+          map_colour = input$map_colour,
+          opacity = input$opacity,
+          map_line_width = input$map_line_width,
+          map_line_colour = input$map_line_colour,
+          waiter = map_waiter
+        )
+      }
     }
   })
 
@@ -1534,7 +1574,6 @@ app_server <- function(input, output, session) {
 
   # delete selected rows from GeoPackage
   observeEvent(input$delete_records, {
-    
     delete_waiter$show()
     selected_rows <- input$`edit_data_dt-data_table_rows_selected`
     id_str <- input$row_id
