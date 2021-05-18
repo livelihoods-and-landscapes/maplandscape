@@ -243,6 +243,7 @@ app_server <- function(input, output, session) {
 
     if ("no items returned" %in% items | is.null(items)) {
       shiny::showNotification("no items returned from Google Cloud Storage query", type = "error", duration = 5)
+      data_file$items <- NULL
     } else {
       data_file$items <- items
     }
@@ -252,11 +253,18 @@ app_server <- function(input, output, session) {
   observe({
     data_file$items
 
+
     if (length(data_file$items) > 0 & !"no items returned" %in% data_file$items) {
       updateSelectInput(
         session,
         "gcs_bucket_objects",
         choices = data_file$items
+      )
+    } else {
+      updateSelectInput(
+        session,
+        "gcs_bucket_objects",
+        choices = ""
       )
     }
   })
@@ -264,6 +272,7 @@ app_server <- function(input, output, session) {
   # add user selected Google Cloud Storage object to list of layers
   # write GeoPackage retrieved from Google Cloud Storage to data_file$data_file and unpack layers in GeoPackage
   observeEvent(input$get_objects, {
+
     req(input$gcs_bucket_objects)
     selected_gcs_object <- input$gcs_bucket_objects
 
@@ -274,23 +283,25 @@ app_server <- function(input, output, session) {
 
     f_lyrs <- NULL
 
-    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & gcs_gpkg != "cannot load GeoPackage from Google Cloud Storage") {
+    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
       f_lyrs <- tryCatch(
         error = function(cnd) NULL,
         purrr::map2(gcs_gpkg$f_path, gcs_gpkg$f_name, list_layers) %>%
           dplyr::bind_rows()
       )
+      
+      isolate({
+        df <- dplyr::bind_rows(data_file$data_file, f_lyrs)
+        # unique number id next to each layer to catch uploads of tables with same name
+        rows <- nrow(df)
+        row_idx <- 1:rows
+        df$layer_disp_name_idx <-
+          paste0(df$layer_disp_name, "_", row_idx, sep = "")
+        data_file$data_file <- df
+      })
     }
 
-    isolate({
-      df <- dplyr::bind_rows(data_file$data_file, f_lyrs)
-      # unique number id next to each layer to catch uploads of tables with same name
-      rows <- nrow(df)
-      row_idx <- 1:rows
-      df$layer_disp_name_idx <-
-        paste0(df$layer_disp_name, "_", row_idx, sep = "")
-      data_file$data_file <- df
-    })
+    
   })
 
   # select one table as active layer from files loaded to the server
