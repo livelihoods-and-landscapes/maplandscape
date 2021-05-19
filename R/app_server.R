@@ -555,7 +555,6 @@ app_server <- function(input, output, session) {
   })
 
   # Filter Rows -------------------------------------------------------------
-
   # filter modal
   observeEvent(input$filter, {
     showModal(
