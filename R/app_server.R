@@ -1771,6 +1771,7 @@ app_server <- function(input, output, session) {
     data_file$tmp_edits <- data.frame()
     data_file$flush_edits <- data_file$flush_edits + 1
   })
+  
 
   # download edited data as a zip file
   output$download_edits <- downloadHandler(
