@@ -76,6 +76,15 @@ app_ui <- function(request) {
         sidebarLayout(
           # Sidebar panel for inputs ----
           sidebarPanel(
+            id = "tPanel",
+            style = "overflow-y:scroll; max-height: 90vh; position:relative;",
+            
+            h4("Active layer"),
+            
+            selectInput("active_layer", "Select active layer", choices = NULL),
+            
+            hr(style = "border-color: #2c3e50 !important;"),
+            
             h4("Sync Completed Forms"),
 
             actionButton("sync_forms", "Sync forms"),
@@ -103,7 +112,7 @@ app_ui <- function(request) {
             ),
 
             # get list of GeoPackages in Google Cloud Storage bucket
-            actionButton("list_google_files", "Get GCS buckets", class = "m-2"),
+            actionButton("list_google_files", "Get GCS buckets", class = "btn-primary m-2"),
             
             # name of Google Cloud Storage bucket to get GeoPackages from
             selectInput(
@@ -123,11 +132,7 @@ app_ui <- function(request) {
             ),
             
             # get list of GeoPackages in Google Cloud Storage bucket
-            actionButton("get_objects", "Download GCS object", class = "m-2"),
-
-            hr(style = "border-color: #2c3e50 !important;"),
-
-            selectInput("active_layer", "Select active layer", choices = NULL),
+            actionButton("get_objects", "Download GCS object", class = "btn-primary m-2"),
 
             hr(style = "border-color: #2c3e50 !important;"),
 
@@ -171,7 +176,7 @@ app_ui <- function(request) {
 
               textInput("join_tbl_name", "Table name", value = "", placeholder = "enter table name for output"),
 
-              actionButton("table_join_button", "Join")
+              actionButton("table_join_button", "Join", class = "btn-primary m-2")
             ),
 
             conditionalPanel(
@@ -194,7 +199,7 @@ app_ui <- function(request) {
 
               textInput("spjoin_tbl_name", "Table name", value = "", placeholder = "enter table name for output"),
 
-              actionButton("spatial_join_button", "Join")
+              actionButton("spatial_join_button", "Join", class = "btn-primary m-2")
             ),
 
             conditionalPanel(
@@ -205,7 +210,7 @@ app_ui <- function(request) {
 
               selectInput("table_filter", label = "Select table to filter", choices = NULL),
 
-              actionButton("filter", "Filter Options"),
+              actionButton("filter", "Filter Options", class = "btn-primary m-2"),
             ),
 
             conditionalPanel(
@@ -216,7 +221,7 @@ app_ui <- function(request) {
 
               selectInput("table_mutate", label = "Select table to add new column", choices = NULL),
 
-              actionButton("add_column", "Add Column Options"),
+              actionButton("add_column", "Add Column Options", class = "btn-primary m-2"),
             ),
           ),
 
@@ -229,7 +234,7 @@ app_ui <- function(request) {
 
               br(),
 
-              downloadButton("download_data_raw", "Download Data"),
+              downloadButton("download_data_raw", "Download Data", class = "btn-primary m-2"),
 
               hr(),
 
@@ -241,7 +246,7 @@ app_ui <- function(request) {
 
               br(),
 
-              downloadButton("download_data_summarised", "Download Summarised Data"),
+              downloadButton("download_data_summarised", "Download Summarised Data", class = "btn-primary m-2"),
 
               hr(),
 
@@ -274,6 +279,7 @@ app_ui <- function(request) {
         ),
 
         shinyFeedback::useShinyFeedback(),
+        
         leafletOutput("web_map"),
 
         absolutePanel(
@@ -287,7 +293,7 @@ app_ui <- function(request) {
             conditionalPanel(
               condition = "input.map_controls == true",
 
-              actionButton("create_map", "draw map"),
+              actionButton("create_map", "draw map", class = "btn-primary m-2"),
 
               selectInput("map_active_layer", "Select active layer", choices = NULL),
 
@@ -326,11 +332,14 @@ app_ui <- function(request) {
         sidebarLayout(
           # Sidebar panel for inputs ----
           sidebarPanel(
+            id = "tPanel",
+            style = "overflow-y:scroll; max-height: 90vh; position:relative;",
+            
             h4("Charts"),
 
             selectInput("chart_active_layer", "Select active layer", choices = NULL),
 
-            actionButton("create_chart", "draw chart"),
+            actionButton("create_chart", "draw chart", class = "btn-primary m-2"),
 
             selectInput(
               "plotType", "Chart type",
@@ -411,6 +420,11 @@ app_ui <- function(request) {
         "Admin",
         sidebarLayout(
           sidebarPanel(
+            id = "tPanel",
+            style = "overflow-y:scroll; max-height: 90vh; position:relative;",
+            
+            h4("Upload local data"),
+            
             mod_get_layers_ui(
               id = "edit_data",
               label = "Select .gpkg or .zip file(s)",
@@ -418,9 +432,7 @@ app_ui <- function(request) {
               accept = c(".gpkg")
             ),
 
-            tags$br(),
-            
-            h4("Edit Google Cloud Data"),
+            h4("Edit Google Cloud data"),
             
             # Google Cloud Storage project
             textInput("admin_gcs_project_id", 
@@ -430,7 +442,7 @@ app_ui <- function(request) {
             ),
             
             # get list of GeoPackages in Google Cloud Storage bucket
-            actionButton("admin_list_google_files", "Get GCS buckets", class = "m-2"),
+            actionButton("admin_list_google_files", "Get GCS buckets", class = "btn-primary m-2"),
             
             # name of Google Cloud Storage bucket to get GeoPackages from
             selectInput(
@@ -450,10 +462,12 @@ app_ui <- function(request) {
             ),
             
             # get list of GeoPackages in Google Cloud Storage bucket
-            actionButton("admin_get_objects", "Download GCS object", class = "m-2"),
+            actionButton("admin_get_objects", "Download GCS object", class = "btn-primary m-2"),
             
             hr(style = "border-color: #2c3e50 !important;"),
 
+            h4("Editing options"),
+            
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
 
             textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
@@ -463,6 +477,9 @@ app_ui <- function(request) {
             actionButton("delete_records", "delete records", class = "btn-primary m-2"),
             
             hr(style = "border-color: #2c3e50 !important;"),
+            
+            # Download edits locally
+            h4("Download edits"),
 
             downloadButton("download_edits", "download edits", class = "btn-primary m-2"),
             

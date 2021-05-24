@@ -1903,10 +1903,16 @@ app_server <- function(input, output, session) {
   })
   
   observeEvent(input$sync_edits, {
-    browser()
     req(input$sync_endpoint)
+    req(edit_df())
+    
+    # get file name of GeoPackage to sync to server
     fname <- data_file$admin_fname
+    
+    # FastAPI endpoint for sync edits operations
     endpoint <- input$sync_endpoint
+    
+    # rename local file in Shiny App to match file in Google Cloud Storage
     path_file_to_post <- data_file$edit_data_file
     path_file_to_post <- path_file_to_post$file_path[1]
     tmp_dir <- dirname(path_file_to_post)
@@ -1914,19 +1920,20 @@ app_server <- function(input, output, session) {
     file.rename(path_file_to_post, update_tmp_path)
     path_file_to_post <- update_tmp_path
     
-    req <- httr::POST(
+    req <- try(httr::POST(
         url = endpoint,
         config = httr::config(token = token()),
-        body = httr::upload_file(path_file_to_post)
-      )
+        body = list(file=httr::upload_file(path_file_to_post))
+      ))
     
-    # use this to set upload file name: POST("http://example.org/upload", body=list(name="test.csv", filedata=upload_file(filename, "text/csv")))
-    # https://stackoverflow.com/questions/34189732/specify-filename-when-using-httr-to-post-file-in-r
-    shiny::showNotification(paste0("sync status (200 = success): ", req$status_code), duration = 5)
+    if ("try-error" %in% class(req)) {
+      shiny::showNotification(paste0("Edits could not be synced"), duration = 5)
+    } else {
+      shiny::showNotification(paste0("Sync response status: ", req$status_code), duration = 5)
+    }
   })
 
   observeEvent(input$refresh_data, {
-    browser()
     selected_gcs_object <- data_file$admin_fname
     admin_current_bucket <- data_file$admin_current_bucket
     
