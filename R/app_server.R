@@ -1903,7 +1903,6 @@ app_server <- function(input, output, session) {
   })
   
   observeEvent(input$sync_edits, {
-    browser()
     req(input$sync_endpoint)
     fname <- data_file$admin_fname
     endpoint <- input$sync_endpoint
