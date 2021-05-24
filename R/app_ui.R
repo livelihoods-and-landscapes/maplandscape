@@ -419,6 +419,40 @@ app_ui <- function(request) {
             ),
 
             tags$br(),
+            
+            h4("Edit Google Cloud Data"),
+            
+            # Google Cloud Storage project
+            textInput("admin_gcs_project_id", 
+                      "Google Cloud Storage project ID", 
+                      value = "", 
+                      placeholder = ""
+            ),
+            
+            # get list of GeoPackages in Google Cloud Storage bucket
+            actionButton("admin_list_google_files", "Get GCS buckets", class = "m-2"),
+            
+            # name of Google Cloud Storage bucket to get GeoPackages from
+            selectInput(
+              "admin_gcs_bucket_name",
+              "GCS bucket name",
+              choices = NULL,
+              selected = NULL,
+              multiple = FALSE
+            ),
+            
+            selectInput(
+              "admin_gcs_bucket_objects",
+              "Select object from GCS",
+              choices = NULL,
+              selected = NULL,
+              multiple = FALSE
+            ),
+            
+            # get list of GeoPackages in Google Cloud Storage bucket
+            actionButton("admin_get_objects", "Download GCS object", class = "m-2"),
+            
+            hr(style = "border-color: #2c3e50 !important;"),
 
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
 
@@ -427,8 +461,21 @@ app_ui <- function(request) {
             actionButton("save_edits", "save edits", class = "btn-primary m-2"),
 
             actionButton("delete_records", "delete records", class = "btn-primary m-2"),
+            
+            hr(style = "border-color: #2c3e50 !important;"),
 
-            downloadButton("download_edits", "download edits", class = "btn-primary m-2")
+            downloadButton("download_edits", "download edits", class = "btn-primary m-2"),
+            
+            hr(style = "border-color: #2c3e50 !important;"),
+            
+            h4("Sync edits to Google Cloud Storage"),
+            
+            # URL / endpoint for sync API
+            textInput(inputId = "sync_endpoint", label = "Endpoint for sync API"),
+            
+            actionButton("sync_edits", "sync edits", class = "btn-primary m-2"),
+            
+            actionButton("refresh_data", "refresh data", class = "btn-primary m-2")
           ),
 
           mainPanel(tabsetPanel(
