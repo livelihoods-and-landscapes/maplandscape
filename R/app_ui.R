@@ -263,7 +263,7 @@ app_ui <- function(request) {
         "Map",
         tags$style(
           type = "text/css",
-          "#web_map {height: calc(100vh - 60px) !important; position: fixed; top: 60px; left: 0; right: 0; bottom: 0; padding: 0; overflow: hidden;}",
+          "#web_map {height: calc(100vh - 70px) !important; width: calc(100vw - 250px) !important; position: fixed; top: 70px; left: 250px; right: 0; bottom: 0; padding: 0; overflow: hidden;}",
           "body {
             margin: 0;
             padding: 0;
@@ -283,15 +283,17 @@ app_ui <- function(request) {
         leafletOutput("web_map"),
 
         absolutePanel(
-          top = "73px",
-          left = "55px",
+          top = "70px",
+          left = "0px",
           width = "250px",
-          height = "80%",
+          height = "100vh",
           wellPanel(
-            style = "padding: 5px !important; border-color: #2c3e50 !important; background: #ecf0f1;",
-            checkboxInput("map_controls", "Map controls", value = FALSE, width = NULL),
-            conditionalPanel(
-              condition = "input.map_controls == true",
+            id = "tPanel",
+            style = "padding: 5px !important; border-color: #ecf0f1 !important; background: #ecf0f1; max-height: 100vh; overflow-y:scroll; position:relative;",
+            # checkboxInput("map_controls", "Map controls", value = FALSE, width = NULL),
+            # conditionalPanel(
+            #   condition = "input.map_controls == true",
+            h4("Map controls"),
 
               actionButton("create_map", "draw map", class = "btn-primary m-2"),
 
@@ -317,7 +319,7 @@ app_ui <- function(request) {
               textInput("map_legend_title", "Legend title:", value = ""),
 
               mod_multiple_input_ui(id = "label_vars", label = "Popup labels")
-            )
+            # )
           )
         )
       ),

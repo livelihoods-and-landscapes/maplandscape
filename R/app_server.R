@@ -1916,14 +1916,13 @@ app_server <- function(input, output, session) {
     path_file_to_post <- data_file$edit_data_file
     path_file_to_post <- path_file_to_post$file_path[1]
     tmp_dir <- dirname(path_file_to_post)
-    update_tmp_path <- paste0(tmp_dir, "/", fname)
-    file.rename(path_file_to_post, update_tmp_path)
-    path_file_to_post <- update_tmp_path
+    sync_tmp_path <- paste0(tmp_dir, "/", fname)
+    fs::file_copy(path_file_to_post, sync_tmp_path, overwrite = TRUE)
     
     req <- try(httr::POST(
         url = endpoint,
         config = httr::config(token = token()),
-        body = list(file=httr::upload_file(path_file_to_post))
+        body = list(file=httr::upload_file(sync_tmp_path))
       ))
     
     if ("try-error" %in% class(req)) {
