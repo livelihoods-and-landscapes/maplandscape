@@ -169,7 +169,7 @@ app_server <- function(input, output, session) {
   # display login with Google button if token is not valid
   output$login_warning <- renderUI({
     if (is.null(isolate(token()))) {
-      tags$p("WARNING: login with Google will reset app and current data will be lost")
+      tags$p("WARNING: login with Google will reset the app and current data will be lost")
     } else {
       return()
     }
@@ -1461,17 +1461,33 @@ app_server <- function(input, output, session) {
     req(data_file$flush_deletes)
     req(data_file$flush_edits)
     req(data_file$flush_geometry_edits)
+    
+    df <- try(
+      isolate(data_file$edit_data_file)
+    )
+    if ("try-error" %in% class(df)) {
+      shiny::showNotification("Data could not be loaded", type = "error")
+      return()
+    }
+    
+    edit_df <- try(
+      read_tables(df, input$edit_layer)
+    )
 
-    df <- isolate(data_file$edit_data_file)
-    edit_df <- read_tables(df, input$edit_layer)
-
+    if ("try-error" %in% class(edit_df)) {
+      shiny::showNotification("Data could not be loaded", type = "error")
+      return()
+    }
+    
     # check if layer to be edited is spatial
     # if not spatial drop geometry and convert to dataframe
     # if spatial transform to 4326 for leaflet
+    edit_layer_crs <- NA
+    
     if ("sf" %in% class(edit_df)) {
       edit_layer_crs <- sf::st_crs(edit_df)
-    }
-
+    } 
+      
     if (is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
       edit_df <- edit_df %>%
         sf::st_drop_geometry() %>%
@@ -1479,6 +1495,8 @@ app_server <- function(input, output, session) {
     } else if (!is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
       edit_df <- edit_df %>%
         sf::st_transform(4326)
+    } else if (is.na(edit_layer_crs)) {
+      edit_df <- edit_df
     }
 
     edit_df

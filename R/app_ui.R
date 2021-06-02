@@ -79,7 +79,7 @@ app_ui <- function(request) {
             id = "tPanel",
             style = "overflow-y:scroll; max-height: 90vh; position:relative;",
             
-            h4("Active layer"),
+            h4("Active Layer"),
             
             selectInput("active_layer", "Select active layer", choices = NULL),
             
