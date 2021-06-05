@@ -57,7 +57,7 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
     } else if ("logical" %in% col_type) {
       from_user <- tryCatch(
         error = function(cnd) {
-          "error casting user supplied value to double"
+          "error casting user supplied value to logical"
         },
         {
           as.logical(from_user)

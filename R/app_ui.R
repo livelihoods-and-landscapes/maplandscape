@@ -78,13 +78,13 @@ app_ui <- function(request) {
           sidebarPanel(
             id = "tPanel",
             style = "overflow-y:scroll; max-height: 90vh; position:relative;",
-            
+
             h4("Active Layer"),
-            
+
             selectInput("active_layer", "Select active layer", choices = NULL),
-            
+
             hr(style = "border-color: #2c3e50 !important;"),
-            
+
             h4("Sync Completed Forms"),
 
             actionButton("sync_forms", "Sync forms"),
@@ -103,17 +103,17 @@ app_ui <- function(request) {
             uiOutput("login_warning"),
 
             uiOutput("login_button"),
-            
+
             # Google Cloud Storage project
-            textInput("gcs_project_id", 
-                      "Google Cloud Storage project ID", 
-                      value = "", 
-                      placeholder = ""
+            textInput("gcs_project_id",
+              "Google Cloud Storage project ID",
+              value = "",
+              placeholder = ""
             ),
 
             # get list of GeoPackages in Google Cloud Storage bucket
             actionButton("list_google_files", "Get GCS buckets", class = "btn-primary m-2"),
-            
+
             # name of Google Cloud Storage bucket to get GeoPackages from
             selectInput(
               "gcs_bucket_name",
@@ -130,7 +130,7 @@ app_ui <- function(request) {
               selected = NULL,
               multiple = FALSE
             ),
-            
+
             # get list of GeoPackages in Google Cloud Storage bucket
             actionButton("get_objects", "Download GCS object", class = "btn-primary m-2"),
 
@@ -279,7 +279,7 @@ app_ui <- function(request) {
         ),
 
         shinyFeedback::useShinyFeedback(),
-        
+
         leafletOutput("web_map"),
 
         absolutePanel(
@@ -295,30 +295,30 @@ app_ui <- function(request) {
             #   condition = "input.map_controls == true",
             h4("Map controls"),
 
-              actionButton("create_map", "draw map", class = "btn-primary m-2"),
+            actionButton("create_map", "draw map", class = "btn-primary m-2"),
 
-              selectInput("map_active_layer", "Select active layer", choices = NULL),
+            selectInput("map_active_layer", "Select active layer", choices = NULL),
 
-              mod_single_input_ui(id = "map_var", label = "Select variable"),
+            mod_single_input_ui(id = "map_var", label = "Select variable"),
 
-              selectInput("map_colour", "Fill colour palette", choices = colour_mappings),
+            selectInput("map_colour", "Fill colour palette", choices = colour_mappings),
 
-              sliderInput("opacity", "Opacity:",
-                min = 0, max = 1,
-                value = 0.8, step = 0.1
-              ),
+            sliderInput("opacity", "Opacity:",
+              min = 0, max = 1,
+              value = 0.8, step = 0.1
+            ),
 
-              numericInput("map_line_width", "Line width", 0.5, min = 0, max = 2),
+            numericInput("map_line_width", "Line width", 0.5, min = 0, max = 2),
 
-              selectInput("map_line_colour", "Select line colour", choices = line_colours),
+            selectInput("map_line_colour", "Select line colour", choices = line_colours),
 
-              helpText("Check box to display legend."),
+            helpText("Check box to display legend."),
 
-              checkboxInput("legend", label = "Legend", value = FALSE),
+            checkboxInput("legend", label = "Legend", value = FALSE),
 
-              textInput("map_legend_title", "Legend title:", value = ""),
+            textInput("map_legend_title", "Legend title:", value = ""),
 
-              mod_multiple_input_ui(id = "label_vars", label = "Popup labels")
+            mod_multiple_input_ui(id = "label_vars", label = "Popup labels")
             # )
           )
         )
@@ -336,7 +336,7 @@ app_ui <- function(request) {
           sidebarPanel(
             id = "tPanel",
             style = "overflow-y:scroll; max-height: 90vh; position:relative;",
-            
+
             h4("Charts"),
 
             selectInput("chart_active_layer", "Select active layer", choices = NULL),
@@ -424,9 +424,9 @@ app_ui <- function(request) {
           sidebarPanel(
             id = "tPanel",
             style = "overflow-y:scroll; max-height: 90vh; position:relative;",
-            
+
             h4("Upload local data"),
-            
+
             mod_get_layers_ui(
               id = "edit_data",
               label = "Select .gpkg or .zip file(s)",
@@ -435,17 +435,17 @@ app_ui <- function(request) {
             ),
 
             h4("Edit Google Cloud data"),
-            
+
             # Google Cloud Storage project
-            textInput("admin_gcs_project_id", 
-                      "Google Cloud Storage project ID", 
-                      value = "", 
-                      placeholder = ""
+            textInput("admin_gcs_project_id",
+              "Google Cloud Storage project ID",
+              value = "",
+              placeholder = ""
             ),
-            
+
             # get list of GeoPackages in Google Cloud Storage bucket
             actionButton("admin_list_google_files", "Get GCS buckets", class = "btn-primary m-2"),
-            
+
             # name of Google Cloud Storage bucket to get GeoPackages from
             selectInput(
               "admin_gcs_bucket_name",
@@ -454,7 +454,7 @@ app_ui <- function(request) {
               selected = NULL,
               multiple = FALSE
             ),
-            
+
             selectInput(
               "admin_gcs_bucket_objects",
               "Select object from GCS",
@@ -462,14 +462,14 @@ app_ui <- function(request) {
               selected = NULL,
               multiple = FALSE
             ),
-            
+
             # get list of GeoPackages in Google Cloud Storage bucket
             actionButton("admin_get_objects", "Download GCS object", class = "btn-primary m-2"),
-            
+
             hr(style = "border-color: #2c3e50 !important;"),
 
             h4("Editing options"),
-            
+
             selectInput("edit_layer", "Select layer to edit", choices = NULL),
 
             textInput(inputId = "row_id", label = "ID column (or ID pattern)"),
@@ -477,23 +477,23 @@ app_ui <- function(request) {
             actionButton("save_edits", "save edits", class = "btn-primary m-2"),
 
             actionButton("delete_records", "delete records", class = "btn-primary m-2"),
-            
+
             hr(style = "border-color: #2c3e50 !important;"),
-            
+
             # Download edits locally
             h4("Download edits"),
 
             downloadButton("download_edits", "download edits", class = "btn-primary m-2"),
-            
+
             hr(style = "border-color: #2c3e50 !important;"),
-            
+
             h4("Sync edits to Google Cloud Storage"),
-            
+
             # URL / endpoint for sync API
             textInput(inputId = "sync_endpoint", label = "Endpoint for sync API"),
-            
+
             actionButton("sync_edits", "sync edits", class = "btn-primary m-2"),
-            
+
             actionButton("refresh_data", "refresh data", class = "btn-primary m-2")
           ),
 

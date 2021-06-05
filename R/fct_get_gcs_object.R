@@ -14,7 +14,7 @@
 
 get_gcs_object <- function(token, bucket, object) {
 
-  
+
   # Google Cloud Storage JSON API GET object https://cloud.google.com/storage/docs/json_api/v1/objects/get
   # set ?alt-media to get object data
   get_object <- paste0("https://storage.googleapis.com/storage/v1/b/", bucket, "/o/", object, "?alt=media")

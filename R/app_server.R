@@ -114,7 +114,7 @@ app_server <- function(input, output, session) {
       flush_edits = 1,
       flush_geometry_edits = 1,
       event_tmp = NULL,
-      map_edits_zoom = 0, 
+      map_edits_zoom = 0,
       admin_buckets = NULL,
       admin_fname = NULL,
       admin_current_bucket = NULL
@@ -275,7 +275,6 @@ app_server <- function(input, output, session) {
   # add user selected Google Cloud Storage object to list of layers
   # write GeoPackage retrieved from Google Cloud Storage to data_file$data_file and unpack layers in GeoPackage
   observeEvent(input$get_objects, {
-
     req(input$gcs_bucket_objects)
     selected_gcs_object <- input$gcs_bucket_objects
 
@@ -292,7 +291,7 @@ app_server <- function(input, output, session) {
         purrr::map2(gcs_gpkg$f_path, gcs_gpkg$f_name, list_layers) %>%
           dplyr::bind_rows()
       )
-      
+
       isolate({
         df <- dplyr::bind_rows(data_file$data_file, f_lyrs)
         # unique number id next to each layer to catch uploads of tables with same name
@@ -303,8 +302,6 @@ app_server <- function(input, output, session) {
         data_file$data_file <- df
       })
     }
-
-    
   })
 
   # select one table as active layer from files loaded to the server
@@ -1302,26 +1299,33 @@ app_server <- function(input, output, session) {
   # user uploaded files for data cleaning / editing
   # return table of files and file paths of data loaded to the server
   upload_edit_file <- mod_get_layers_server(id = "edit_data")
-  
+
   # get files to edit from Google Cloud Storage
   # get list of GCS Buckets
   observeEvent(input$admin_list_google_files, {
     req(token())
     req(input$admin_gcs_project_id)
-    
-    buckets <- list_gcs_buckets(token(), input$admin_gcs_project_id)
-    
+
+    buckets <- try(
+      list_gcs_buckets(token(), input$admin_gcs_project_id)
+    )
+
+    if (!"try-error" %in% buckets) {
+      shiny::showNotification("Error listing buckets Google Cloud Storage", type = "error", duration = 5)
+      return()
+    }
+
     if ("no items returned" %in% buckets | is.null(buckets)) {
       shiny::showNotification("no buckets available in Google Cloud Storage", type = "error", duration = 5)
     } else {
       data_file$admin_buckets <- buckets
     }
   })
-  
+
   # update select input with list of objects in Google Cloud Storage bucket
   observe({
     data_file$admin_buckets
-    
+
     if (length(data_file$admin_buckets) > 0 & !"no items returned" %in% data_file$admin_buckets) {
       updateSelectInput(
         session,
@@ -1330,12 +1334,12 @@ app_server <- function(input, output, session) {
       )
     }
   })
-  
+
   observe({
     req(input$admin_gcs_bucket_name)
-    
+
     items <- list_gcs_bucket_objects(token(), input$admin_gcs_bucket_name)
-    
+
     if ("no items returned" %in% items | is.null(items)) {
       shiny::showNotification("no items returned from Google Cloud Storage query", type = "error", duration = 5)
       data_file$admin_items <- NULL
@@ -1343,11 +1347,11 @@ app_server <- function(input, output, session) {
       data_file$admin_items <- items
     }
   })
-  
+
   # update select input with list of objects in Google Cloud Storage bucket
   observe({
     data_file$admin_items
-    
+
     if (length(data_file$admin_items) > 0 & !"no items returned" %in% data_file$admin_items) {
       updateSelectInput(
         session,
@@ -1362,32 +1366,31 @@ app_server <- function(input, output, session) {
       )
     }
   })
-  
+
   # add user selected Google Cloud Storage object to list of layers
   # write GeoPackage retrieved from Google Cloud Storage to data_file$data_file and unpack layers in GeoPackage
   observeEvent(input$admin_get_objects, {
-    
     req(input$admin_gcs_bucket_objects)
     selected_gcs_object <- input$admin_gcs_bucket_objects
-    
+
     gcs_gpkg <- NULL
     gcs_gpkg <- try(
       get_gcs_object(token(), input$admin_gcs_bucket_name, selected_gcs_object)
     )
-    
+
     f_lyrs <- NULL
-    
+
     if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
       f_lyrs <- tryCatch(
         error = function(cnd) NULL,
         purrr::map2(gcs_gpkg$f_path, gcs_gpkg$f_name, list_layers) %>%
-          dplyr::bind_rows() 
+          dplyr::bind_rows()
       )
-      
+
       # use the f_name for syncing edits back to Google Cloud Storage
       data_file$admin_fname <- gcs_gpkg$f_name
       data_file$admin_current_bucket <- input$admin_gcs_bucket_name
-      
+
       isolate({
         # clear previously uploaded data
         data_file$edit_data_file <- data.frame()
@@ -1398,7 +1401,7 @@ app_server <- function(input, output, session) {
         df$layer_disp_name_idx <-
           paste0(df$layer_disp_name, "_", row_idx, sep = "")
         data_file$edit_data_file <- df
-        
+
         # create new log for edits
         # log file for any errors
         data_file$edit_log <- NULL
@@ -1410,16 +1413,14 @@ app_server <- function(input, output, session) {
           )
         data_file$edit_log <- log
       })
-      
     }
-    
   })
 
   # this handles file uploads from local machine
   # update reactiveValues object holding dataframe of layers a user can select as active layer
   observe({
     req(upload_edit_file())
-    
+
     upload_edit_file <- isolate(upload_edit_file())
     isolate({
       # clear previously uploaded data
@@ -1461,7 +1462,7 @@ app_server <- function(input, output, session) {
     req(data_file$flush_deletes)
     req(data_file$flush_edits)
     req(data_file$flush_geometry_edits)
-    
+
     df <- try(
       isolate(data_file$edit_data_file)
     )
@@ -1469,7 +1470,7 @@ app_server <- function(input, output, session) {
       shiny::showNotification("Data could not be loaded", type = "error")
       return()
     }
-    
+
     edit_df <- try(
       read_tables(df, input$edit_layer)
     )
@@ -1478,16 +1479,16 @@ app_server <- function(input, output, session) {
       shiny::showNotification("Data could not be loaded", type = "error")
       return()
     }
-    
+
     # check if layer to be edited is spatial
     # if not spatial drop geometry and convert to dataframe
     # if spatial transform to 4326 for leaflet
     edit_layer_crs <- NA
-    
+
     if ("sf" %in% class(edit_df)) {
       edit_layer_crs <- sf::st_crs(edit_df)
-    } 
-      
+    }
+
     if (is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
       edit_df <- edit_df %>%
         sf::st_drop_geometry() %>%
@@ -1905,12 +1906,12 @@ app_server <- function(input, output, session) {
     data_file$tmp_edits <- data.frame()
     data_file$flush_edits <- data_file$flush_edits + 1
   })
-  
+
   # sync edits
   # update select input with list of Google Cloud Storage bucket
   observe({
     data_file$admin_buckets
-    
+
     if (length(data_file$admin_buckets) > 0 & !"no items returned" %in% data_file$admin_buckets) {
       updateSelectInput(
         session,
@@ -1919,30 +1920,30 @@ app_server <- function(input, output, session) {
       )
     }
   })
-  
+
   observeEvent(input$sync_edits, {
     req(input$sync_endpoint)
     req(edit_df())
-    
+
     # get file name of GeoPackage to sync to server
     fname <- data_file$admin_fname
-    
+
     # FastAPI endpoint for sync edits operations
     endpoint <- input$sync_endpoint
-    
+
     # rename local file in Shiny App to match file in Google Cloud Storage
     path_file_to_post <- data_file$edit_data_file
     path_file_to_post <- path_file_to_post$file_path[1]
     tmp_dir <- dirname(path_file_to_post)
     sync_tmp_path <- paste0(tmp_dir, "/", fname)
     fs::file_copy(path_file_to_post, sync_tmp_path, overwrite = TRUE)
-    
+
     req <- try(httr::POST(
-        url = endpoint,
-        config = httr::config(token = token()),
-        body = list(file=httr::upload_file(sync_tmp_path))
-      ))
-    
+      url = endpoint,
+      config = httr::config(token = token()),
+      body = list(file = httr::upload_file(sync_tmp_path))
+    ))
+
     if ("try-error" %in% class(req)) {
       shiny::showNotification(paste0("Edits could not be synced"), duration = 5)
     } else {
@@ -1953,25 +1954,25 @@ app_server <- function(input, output, session) {
   observeEvent(input$refresh_data, {
     selected_gcs_object <- data_file$admin_fname
     admin_current_bucket <- data_file$admin_current_bucket
-    
+
     gcs_gpkg <- NULL
     gcs_gpkg <- try(
       get_gcs_object(token(), admin_current_bucket, selected_gcs_object)
     )
-    
+
     f_lyrs <- NULL
-    
+
     if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
       f_lyrs <- tryCatch(
         error = function(cnd) NULL,
         purrr::map2(gcs_gpkg$f_path, gcs_gpkg$f_name, list_layers) %>%
-          dplyr::bind_rows() 
+          dplyr::bind_rows()
       )
-      
+
       # use the f_name for syncing edits back to Google Cloud Storage
       data_file$admin_fname <- gcs_gpkg$f_name
       data_file$admin_current_bucket <- admin_current_bucket
-      
+
       isolate({
         # clear previously uploaded data
         data_file$edit_data_file <- data.frame()
@@ -1982,7 +1983,7 @@ app_server <- function(input, output, session) {
         df$layer_disp_name_idx <-
           paste0(df$layer_disp_name, "_", row_idx, sep = "")
         data_file$edit_data_file <- df
-        
+
         # create new log for edits
         # log file for any errors
         data_file$edit_log <- NULL
@@ -1994,10 +1995,9 @@ app_server <- function(input, output, session) {
           )
         data_file$edit_log <- log
       })
-      
     }
   })
-  
+
   # download edited data as a zip file
   output$download_edits <- downloadHandler(
     filename = function() {
