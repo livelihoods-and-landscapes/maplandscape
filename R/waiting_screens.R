@@ -29,3 +29,8 @@ edit_screen <- tagList(
   waiter::spin_flower(),
   h4("Saving edits...")
 )
+
+sync_edit_screen <- tagList(
+  waiter::spin_flower(),
+  h4("Syncing edits...")
+)

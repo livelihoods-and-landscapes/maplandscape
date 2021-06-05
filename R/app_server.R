@@ -1921,10 +1921,17 @@ app_server <- function(input, output, session) {
     }
   })
 
+  # sync forms with database / template
+  sync_edit_waiter <- waiter::Waiter$new(
+    html = edit_screen,
+    color = "rgba(44,62,80,.6)"
+  )
+  
   observeEvent(input$sync_edits, {
     req(input$sync_endpoint)
     req(edit_df())
 
+    sync_edit_waiter$show()
     # get file name of GeoPackage to sync to server
     fname <- data_file$admin_fname
 
@@ -1949,6 +1956,8 @@ app_server <- function(input, output, session) {
     } else {
       shiny::showNotification(paste0("Sync response status: ", req$status_code), duration = 5)
     }
+    
+    sync_edit_waiter$hide()
   })
 
   observeEvent(input$refresh_data, {

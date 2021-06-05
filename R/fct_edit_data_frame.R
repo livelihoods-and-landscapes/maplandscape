@@ -69,14 +69,19 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
           "error casting user supplied value to POSIXct"
         },
         {
-          as.POSIXct(from_user)
+          if (lubridate::is.POSIXct(from_user) | lubridate::is.POSIXt(from_user)) {
+            as.POSIXct(from_user)
+          } else {
+            "error casting user supplied value to POSIXct"
+          }
+          
         }
       )
     } else {
       from_user <- "error user supplied value and data frame column type do not match"
     }
     # update column value
-    if ((class(from_user) == "character") & (stringr::str_detect(from_user, "^error"))) {
+    if (((class(from_user) == "character") & (stringr::str_detect(from_user, "^error"))) | (is.na(from_user))) {
       log_message <- paste0("row index: ", row_idx, " col index: ", col_idx, " - ", from_user, " (layer: ", layer, ")")
       log <- c(log, log_message)
     } else {
