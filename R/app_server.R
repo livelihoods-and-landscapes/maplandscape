@@ -1310,7 +1310,7 @@ app_server <- function(input, output, session) {
       list_gcs_buckets(token(), input$admin_gcs_project_id)
     )
 
-    if (!"try-error" %in% buckets) {
+    if ("try-error" %in% buckets) {
       shiny::showNotification("Error listing buckets Google Cloud Storage", type = "error", duration = 5)
       return()
     }
