@@ -929,6 +929,9 @@ app_server <- function(input, output, session) {
           map_line_colour = input$map_line_colour,
           waiter = map_waiter
         )
+        if (any(is.na(sf::st_crs(map_active_df())))) {
+          data_file$map_drawn <- 0
+        }
       }
     } else if (data_file$map_drawn == 1) {
       if ("sf" %in% class(map_active_df()) &
@@ -946,6 +949,9 @@ app_server <- function(input, output, session) {
           map_line_colour = input$map_line_colour,
           waiter = map_waiter
         )
+        if (any(is.na(sf::st_crs(map_active_df())))) {
+          data_file$map_drawn <- 0
+        }
       }
     }
   })
@@ -1044,10 +1050,23 @@ app_server <- function(input, output, session) {
     if ("sf" %in% class(map_active_df()) &
       is.atomic(map_active_df()[[map_var()]]) &
       nrow(map_active_df()) > 0) {
+      
+      # Catch GeoPackages with non-spatial tables that GeoPandas has added empty
+      # GeometryCollection column to.
+      if (any(is.na(sf::st_crs(map_active_df())))) {
+        return()
+      }
+      
       # make map active layer epsg 4326
       # make this an if statement
-      map_df <- map_active_df() %>%
-        sf::st_transform(4326)
+      map_df <- try(
+        map_active_df() %>%
+          sf::st_transform(4326)
+      )
+      
+      if ("try-error" %in% class(map_df)) {
+        return()
+      }
 
       bbox <- sf::st_bbox(map_df) %>%
         as.vector()

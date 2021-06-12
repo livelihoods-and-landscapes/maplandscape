@@ -7,7 +7,6 @@
 
 read_tables <- function(uploads, lyr) {
   req(uploads, lyr)
-
   a_lyr <- uploads %>%
     dplyr::filter(layer_disp_name_idx == lyr)
 

@@ -25,10 +25,24 @@ add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_c
   if ("sf" %in% class(map_active_df) & is.atomic(map_active_df[[map_var]]) & nrow(map_active_df) > 0) {
     waiter$show()
 
+    # Catch GeoPackages with non-spatial tables that GeoPandas has added empty
+    # GeometryCollection column to.
+    if (any(is.na(sf::st_crs(map_active_df)))) {
+      waiter$hide()
+      return()
+    }
+    
     # make map active layer epsg 4326
     # make this an if statement
-    map_df <- map_active_df %>%
-      sf::st_transform(4326)
+    map_df <- try(
+      map_active_df %>%
+        sf::st_transform(4326)
+    )
+    
+    if ("try-error" %in% class(map_df)) {
+      waiter$hide()
+      return()
+    }
 
     # get geometry type of map active layer
     geometry_type <- sf::st_geometry_type(map_df, by_geometry = FALSE)
