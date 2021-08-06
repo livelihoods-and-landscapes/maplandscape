@@ -9,3 +9,75 @@ body {
   -moz-background-size: cover;
   -o-background-size: cover;
 }
+
+.shiny-notification {
+  position:fixed;
+  top: calc(50%);
+  left: calc(50%);
+}
+
+#dataSidePanel {
+  overflow-y:scroll;
+  max-height: 90vh;
+  position:relative;
+}
+
+#mapSidePanel {
+  overflow-y:scroll;
+  max-height: 90vh;
+  position:relative;
+  padding: 5px !important;
+  border-color: #ecf0f1 !important;
+  background: #ecf0f1;
+}
+
+#web_map {
+  height: calc(100vh - 55px) !important;
+  width: calc(100vw - 250px) !important;
+  position: fixed;
+  top: 55px;
+  left: 250px;
+  right: 0;
+  bottom: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.leaflet-popup-content-wrapper {
+  background-color: #ecf0f1
+}
+
+.leaflet-map-pane {
+  z-index: auto;
+}
+
+#chartSidePanel {
+  overflow-y:scroll;
+  max-height: 90vh;
+  position:relative;
+}
+
+#adminSidePanel {
+  overflow-y:scroll;
+  max-height: 90vh;
+  position:relative;
+}
+
+#edit_leafmap {
+  height: calc(100vh - 135px) !important;
+}
+
+.docs {
+  padding-top: 10px;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  padding-left: 10px;
+}
+
+.docs_image {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 5px;
+  border: thin silver solid;
+}
