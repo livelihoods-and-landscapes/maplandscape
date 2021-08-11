@@ -1,6 +1,6 @@
 #' Get GeoPackages from Google Cloud Storage bucket
 #'
-#' Makes a request to a user specified Google Cloud Storage bucket to get object
+#' Makes a request to a user specified Google Cloud Storage bucket to get an object
 #' (GeoPackage) in the bucket.
 #'
 #' @param token an OAuth2.0 token which allows a user to make authenticated HTTP
@@ -11,6 +11,8 @@
 #' @return two element list. First element is the path to where the GeoPackage
 #'   has been written or character vector with an error message. The second
 #'   element is the file name to display to users when selecting the GeoPackage.
+#'
+#' @export
 
 get_gcs_object <- function(token, bucket, object) {
 

@@ -10,9 +10,9 @@ mod_get_layers_Server(id)
 \item{session}{}
 }
 \value{
-field_layers - a data frame with three columns: layers = table / layer name;
-  layer_disp_name = clean and informative table / layer name for select
-  input; file_path = temporary file path to data; and file_type = file type.
+\code{field_layers} tibble with three columns: layers - layer name;
+  layer_disp_name - clean and informative layer name for select
+  input; file_path - temporary file path to data; and file_type - file type.
 }
 \description{
 Process files (GeoPackages) uploaded by the user. For each file

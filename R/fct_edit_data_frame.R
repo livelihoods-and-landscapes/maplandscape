@@ -1,10 +1,21 @@
 #' Apply edits from user to layers in a GeoPackage
 #'
-#' @param tmp_edits Data frame recording user supplied edits (derived from editing DataTables object in the UI).
-#' @param df_to_edit Data frame or spatial data frame (sf) representing layer in GeoPacakge to apply user supplied edits to.
-#' @param df_to_edit_not_sf Data frame representing layer in GeoPackage with sf geometry object dropped.
+#' \code{edit_data_frame} applies user edits to a DataTables object
+#' in a browser to the underlying (spatial) data frame.
+#'
+#' @param tmp_edits Data frame recording user supplied edits (derived from
+#'  editing DataTables object in the UI).
+#' @param df_to_edit Data frame or spatial data frame (sf) representing the layer in
+#'  GeoPackage to apply user edits to.
+#' @param df_to_edit_not_sf Data frame representing the layer in GeoPackage with the sf
+#'  geometry object dropped.
 #' @param layer Name of layer that edits are being applied to.
 #'
+#' @return A two-element list. The first element is the data frame with edits
+#'  applied to it. The second element is a log recording the status of attempts
+#'  to apply user edits to the underlying data frame object.
+#'
+#' @export
 
 edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
   log <- c()
@@ -74,7 +85,6 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
           } else {
             "error casting user supplied value to POSIXct"
           }
-          
         }
       )
     } else {

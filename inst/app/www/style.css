@@ -11,7 +11,8 @@ body {
 }
 
 .shiny-notification {
-  position:fixed;
+  z-index: 800;
+  position: fixed;
   top: calc(50%);
   left: calc(50%);
 }
@@ -44,7 +45,7 @@ body {
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #ecf0f1
+  background-color: #f8f9fa
 }
 
 .leaflet-map-pane {

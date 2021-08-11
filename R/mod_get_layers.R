@@ -1,13 +1,12 @@
 #' get_layers UI
 #'
-#' @description Generate UI for file upload.
+#' @description Generate UI for file upload using shiny's \code{fileInput}.
 #'
 #' @param id inputID for file upload UI component.
 #' @param label label for file upload widget on the UI.
 #' @param multiple logical, whether to accept multiple file uploads.
 #' @param accept file types to accept - vector of strings indicating extensions or MIME type
 #'
-#' @return
 #' @export
 #'
 mod_get_layers_UI <- function(id, label, multiple, accept) {
@@ -31,11 +30,12 @@ mod_get_layers_UI <- function(id, label, multiple, accept) {
 #' @param output
 #' @param session
 #'
-#' @return field_layers - a data frame with three columns: layers = table / layer name;
-#'   layer_disp_name = clean and informative table / layer name for select
-#'   input; file_path = temporary file path to data; and file_type = file type.
-#' @export
+#' @return \code{field_layers} tibble with three columns: layers - layer name;
+#'   layer_disp_name - clean and informative layer name for select
+#'   input; file_path - temporary file path to data; and file_type - file type.
 #'
+#' @export
+
 mod_get_layers_Server <- function(id) {
   moduleServer(id, function(input, output, session) {
     field_layers <- reactive({

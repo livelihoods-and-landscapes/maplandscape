@@ -2,18 +2,18 @@
 % Please edit documentation in R/fct_read_tables.R
 \name{read_tables}
 \alias{read_tables}
-\title{Import a table - either spatial a table (i.e. a table in a GeoPackage) or csv file.}
+\title{Read tabular data - either spatial layer (i.e. a table in a GeoPackage) or csv file.}
 \usage{
 read_tables(uploads, lyr)
 }
 \arguments{
-\item{uploads}{Data frame generated from \code{list_layers} indicating names, file types, and paths to files uploaded tables.}
+\item{uploads}{Data frame generated from \code{list_layers} indicating names, file types, and paths to uploaded layers.}
 
-\item{lyr}{User selected layer - this is used for selecting the relevant layer from a GeoPackage with many tables.}
+\item{lyr}{User selected layer - this is used for selecting the relevant layer from a GeoPackage with many layers.}
 }
 \value{
-Table - data frame or spatial table (of class \code{sf}) of the user selected layer.
+a (spatial) data frame of the selected layer.
 }
 \description{
-Import a table - either spatial a table (i.e. a table in a GeoPackage) or csv file.
+Read tabular data - either spatial layer (i.e. a table in a GeoPackage) or csv file.
 }

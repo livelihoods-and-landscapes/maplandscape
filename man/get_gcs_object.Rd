@@ -20,6 +20,6 @@ two element list. First element is the path to where the GeoPackage
   element is the file name to display to users when selecting the GeoPackage.
 }
 \description{
-Makes a request to a user specified Google Cloud Storage bucket to get object
+Makes a request to a user specified Google Cloud Storage bucket to get an object
 (GeoPackage) in the bucket.
 }

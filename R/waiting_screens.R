@@ -1,36 +1,37 @@
+
 # waiting screen spinners
 
-map_screen <- tagList(
+map_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Drawing map...")
+  shiny::h4("Drawing map...")
 )
 
-join_screen <- tagList(
+join_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Joining tables...")
+  shiny::h4("Joining tables...")
 )
 
-sync_screen <- tagList(
+sync_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Syncing forms...")
+  shiny::h4("Syncing forms...")
 )
 
-resize_screen <- tagList(
+resize_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Resizing...")
+  shiny::h4("Resizing...")
 )
 
-delete_screen <- tagList(
+delete_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Removing rows...")
+  shiny::h4("Removing rows...")
 )
 
-edit_screen <- tagList(
+edit_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Saving edits...")
+  shiny::h4("Saving edits...")
 )
 
-sync_edit_screen <- tagList(
+sync_edit_screen <- shiny::tagList(
   waiter::spin_flower(),
-  h4("Syncing edits...")
+  shiny::h4("Syncing edits...")
 )

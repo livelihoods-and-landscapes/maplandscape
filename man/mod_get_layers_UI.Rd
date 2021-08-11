@@ -15,9 +15,6 @@ mod_get_layers_UI(id, label, multiple, accept)
 
 \item{accept}{file types to accept - vector of strings indicating extensions or MIME type}
 }
-\value{
-
-}
 \description{
-Generate UI for file upload.
+Generate UI for file upload using shiny's \code{fileInput}.
 }

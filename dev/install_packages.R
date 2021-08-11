@@ -1,4 +1,5 @@
 renv::install( "devtools" )
+renv::install( "pkgdown" )
 renv::install( "shiny" )
 renv::install( "bslib" )
 renv::install( "shinythemes" )

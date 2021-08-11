@@ -1,12 +1,13 @@
 #' List Google Cloud Storage buckets
 #'
-#' Makes a request to a user specified Google Cloud Storage bucket to get an object
-#' (GeoPackage) in the bucket.
+#' Makes a request to a user specified Google Cloud project to list storage bucekts
 #'
 #' @param token an OAuth2.0 token which allows a user to make authenticated HTTP
 #'   requests to the Google Cloud Storage API.
 #'
 #' @return vector of bucket names.
+#'
+#' @export
 
 list_gcs_buckets <- function(token, project_id) {
 

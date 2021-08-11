@@ -12,13 +12,13 @@ list_layers(f_path, f_name)
 \item{f_name}{A character vector of file names of GeoPackage(s) uploaded by the user.}
 }
 \value{
-A tibble with three columns: layers = table / layer name;
-  layer_disp_name = clean and informative table / layer name for select
-  input; file_path = temporary file path to data; and file_type = file type.
+A tibble with three columns: layers - layer name;
+  layer_disp_name - clean and informative layer name for select
+  input; file_path - temporary file path to data; and file_type - file type.
 }
 \description{
-\code{list_layers} returns the name and path to tables / layers from data
-uploaded to the application as a tibble object. If a GeoPackage is uploaded which
-contains more than one table, each table and the path to that table will be
+\code{list_layers} returns the name and path to layers from data
+uploaded to the application as a tibble (data frame like object). If a GeoPackage is uploaded which
+contains more than one layer, each layer and the path to that layer will be
 recorded on a separate row of the returned tibble.
 }

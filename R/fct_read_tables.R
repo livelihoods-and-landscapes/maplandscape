@@ -1,9 +1,11 @@
-#' Import a table - either spatial a table (i.e. a table in a GeoPackage) or csv file.
+#' Read tabular data - either spatial layer (i.e. a table in a GeoPackage) or csv file.
 #'
-#' @param uploads Data frame generated from \code{list_layers} indicating names, file types, and paths to files uploaded tables.
-#' @param lyr User selected layer - this is used for selecting the relevant layer from a GeoPackage with many tables.
+#' @param uploads Data frame generated from \code{list_layers} indicating names, file types, and paths to uploaded layers.
+#' @param lyr User selected layer - this is used for selecting the relevant layer from a GeoPackage with many layers.
 #'
-#' @return Table - data frame or spatial table (of class \code{sf}) of the user selected layer.
+#' @return  a (spatial) data frame of the selected layer.
+#'
+#' @export
 
 read_tables <- function(uploads, lyr) {
   req(uploads, lyr)

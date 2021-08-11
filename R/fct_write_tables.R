@@ -4,6 +4,7 @@
 #' @param gpkg_dir Data frame generated from \code{list_layers} indicating names, file types, and paths to files uploaded tables.
 #' @param lyr User selected layer - this is used for selecting the relevant layer from a GeoPackage with many tables.
 #'
+#' @export
 
 write_tables <- function(df, gpkg_dir, lyr) {
   req(gpkg_dir, lyr)

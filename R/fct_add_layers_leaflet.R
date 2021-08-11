@@ -1,17 +1,21 @@
-#' Add layer to \code{Leaflet} web map
+#' Add layer to a Leaflet web map
 #'
 #' \code{add_layers_leaflet} adds a user selected spatial layer to a Leaflet web
-#' map. \code{sf} \code{POINT}, \code{LINESTRING}, \code{MULTILINESTRING}, \code{POLYGON}, \code{MULITPOLYGON}
+#' map. sf data frames with \code{POINT}, \code{LINESTRING}, \code{MULTILINESTRING}, \code{POLYGON}, \code{MULITPOLYGON}
 #' geometries can be added to the web map.
 #'
-#' @param in_df A \code{sf} data frame object that is displayed on the leaflet
-#'   web map.
-#' @param layer_id The layerId of the feature selected by the user.
-#' @param label_vars The variables from \code{in_df} selected to be displayed in
-#'   the popup.
+#' @param map_object single-element character vector of the ID of the Leaflet map object.
+#' @param map_active_df the spatial data frame containing features to draw on the Leaflet map object.
+#' @param map_var the column in \code{map_active_df} to map fill / marker colours to data values when drawing the features.
+#' @param map_colour fill colour palette - RColorBrewer palettes such as \code{"YlOrRd"}.
+#' @param opacity feature opacity - numeric value between 0 and 1.
+#' @param map_line_width stroke width for line and polygon features.
+#' @param map_line_colour stroke colour for line and polygon features.
+#' @param waiter waiter object to display while map is rendering.
 #'
-#' @return \code{popup_text} a html popup label to be displayed on the
-#'   \code{Leaflet} web map.
+#' @return Leaflet proxy object.
+#'
+#' @wxport
 #'
 #' @importFrom magrittr %>%
 

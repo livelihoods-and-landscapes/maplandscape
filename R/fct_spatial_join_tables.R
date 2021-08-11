@@ -1,21 +1,21 @@
-#' Spatial join of two tables or layers
+#' Spatial join of two layers
 #'
-#' Perform a spatial inner join or left join operation on two tables based on
-#' largest intersection between spatial features in two tables. Spatial joins
-#' performed using \code{\link[sf]{st_join}}.
+#' Perform a spatial inner join or left join operation on two layers based on
+#' largest intersection between spatial features. Spatial joins are performed
+#' using sf's \code{st_join}.
 #'
-#' Geometries of both spatial tables are checked for validity (using
-#' \code{\link[sf]{st_is_valid}}) and that they are not empty (using
-#' \code{\link[sf]{st_is_empty}}). Invalid geometries are dropped before
-#' performing spatial join.
+#' Geometries of both spatial tables are checked for validity (using sf's
+#' \code{st_is_valid}) and that they are not empty (using sf's
+#' \code{st_is_empty}). Invalid geometries are dropped before performing spatial
+#' joins.
 #'
 #' @param f_left Left table in spatial joins.
 #' @param f_right Right table in spatial joins.
 #' @param j_type A character specifying the type of join to perform. Options for
 #'   spatial joins include inner and left joins.
 #'
-#' @return \code{j_df} A table of class \code{sf} (i.e. spatial features)
-#'   returned by the spatial join.
+#' @return \code{j_df} A layer of class sf (i.e. spatial features and attribute
+#'   columns) returned by the spatial join.
 #'
 
 spatial_join_tables <- function(f_left, f_right, j_type) {

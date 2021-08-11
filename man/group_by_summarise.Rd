@@ -7,20 +7,20 @@
 group_by_summarise(in_df, group_var, summ_var)
 }
 \arguments{
-\item{in_df}{A table / layer (spatial or non-spatial) to summarise.}
+\item{in_df}{A layer (spatial or non-spatial data frame) to summarise.}
 
-\item{group_var}{A character vector of variable names to group by - uses
-\code{\link[dplyr]{group_by}}.}
+\item{group_var}{A character vector of column names to group by - uses
+dplyr's \code{group_by} function.}
 
-\item{summ_var}{A character vector of variable names to summarise - uses
-\code{\link[dplyr]{summarise}}. For all numeric variables the mean and sum
-are computed. For numeric and non-numeric variables the count of
+\item{summ_var}{A character vector of columns names to compute grouped summary statistics for - uses
+dplyr's \code{summarise}. For all numeric columns the mean and sum
+are computed. For numeric and non-numeric columns the count of
 observations within each group is returned.}
 }
 \value{
-A summary table as a data frame (\code{s_df}) object.
+a summary table as a data frame (\code{s_df}) object.
 }
 \description{
 Performs group by and summarise operations on user selected grouping
-variables and variables to compute summary statistics within a group.
+columns and compute summary statistics within the group.
 }

@@ -14,6 +14,5 @@ requests to the Google Cloud Storage API.}
 vector of bucket names.
 }
 \description{
-Makes a request to a user specified Google Cloud Storage bucket to get an object
-(GeoPackage) in the bucket.
+Makes a request to a user specified Google Cloud project to list storage bucekts
 }

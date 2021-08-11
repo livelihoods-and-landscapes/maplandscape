@@ -1,30 +1,31 @@
 #' Sync data collected using QField mobile GIS
 #'
-#' \code{sync_forms} syncs data stored in GeoPackages collected to a template GeoPackage database or the initial "clean" QGS
-#' project.
+#' \code{sync_forms} syncs layers stored in GeoPackages to a template GeoPackage database or the initial "clean" QGS
+#' project GeoPackage.
 #'
 #' @param template A data frame of the format returned by
-#'   \code{\link[shiny]{fileInput}}. This data frame stores the path of a single
+#'   shiny's \code{fileInput}. This data frame stores the path of a single
 #'   GeoPackage which can either be a central database that data collected in
 #'   the field is synced to or the "clean" QGS project with no data and an empty
-#'   GeoPackage with the same tables as the uploaded forms.
+#'   GeoPackage with the same layers as the uploaded forms.
 #'
 #' @param forms A data frame of the format returned by
-#'   \code{\link[shiny]{fileInput}}.
+#'   shiny's \code{fileInput}.
 #'
 #' @return A four element list \code{out_gpkg}, The first element is the path
 #'   to a temporary GeoPackage storing data from \code{forms} synced with \code{
 #'   template}. The second element is the date-time of the call to
 #'   \code{sync_forms} - this is used for naming downloads of synced data. The
 #'   third element is a data frame of the format returned by
-#'   \code{\link[shiny]{fileInput}} listing all layers returned from syncing
+#'   shiny's \code{fileInput} listing all layers returned from syncing
 #'   \code{forms} with \code{template}. The fourth element is a path to a
 #'   log file.
+#'
+#' @export
 
 
 ### TO-DOs
 ### check for duplicate geometries
-
 
 sync_forms <- function(template, forms) {
   template_layers <- template$layers
@@ -92,8 +93,7 @@ sync_forms <- function(template, forms) {
         crs_template_df <- sf::st_crs(template_df)
         lyr <- template$layers[i]
         template_colnames <- colnames(template_df)
-      }
-      else if (any(class(template_df) == "data.frame")) {
+      } else if (any(class(template_df) == "data.frame")) {
         lyr <- template$layers[i]
         template_colnames <- colnames(template_df)
       } else if (any(class(template_df) == "character")) {
@@ -141,8 +141,7 @@ sync_forms <- function(template, forms) {
             form_df <- form_df %>%
               sf::st_transform(crs = crs_template_df)
             form_colnames <- colnames(form_df)
-          }
-          else if (any(class(form_df) == "data.frame")) {
+          } else if (any(class(form_df) == "data.frame")) {
             form_colnames <- colnames(form_df)
           } else if (any(class(form_df) == "character")) {
             readr::write_lines(

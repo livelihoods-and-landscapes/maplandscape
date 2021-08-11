@@ -1,13 +1,13 @@
-#' Join two tables or layers
+#' Join two layers
 #'
-#' Perform an inner join or left join operation on two tables based on *n*
+#' Perform an inner join or left join operation on two ;ayers based on *n*
 #' number of primary and foreign keys. Perform joins using
-#' \code{\link[dplyr]{inner_join}} and \code{\link[dplyr]{left_join}}.
+#'  dplyr's inner_join and left_join functions.
 #'
 #' Primary and foreign keys are converted to character vectors before joining.
 #'
-#' @param f_left Table with primary keys and left table in joins.
-#' @param f_right Table with foreign keys and right table in joins. For
+#' @param f_left Layer with primary keys and left table in joins.
+#' @param f_right Layer with foreign keys and right table in joins. For
 #'   non-spatial joins this must be a non-spatial data frame - if it is a spatial
 #'   table it will be converted to non-spatial.
 #' @param pk A character vector of primary keys. The primary and foreign keys do
@@ -16,9 +16,11 @@
 #'   not need to have the same names but the order of the keys matters.
 #' @param j_type A string specifying the type of join to perform.
 #'
-#' @return \code{j_df} A table joined on primary and foreign keys. Will be of
-#'   class \code{sf} (i.e. spatial features) if f_left is spatial and of class
+#' @return \code{j_df} A layer joined on primary and foreign keys. Will be of
+#'   class sf (i.e. spatial features) if f_left is spatial and of class
 #'   sf. Otherwise returns a data frame.
+#'
+#' @export
 
 join_tables <- function(f_left, f_right, j_type, pk, fk) {
   if (j_type == "col_inner") {
