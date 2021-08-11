@@ -1,4 +1,5 @@
 library(shiny)
+library(maplandscape)
 
 options(shiny.maxRequestSize = 5000 * 1024^2)
 

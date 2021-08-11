@@ -39,5 +39,6 @@ Imports:
     xfun
 RoxygenNote: 7.1.1
 Suggests: 
-    knitr
+    knitr,
+    shinytest
 VignetteBuilder: knitr
