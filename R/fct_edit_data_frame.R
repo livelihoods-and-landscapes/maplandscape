@@ -1,15 +1,16 @@
-#' Apply edits from user to layers in a GeoPackage
+#' Edits layers in a GeoPackage
 #'
-#' \code{edit_data_frame} applies user edits to a DataTables object
-#' in a browser to the underlying (spatial) data frame.
+#' \code{edit_data_frame} applies edits that a user has made to data rendered in a \href{https://rstudio.github.io/DT/}{DataTables} object
+#' in a web browser to the underlying (\href{https://r-spatial.github.io/sf/index.html}{sf}) data frame on the server.
 #'
-#' @param tmp_edits Data frame recording user supplied edits (derived from
-#'  editing DataTables object in the UI).
-#' @param df_to_edit Data frame or spatial data frame (sf) representing the layer in
-#'  GeoPackage to apply user edits to.
-#' @param df_to_edit_not_sf Data frame representing the layer in GeoPackage with the sf
-#'  geometry object dropped.
-#' @param layer Name of layer that edits are being applied to.
+#' This function is designed to be used in Shiny applications to support interactive cleaning of attribute data in GeoPackages.
+#'
+#' @param tmp_edits data frame storing the edits that a user has made to values in a \href{https://rstudio.github.io/DT/}{DataTables} object in their UI.
+#' @param df_to_edit Data frame or spatial data frame (\href{https://r-spatial.github.io/sf/index.html}{sf}) representing the layer in
+#'  GeoPackage that is rendered in the \href{https://rstudio.github.io/DT/}{DataTables} object which the user edits will be applied to.
+#' @param df_to_edit_not_sf Data frame representing the layer in GeoPackage (i.e. \code{df_to_edit}) with the \href{https://r-spatial.github.io/sf/index.html}{sf}
+#'  geometry object dropped (this can be done using \link[sf]{st_drop_geometry}).
+#' @param layer single element character vector of the name of layer in the GeoPackage that edits are applied to.
 #'
 #' @return A two-element list. The first element is the data frame with edits
 #'  applied to it. The second element is a log recording the status of attempts
@@ -105,5 +106,6 @@ edit_data_frame <- function(tmp_edits, df_to_edit, df_to_edit_not_sf, layer) {
   edits_out <- vector(mode = "list", length = 2)
   edits_out[[1]] <- df_to_edit
   edits_out[[2]] <- log
+
   edits_out
 }

@@ -2,17 +2,17 @@
 % Please edit documentation in R/fct_add_popups.R
 \name{add_popups}
 \alias{add_popups}
-\title{Add popup label when feature is clicked on a Leaflet web map}
+\title{Add a popup label when a feature is clicked on a Leaflet web map}
 \usage{
 add_popups(in_df, layer_id, label_vars)
 }
 \arguments{
-\item{in_df}{A sf data frame object that is displayed on the Leaflet web
+\item{in_df}{an \href{https://r-spatial.github.io/sf/index.html}{sf} data frame object that is displayed on the \link[leaflet]{leaflet} web
 map.}
 
-\item{layer_id}{The layerId of the feature selected by the user.}
+\item{layer_id}{The \code{layerId} of the feature selected / clicked on by the user.}
 
-\item{label_vars}{The column from \code{in_df} selected to be displayed in
+\item{label_vars}{The column(s) from \code{in_df} selected to be displayed in
 the popup.}
 }
 \value{
@@ -21,6 +21,6 @@ web map.
 }
 \description{
 \code{add_popups} creates a popup label containing values of selected
-columns for a feature selected through an on-click event on a Leaflet
+columns for a feature selected through an on-click event on a \link[leaflet]{leaflet}
 web map.
 }

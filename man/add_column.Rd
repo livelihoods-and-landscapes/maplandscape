@@ -2,26 +2,30 @@
 % Please edit documentation in R/fct_add_column.R
 \name{add_column}
 \alias{add_column}
-\title{Add column to a (spatial) data frame as a function of values in other columns}
+\title{Add column to a (spatial) data frame}
 \usage{
 add_column(mutate_df, mutate_conditions, col_name)
 }
 \arguments{
-\item{mutate_df}{A (spatial) data frame to add a column to using dplyr's
-\code{mutate} function.}
+\item{mutate_df}{a (spatial -
+\href{https://r-spatial.github.io/sf/index.html}{sf}) data frame to add a
+column to using dplyr's \link[dplyr]{mutate} function.}
 
-\item{mutate_conditions}{Conditions used to compute values for the new column
-based on values of existing columns in \code{mutate_df}.}
+\item{mutate_conditions}{a single element character vector of operations used
+to compute values for the new column based on values of existing columns in
+\code{mutate_df}.}
 
 \item{col_name}{name of new column to add to \code{mutate_df}.}
 }
 \value{
-appends a new column to \code{mutate_df}
+appends a new column to \code{mutate_df}.
 }
 \description{
-Add a column to a (spatial) data frame using dplyr's \code{mutate} function.
-The values of the new column will be computed by applying operations to
-values in existing columns. For example, \code{new_column = old_column > 30}
-will create a new column \code{new_column} of type LOGICAL with values of
-\code{TRUE} where \code{old_column} is greater than 30.
+Add a column to a (spatial -
+\href{https://r-spatial.github.io/sf/index.html}{sf}) data frame using dplyr's
+\link[dplyr]{mutate} function. The values of the new column will be computed
+by applying operations to values in existing columns. For example,
+\code{new_column = old_column > 30} will create a new column
+\code{new_column} of type LOGICAL with values of \code{TRUE} where
+\code{old_column} is greater than 30.
 }

@@ -2,21 +2,20 @@
 % Please edit documentation in R/fct_edit_data_frame.R
 \name{edit_data_frame}
 \alias{edit_data_frame}
-\title{Apply edits from user to layers in a GeoPackage}
+\title{Edits layers in a GeoPackage}
 \usage{
 edit_data_frame(tmp_edits, df_to_edit, df_to_edit_not_sf, layer)
 }
 \arguments{
-\item{tmp_edits}{Data frame recording user supplied edits (derived from
-editing DataTables object in the UI).}
+\item{tmp_edits}{data frame storing the edits that a user has made to values in a \href{https://rstudio.github.io/DT/}{DataTables} object in their UI.}
 
-\item{df_to_edit}{Data frame or spatial data frame (sf) representing the layer in
-GeoPackage to apply user edits to.}
+\item{df_to_edit}{Data frame or spatial data frame (\href{https://r-spatial.github.io/sf/index.html}{sf}) representing the layer in
+GeoPackage that is rendered in the \href{https://rstudio.github.io/DT/}{DataTables} object which the user edits will be applied to.}
 
-\item{df_to_edit_not_sf}{Data frame representing the layer in GeoPackage with the sf
-geometry object dropped.}
+\item{df_to_edit_not_sf}{Data frame representing the layer in GeoPackage (i.e. \code{df_to_edit}) with the \href{https://r-spatial.github.io/sf/index.html}{sf}
+geometry object dropped (this can be done using \link[sf]{st_drop_geometry})..}
 
-\item{layer}{Name of layer that edits are being applied to.}
+\item{layer}{single element character vector of the name of layer in the GeoPackage that edits are applied to.}
 }
 \value{
 A two-element list. The first element is the data frame with edits
@@ -24,6 +23,9 @@ A two-element list. The first element is the data frame with edits
  to apply user edits to the underlying data frame object.
 }
 \description{
-\code{edit_data_frame} applies user edits to a DataTables object
-in a browser to the underlying (spatial) data frame.
+\code{edit_data_frame} applies edits that a user has made to data rendered in a \href{https://rstudio.github.io/DT/}{DataTables} object
+in a web browser to the underlying (\href{https://r-spatial.github.io/sf/index.html}{sf}) data frame on the server.
+}
+\details{
+This function is designed to be used in Shiny applications to support interactive cleaning of attribute data in GeoPackages.
 }

@@ -1,12 +1,12 @@
-#' Get GeoPackages from Google Cloud Storage bucket
+#' Get GeoPackages from a Google Cloud Storage bucket
 #'
 #' Makes a request to a user specified Google Cloud Storage bucket to get an object
 #' (GeoPackage) in the bucket.
 #'
 #' @param token an OAuth2.0 token which allows a user to make authenticated HTTP
 #'   requests to the Google Cloud Storage API.
-#' @param bucket name of Google Cloud Storage bucket.
-#' @param object name of GeoPackage to get.
+#' @param bucket single element character vector of the name of Google Cloud Storage bucket.
+#' @param object single element character vector of the name of GeoPackage to get.
 #'
 #' @return two element list. First element is the path to where the GeoPackage
 #'   has been written or character vector with an error message. The second

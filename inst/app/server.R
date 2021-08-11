@@ -687,14 +687,14 @@ app_server <- function(input, output, session) {
           "Filter conditions must be specified using dplyr syntax. Some tips:"
         ),
         tags$ul(
-          tags$li("Quotes for strings - \"string\""),
-          tags$li("Escape apostrophes within strings - \"vava\\'u\""),
+          tags$li("Quotes for strings ~ \"string\""),
+          tags$li("Escape apostrophes within strings ~ \"vava\\'u\""),
           tags$li("Specify column names without quotes"),
-          tags$li("== - equal to"),
-          tags$li("!= - not equal to"),
-          tags$li("<, >, <=, >= - greater than / less than comparisons"),
-          tags$li("& - and"),
-          tags$li("| - or")
+          tags$li("== ~ equal to"),
+          tags$li("!= ~ not equal to"),
+          tags$li("<, >, <=, >= ~ greater than / less than comparisons"),
+          tags$li("& ~ and"),
+          tags$li("| ~ or")
         ),
         tags$p("Example: crop_number > 25"),
         tags$p("Example: island == \"vava\'u\""),
@@ -750,7 +750,6 @@ app_server <- function(input, output, session) {
     req(input$filter_conditions)
 
     filter_df <- isolate(filter_df())
-
     filter_out <- filter_rows(filter_df, input$filter_conditions)
 
     # catch cases when the user does not provide a layer name for the output
@@ -798,6 +797,8 @@ app_server <- function(input, output, session) {
       return()
     }
 
+    # filter_rows() should return an object of class data frame
+    # sf objects extend class data frame
     if ("data.frame" %in% class(filter_out) & filter_out != "filter error") {
       app_data$joined_df[[input$filter_tbl_name]] <- filter_out
       shiny::showNotification(
@@ -897,29 +898,6 @@ app_server <- function(input, output, session) {
 
     mutate_out <- add_column(mutate_df, input$mutate_conditions, col_name)
 
-    # mutate_expr <- tryCatch(
-    #   error = function(cnd) {
-    #     "mutate error"
-    #   },
-    #   {
-    #     mutate_expr <-
-    #       call2(
-    #         dplyr::mutate,
-    #         rlang::parse_expr("mutate_df"),
-    #         !!col_name := parse_expr(input$mutate_conditions)
-    #       )
-    #   }
-    # )
-    #
-    # mutate_out <- tryCatch(
-    #   error = function(cnd) {
-    #     "mutate error"
-    #   },
-    #   {
-    #     mutate_out <- eval(mutate_expr)
-    #   }
-    # )
-
     # catch cases when the user does not provide a column name
     if (nchar(input$col_name) < 1) {
       shiny::showNotification(
@@ -965,6 +943,8 @@ app_server <- function(input, output, session) {
       return()
     }
 
+    # add_column() should return an object of class data frame
+    # sf objects extend class data frame
     if ("data.frame" %in% class(mutate_out)) {
       if (any(jdf == input$table_mutate)) {
         # update joined_df object with new column

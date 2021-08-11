@@ -1,22 +1,23 @@
-#' Add layer to \code{Leaflet} web map - no zoom
+#' Add layer to a Leaflet web map - no zoom
 #'
-#' \code{add_layers_leaflet} adds a user selected spatial layer to a Leaflet web
-#' map. \code{sf} \code{POINT}, \code{LINESTRING}, \code{MULTILINESTRING},
-#' \code{POLYGON}, \code{MULITPOLYGON} geometries can be added to the web map.
+#' \code{add_layers_leaflet} adds a spatial layer (of class \href{https://r-spatial.github.io/sf/index.html}{sf}) to a \link[leaflet]{leaflet} web
+#' map. \href{https://r-spatial.github.io/sf/index.html}{sf} data frames with \code{POINT}, \code{LINESTRING}, \code{MULTILINESTRING}, \code{POLYGON}, \code{MULITPOLYGON}
+#' geometries can be added to the web map.
+#'
 #' Calling this function does not change the zoom or extent of the Leaflet map
 #' to fit the contents drawn on the map. Used for keeping the zoom extent the
-#' same but updating colour and opacity.
+#' same but updating colour, opacity, and other styling options.
 #'
-#' @param map_object single-element character vector of the ID of the Leaflet map object.
-#' @param map_active_df the spatial data frame containing features to draw on the Leaflet map object.
-#' @param map_var the column in \code{map_active_df} to map fill / marker colours to data values when drawing the features.
-#' @param map_colour fill colour palette - RColorBrewer palettes such as \code{"YlOrRd"}.
+#' @param map_object single-element character vector of the ID of the \link[leaflet]{leaflet} map object.
+#' @param map_active_df the spatial data frame (of class \href{https://r-spatial.github.io/sf/index.html}{sf}) of features to draw on the \link[leaflet]{leaflet} map.
+#' @param map_var the column in \code{map_active_df} of data values to map fill / marker colours to when drawing the features.
+#' @param map_colour fill colour palette - \href{https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf}{RColorBrewer} palettes such as \code{"YlOrRd"}.
 #' @param opacity feature opacity - numeric value between 0 and 1.
 #' @param map_line_width stroke width for line and polygon features.
 #' @param map_line_colour stroke colour for line and polygon features.
-#' @param waiter waiter object to display while map is rendering.
+#' @param waiter \href{https://waiter.john-coene.com/#/}{waiter} object to display while the map is rendering.
 #'
-#' @return Leaflet proxy object.
+#' @return \link[leaflet]{leaflet} proxy object.
 #'
 #' @wxport
 #'
