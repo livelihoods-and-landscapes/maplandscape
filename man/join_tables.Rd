@@ -7,29 +7,29 @@
 join_tables(f_left, f_right, j_type, pk, fk)
 }
 \arguments{
-\item{f_left}{Layer with primary keys and left table in joins.}
+\item{f_left}{layer with primary keys and left table in joins.}
 
-\item{f_right}{Layer with foreign keys and right table in joins. For
+\item{f_right}{layer with foreign keys and right table in joins. For
 non-spatial joins this must be a non-spatial data frame - if it is a spatial
-table it will be converted to non-spatial.}
+data frame (i.e. of class \href{https://r-spatial.github.io/sf/index.html}{sf}) it will be converted to non-spatial.}
 
-\item{j_type}{A string specifying the type of join to perform.}
+\item{j_type}{a string specifying the type of join to perform. \code{"col_inner"} specifies an inner join and \code{"col_left"} specifies a left join.}
 
-\item{pk}{A character vector of primary keys. The primary and foreign keys do
+\item{pk}{a character vector of primary keys. The primary and foreign keys do
 not need to have the same names but the order of the keys matters.}
 
-\item{fk}{A character vector of foreign keys. The primary and foreign keys do
+\item{fk}{a character vector of foreign keys. The primary and foreign keys do
 not need to have the same names but the order of the keys matters.}
 }
 \value{
 \code{j_df} A layer joined on primary and foreign keys. Will be of
-  class sf (i.e. spatial features) if f_left is spatial and of class
-  sf. Otherwise returns a data frame.
+  class \href{https://r-spatial.github.io/sf/index.html}{sf}(i.e. spatial features) if f_left is spatial and of class
+  \href{https://r-spatial.github.io/sf/index.html}{sf}. Otherwise returns a data frame.
 }
 \description{
-Perform an inner join or left join operation on two ;ayers based on *n*
+Perform an inner join or left join operation on two layers based on \emph{n}
 number of primary and foreign keys. Perform joins using
- dplyr's inner_join and left_join functions.
+ dplyr's \link[dplyr]{inner_join} and \link[dplyr]{left_join} functions.
 }
 \details{
 Primary and foreign keys are converted to character vectors before joining.

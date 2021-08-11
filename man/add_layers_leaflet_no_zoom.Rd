@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_add_layers_leaflet_no_zoom.R
 \name{add_layers_leaflet_no_zoom}
 \alias{add_layers_leaflet_no_zoom}
-\title{Add layer to a Leaflet web map - no zoom on laod}
+\title{Add layer to a Leaflet web map - no zoom}
 \usage{
 add_layers_leaflet_no_zoom(
   map_object,

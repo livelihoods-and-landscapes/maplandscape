@@ -7,20 +7,24 @@
 group_by_summarise(in_df, group_var, summ_var)
 }
 \arguments{
-\item{in_df}{A layer (spatial or non-spatial data frame) to summarise.}
+\item{in_df}{a layer (spatial
+(\href{https://r-spatial.github.io/sf/index.html}{sf}) or non-spatial data
+frame) to summarise.}
 
-\item{group_var}{A character vector of column names to group by - uses
-dplyr's \code{group_by} function.}
+\item{group_var}{a character vector of column names to group by - uses
+dplyr's \link[dplyr]{group_by} function.}
 
-\item{summ_var}{A character vector of columns names to compute grouped summary statistics for - uses
-dplyr's \code{summarise}. For all numeric columns the mean and sum
-are computed. For numeric and non-numeric columns the count of
-observations within each group is returned.}
+\item{summ_var}{A character vector of columns names to compute grouped
+summary statistics for - uses dplyr's \link[dplyr]{summarise}. For all
+numeric columns the mean and sum are computed. For numeric and non-numeric
+columns the count of observations within each group is returned.}
 }
 \value{
 a summary table as a data frame (\code{s_df}) object.
 }
 \description{
-Performs group by and summarise operations on user selected grouping
-columns and compute summary statistics within the group.
+Perform group by and summarise operations on selected grouping columns and
+compute summary statistics within each group. This function uses dplyr's
+\link[dplyr]{group_by} function for creating groups within the data frame and
+\link[dplyr]{summarise} for computing summary statistics.
 }

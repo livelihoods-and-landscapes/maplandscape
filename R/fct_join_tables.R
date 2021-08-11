@@ -73,7 +73,6 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
       pkk <- p
       f_left[[pkk]] <- as.character(f_left[[pkk]])
     }
-    print(str(f_left))
 
     for (f in fk) {
       fkk <- f

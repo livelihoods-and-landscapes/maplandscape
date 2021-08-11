@@ -1,5 +1,4 @@
-library(shiny)
-library(maplandscape)
+
 
 navbarPage(
   theme = bslib::bs_theme(bootswatch = "minty"),

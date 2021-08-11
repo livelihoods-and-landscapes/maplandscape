@@ -103,7 +103,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
       } else if (geometry_type == "MULTIPOINT") {
 
         # cast MULTIPOINT to POINT as Leaflet does not support multipoint
-        map_df <- st_cast(map_df, "POINT")
+        map_df <- sf::st_cast(map_df, "POINT")
 
         proxy_map <- leaflet::leafletProxy(map_object, data = map_df) %>%
           leaflet::clearControls() %>%
@@ -112,7 +112,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
           leaflet::addPolylines(
             data = map_df,
             layerId = map_df$layer_id,
-            options = markerOptions(clickable = TRUE)
+            options = leaflet::markerOptions(clickable = TRUE)
           ) %>%
           leaflet::fitBounds(bbox[1], bbox[2], bbox[3], bbox[4])
       } else if (geometry_type == "POINT") {

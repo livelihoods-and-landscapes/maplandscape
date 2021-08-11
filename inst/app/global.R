@@ -1,3 +1,6 @@
+library(magrittr)
+library(shiny)
+
 # Google OAuth2.0 app
 if (interactive()) {
   # testing url

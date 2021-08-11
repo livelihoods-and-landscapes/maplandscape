@@ -13,7 +13,7 @@ edit_data_frame(tmp_edits, df_to_edit, df_to_edit_not_sf, layer)
 GeoPackage that is rendered in the \href{https://rstudio.github.io/DT/}{DataTables} object which the user edits will be applied to.}
 
 \item{df_to_edit_not_sf}{Data frame representing the layer in GeoPackage (i.e. \code{df_to_edit}) with the \href{https://r-spatial.github.io/sf/index.html}{sf}
-geometry object dropped (this can be done using \link[sf]{st_drop_geometry})..}
+geometry object dropped (this can be done using \link[sf]{st_drop_geometry}).}
 
 \item{layer}{single element character vector of the name of layer in the GeoPackage that edits are applied to.}
 }

@@ -4,13 +4,14 @@
 #' @param gpkg_dir Data frame generated from \code{list_layers} indicating names, file types, and paths to files uploaded tables.
 #' @param lyr User selected layer - this is used for selecting the relevant layer from a GeoPackage with many tables.
 #'
+#' @import shiny
 #' @export
 
 write_tables <- function(df, gpkg_dir, lyr) {
   req(gpkg_dir, lyr)
 
   a_lyr <- gpkg_dir %>%
-    dplyr::filter(layer_disp_name_idx == lyr)
+    dplyr::filter(gpkg_dir[["layer_disp_name_idx"]] == lyr)
 
   sf::st_write(
     obj = df,

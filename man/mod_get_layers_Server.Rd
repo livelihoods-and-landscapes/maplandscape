@@ -7,7 +7,7 @@
 mod_get_layers_Server(id)
 }
 \arguments{
-\item{session}{}
+\item{id}{inputID to correspond to file upload UI component.}
 }
 \value{
 \code{field_layers} tibble with three columns: layers - layer name;

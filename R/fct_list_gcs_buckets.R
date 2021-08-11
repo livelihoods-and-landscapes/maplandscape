@@ -4,6 +4,7 @@
 #'
 #' @param token an OAuth2.0 token which allows a user to make authenticated HTTP
 #'   requests to the Google Cloud Storage API.
+#' @param project_id single element character vector of Google Cloud project id.
 #'
 #' @return vector of bucket names.
 #'

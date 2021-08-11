@@ -1,4 +1,6 @@
 #' @export
+#' @import shiny
+#' @noRd
 mod_multiple_input_UI <- function(id, label) {
   tagList(
     selectInput(NS(id, "multiple_input"), label, choices = NULL, multiple = TRUE)
@@ -6,6 +8,8 @@ mod_multiple_input_UI <- function(id, label) {
 }
 
 #' @export
+#' @import shiny
+#' @noRd
 mod_multiple_input_Server <- function(id, m_df) {
   moduleServer(id, function(input, output, session) {
     observe({

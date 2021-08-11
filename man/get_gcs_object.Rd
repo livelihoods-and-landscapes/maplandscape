@@ -2,7 +2,7 @@
 % Please edit documentation in R/fct_get_gcs_object.R
 \name{get_gcs_object}
 \alias{get_gcs_object}
-\title{Get GeoPackages from Google Cloud Storage bucket}
+\title{Get GeoPackages from a Google Cloud Storage bucket}
 \usage{
 get_gcs_object(token, bucket, object)
 }
@@ -10,9 +10,9 @@ get_gcs_object(token, bucket, object)
 \item{token}{an OAuth2.0 token which allows a user to make authenticated HTTP
 requests to the Google Cloud Storage API.}
 
-\item{bucket}{name of Google Cloud Storage bucket.}
+\item{bucket}{single element character vector of the name of Google Cloud Storage bucket.}
 
-\item{object}{name of GeoPackage to get.}
+\item{object}{single element character vector of the name of GeoPackage to get.}
 }
 \value{
 two element list. First element is the path to where the GeoPackage

@@ -19,6 +19,7 @@
 #'
 #' @import rlang
 #' @import dplyr
+#' @import tidyselect
 #' @importFrom magrittr %>%
 #'
 #' @export

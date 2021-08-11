@@ -9,6 +9,8 @@ list_gcs_buckets(token, project_id)
 \arguments{
 \item{token}{an OAuth2.0 token which allows a user to make authenticated HTTP
 requests to the Google Cloud Storage API.}
+
+\item{project_id}{single element character vector of Google Cloud project id.}
 }
 \value{
 vector of bucket names.

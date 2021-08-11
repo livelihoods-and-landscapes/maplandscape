@@ -12,6 +12,7 @@
 #'   layer_disp_name - clean and informative layer name for select
 #'   input; file_path - temporary file path to data; and file_type - file type.
 #'
+#' @import utils
 #' @export
 
 list_layers <- function(f_path, f_name) {

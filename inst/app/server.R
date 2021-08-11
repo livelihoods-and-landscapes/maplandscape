@@ -1,5 +1,4 @@
-library(shiny)
-library(maplandscape)
+
 
 options(shiny.maxRequestSize = 5000 * 1024^2)
 
@@ -401,7 +400,7 @@ app_server <- function(input, output, session) {
     req(active_df(), grouping_vars())
 
     tmp_df <- active_df() %>%
-      select_if(is.numeric)
+      dplyr::select_if(is.numeric)
     choices <- names(tmp_df)
     s_intersect <- intersect(
       choices,
@@ -1394,7 +1393,7 @@ app_server <- function(input, output, session) {
     req(chart_active_df())
 
     tmp_df <- chart_active_df() %>%
-      select_if(is.numeric)
+      dplyr::select_if(is.numeric)
     choices <- names(tmp_df)
     print(choices)
 
@@ -1412,7 +1411,7 @@ app_server <- function(input, output, session) {
     req(chart_active_df())
 
     tmp_df <- chart_active_df() %>%
-      select_if(is.numeric)
+      dplyr::select_if(is.numeric)
     choices <- names(tmp_df)
     print(choices)
 
@@ -1443,7 +1442,7 @@ app_server <- function(input, output, session) {
     req(chart_active_df(), col_grouping_var())
 
     tmp_df <- chart_active_df() %>%
-      select_if(is.numeric)
+      dplyr::select_if(is.numeric)
     choices <- names(tmp_df)
     s_intersect <- intersect(choices, col_grouping_var())
     choices <- choices[!choices %in% s_intersect]
