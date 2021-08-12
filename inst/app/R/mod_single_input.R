@@ -1,15 +1,11 @@
-#' @export
-#' @import shiny
-#' @noRd
+
 mod_single_input_UI <- function(id, label) {
   tagList(
     selectInput(NS(id, "single_input"), label, choices = NULL)
   )
 }
 
-#' @export
-#' @import shiny
-#' @noRd
+
 mod_single_input_Server <- function(id, s_df) {
   moduleServer(id, function(input, output, session) {
 

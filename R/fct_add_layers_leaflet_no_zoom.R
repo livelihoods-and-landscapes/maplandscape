@@ -125,7 +125,7 @@ add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_c
           leaflet::addMarkers(
             data = map_df,
             layerId = map_df$layer_id,
-            options = markerOptions(clickable = TRUE)
+            options = leaflet::markerOptions(clickable = TRUE)
           )
       }
       proxy_map

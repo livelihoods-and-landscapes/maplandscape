@@ -123,7 +123,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
           leaflet::addMarkers(
             data = map_df,
             layerId = map_df$layer_id,
-            options = markerOptions(clickable = TRUE)
+            options = leaflet::markerOptions(clickable = TRUE)
           ) %>%
           leaflet::fitBounds(bbox[1], bbox[2], bbox[3], bbox[4])
       }
