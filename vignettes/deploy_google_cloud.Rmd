@@ -1,0 +1,29 @@
+---
+title: "Deploy: Google Cloud"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Deploy: Google Cloud}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(maplandscape)
+```
+
+This vignette provides a set of instructions for deploying maplandscape on [Google Cloud Run]().
+
+Google Cloud Run is a stateless service whereas Shiny is stateful and based on user sessions, successive user requests to a Shiny application depend on each other. 
+
+Each user's requests must be sent to the appropriate instance of a Shiny application. 
+
+Shiny apps can be deployed as containerised applications on Google Cloud Run. 
+
+## Build maplandscape as a docker image

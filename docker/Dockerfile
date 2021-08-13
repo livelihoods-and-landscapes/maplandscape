@@ -24,10 +24,17 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean
 
+# copy necessary files
+COPY --chown=shiny:shiny app.R /srv/shiny-server/app/
+
 # copy customised shiny-server config to run on Google Cloud Run
 COPY shiny-customized.config /etc/shiny-server/shiny-server.conf
 
 # install required R packages
+RUN R -e 'install.packages(c( \
+  "devtools", "shiny"), \
+  repos="http://cran.rstudio.com/")'
+
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
 
 # expose port

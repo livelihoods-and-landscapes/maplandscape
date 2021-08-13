@@ -25,7 +25,7 @@ body {
 
 #mapSidePanel {
   overflow-y:scroll;
-  max-height: 90vh;
+  max-height: 100vh;
   position:relative;
   padding: 5px !important;
   border-color: #ecf0f1 !important;

@@ -51,4 +51,9 @@ The image is based on the `rocker/shiny:latest` image which includes [Shiny Serv
 
 A customised `shiny-customised.config` file is used to set the `app_dir` to  the app directory where Shiny Server will launch and serve the app from. 
 
+Launch the docker container:
+
+```
+docker run -p 3838:3838 maplandscape
+```
 
