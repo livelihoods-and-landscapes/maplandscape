@@ -39,6 +39,8 @@ Imports:
     xfun
 RoxygenNote: 7.1.1
 Suggests: 
+    testthat (>= 3.0.0),
     knitr,
     shinytest
 VignetteBuilder: knitr
+Config/testthat/edition: 3

@@ -1494,60 +1494,43 @@ app_server <- function(input, output, session) {
       y_lab <- isolate(input$y_axis_label)
       chart_type <- isolate(input$plotType)
       bar_plot_type <- isolate(input$bar_plot_type)
+      chart_active_df <- isolate(chart_active_df())
 
       if (chart_type == "histogram") {
+
         binwidth <- isolate(input$binwidth)
         hist_x_var <- isolate(hist_x_axis_vars())
+        chart <- make_histogram(
+          chart_active_df,
+          hist_x_var,
+          binwidth,
+          x_lab,
+          y_lab,
+          axis_font_size,
+          lab_font_size
+        )
 
-        chart <-
-          ggplot2::ggplot(isolate(chart_active_df()), ggplot2::aes(.data[[hist_x_var]])) +
-          ggplot2::geom_histogram(
-            binwidth = binwidth,
-            color = "#78c2ad",
-            fill = "#78c2ad"
-          ) +
-          ggplot2::xlab(x_lab) +
-          ggplot2::ylab(y_lab) +
-          ggplot2::theme(
-            plot.background = ggplot2::element_rect(fill = NA, colour = NA),
-            panel.background = ggplot2::element_rect(fill = NA, colour = "#78c2ad"),
-            axis.text.x = ggplot2::element_text(
-              angle = -45,
-              vjust = 1,
-              hjust = 0,
-              size = axis_font_size
-            ),
-            axis.text.y = ggplot2::element_text(size = axis_font_size),
-            axis.title.x = ggplot2::element_text(size = lab_font_size),
-            axis.title.y = ggplot2::element_text(size = lab_font_size)
-          )
-      } else if (chart_type == "scatter") {
-        scatter_x_var <- isolate(scatter_x_axis_vars())
-        scatter_y_var <- isolate(scatter_y_axis_vars())
-        point <- isolate(input$scatter_point_size)
+      }
 
-        chart <-
-          ggplot2::ggplot(
-            isolate(chart_active_df()),
-            ggplot2::aes(.data[[scatter_x_var]], .data[[scatter_y_var]])
-          ) +
-          ggplot2::geom_point(color = "#78c2ad", size = point) +
-          ggplot2::xlab(x_lab) +
-          ggplot2::ylab(y_lab) +
-          ggplot2::theme(
-            plot.background = ggplot2::element_rect(fill = NA, colour = NA),
-            panel.background = ggplot2::element_rect(fill = NA, colour = "#78c2ad"),
-            axis.text.x = ggplot2::element_text(
-              angle = -45,
-              vjust = 1,
-              hjust = 0,
-              size = axis_font_size
-            ),
-            axis.text.y = ggplot2::element_text(size = axis_font_size),
-            axis.title.x = ggplot2::element_text(size = lab_font_size),
-            axis.title.y = ggplot2::element_text(size = lab_font_size)
+      if (chart_type == "scatter") {
+
+          scatter_x_var <- isolate(scatter_x_axis_vars())
+          scatter_y_var <- isolate(scatter_y_axis_vars())
+          point <- isolate(input$scatter_point_size)
+          chart <- make_scatter(
+            chart_active_df,
+            scatter_x_var,
+            scatter_y_var,
+            point,
+            x_lab,
+            y_lab,
+            axis_font_size,
+            lab_font_size
           )
-      } else if (chart_type == "bar plot") {
+      }
+
+      if (chart_type == "bar plot") {
+
         bar_x_var <- isolate(col_summarised_df()[, 1])
 
         if (bar_plot_type == "count_records") {
@@ -1559,27 +1542,14 @@ app_server <- function(input, output, session) {
         }
 
         col_chart_df <- data.frame(bar_x_var, bar_y_var)
-        chart <-
-          ggplot2::ggplot(
-            col_chart_df,
-            ggplot2::aes(col_chart_df[, 1], col_chart_df[, 2])
-          ) +
-          ggplot2::geom_col(color = "#78c2ad", fill = "#78c2ad") +
-          ggplot2::xlab(x_lab) +
-          ggplot2::ylab(y_lab) +
-          ggplot2::theme(
-            plot.background = ggplot2::element_rect(fill = NA, colour = NA),
-            panel.background = ggplot2::element_rect(fill = NA, colour = "#78c2ad"),
-            axis.text.x = ggplot2::element_text(
-              angle = -45,
-              vjust = 1,
-              hjust = 0,
-              size = axis_font_size
-            ),
-            axis.text.y = ggplot2::element_text(size = axis_font_size),
-            axis.title.x = ggplot2::element_text(size = lab_font_size),
-            axis.title.y = ggplot2::element_text(size = lab_font_size)
-          )
+
+        chart <- make_barplot(
+          col_chart_df,
+          x_lab,
+          y_lab,
+          axis_font_size,
+          lab_font_size
+        )
       }
 
       chart
