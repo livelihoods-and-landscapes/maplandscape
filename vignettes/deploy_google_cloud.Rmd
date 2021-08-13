@@ -27,3 +27,15 @@ Each user's requests must be sent to the appropriate instance of a Shiny applica
 Shiny apps can be deployed as containerised applications on Google Cloud Run. 
 
 ## Build maplandscape as a docker image
+
+
+## Deploy a Shiny application on Google Cloud Run
+
+To get Shiny to run on Google Cloud Run:
+
+* limit number of instances to 1 - thus, requests are always routed to the correct Shiny instance. The cost is that the app won't scale if it recieves more traffic. 
+* disable websocket protocols in Shiny Server to keep only protocols that work with Google Cloud Run (see here: https://github.com/randy3k/shiny-cloudrun-demo).
+* one container on Cloud Run can service up to 80 requests concurrently. Thus, for Shiny apps to keep state they can only service 80 concurrent requests. 
+* use a higher CPU / RAM spec so that a single container can handle more traffic. 
+
+Use `shiny-customized.config` to overwrite default shiny server configurations disabling websocket features not supported by Google Cloud Run. 

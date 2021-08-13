@@ -1,0 +1,19 @@
+---
+title: "OAuth2.0 setup"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{OAuth2.0 setup}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(maplandscape)
+```
