@@ -14,6 +14,36 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(maplandscape)
+## OAuth2.0 on Google Cloud
+
+Navigate to *APIs and services* in the Google Cloud Platform menu. Select *OAuth consent screen* and fill out the required information. 
+
+You will need to select *Cloud Storage API* as a sensitive scope. This will allow users to make authenticated requests to their Google Cloud Storage buckets and objects. 
+
+If the app is in-development or testing phases, you can add test users. If you want to publish the app you will need to get it verified by Google (read more about this process [here](https://support.google.com/cloud/answer/9110914#)).
+
+Next, head to the *Credentials* section and click *Create Credentials* and *OAuth client ID*. 
+
+Select Application type as *Web application* and add URI (*Authorised redirect URIs*) for where you want authourised users to be redirected to (typically, an instance of a Shiny app where they can interact with their GeoPackages in Google Cloud Storage). 
+
+Once you create your OAuth client, you will see that a Client ID and a Client Secret have been generated. 
+
+Head to the directory where you cloned the `maplandscape` package. 
+
+```
+git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
+
+cd maplandscape
+```
+
+Navigate to the `global.R` file at `inst/app/global.R`.
+
+Add your Client ID and Client Secret to the `httr::oauth_app()` object. Also, set the `APP_URL` value to the redirect URI for your app. 
+
+```
+app <- httr::oauth_app("shiny",
+                       key = "<Client ID here>",
+                       secret = "<Client Secret here>",
+                       redirect_uri = APP_URL
+)
 ```

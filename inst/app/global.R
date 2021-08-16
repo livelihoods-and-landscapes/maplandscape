@@ -8,13 +8,13 @@ if (interactive()) {
   APP_URL <- "http://localhost:8100/"
 } else {
   # deployed URL
-  APP_URL <- "https://livelihoods-landscape.shinyapps.io/maplandscape"
+  APP_URL <- "https://map.livelihoods-and-landscape.com"
 }
 
 # Note that secret is not really secret, and it's fine to include inline
 app <- httr::oauth_app("shiny",
-                       key = "252184882311-48os9c1p3kibne8pkck9euspctsgl7u9.apps.googleusercontent.com",
-                       secret = "MLsy5lBi072xIBGmAZpPgHuE",
+                       key = "25228130184-l3g7lpo3b7vblf2orrc4it8i2r9p1dff.apps.googleusercontent.com",
+                       secret = "7lYDgQmFpZFDCI6Zr1L27gf9",
                        redirect_uri = APP_URL
 )
 
