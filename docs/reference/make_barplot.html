@@ -40,7 +40,9 @@
 
 
 <meta property="og:title" content="Barplot — make_barplot" />
-<meta property="og:description" content="Barplot" />
+<meta property="og:description" content="Generate and style a bar plot which visualises summary statistics (mean, sum,
+count) of values in a group. Designed to be used in  a Shiny application to
+visualise results of group_by and summarise operations." />
 
 
 
@@ -87,9 +89,50 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Articles
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="../articles/add_columns.html">Add Columns</a>
+    </li>
+    <li>
+      <a href="../articles/admin_mode.html">Admin Mode</a>
+    </li>
+    <li>
+      <a href="../articles/charts.html">Charts</a>
+    </li>
+    <li>
+      <a href="../articles/deploy_google_cloud.html">Deploy: Google Cloud</a>
+    </li>
+    <li>
+      <a href="../articles/filter_rows.html">Filter Rows</a>
+    </li>
+    <li>
+      <a href="../articles/group_by_summarise.html">Summary Tables</a>
+    </li>
+    <li>
+      <a href="../articles/oauth.html">OAuth2.0 setup</a>
+    </li>
+    <li>
+      <a href="../articles/spatial_join.html">Combine Spatial Layers</a>
+    </li>
+    <li>
+      <a href="../articles/web_mapping.html">Web Mapping</a>
+    </li>
+  </ul>
+</li>
       </ul>
       <ul class="nav navbar-nav navbar-right">
-        
+        <li>
+  <a href="https://github.com/livelihoods-and-landscapes/maplandscape/">
+    <span class="fab fa-github fa-lg"></span>
+     
+  </a>
+</li>
       </ul>
       
     </div><!--/.nav-collapse -->
@@ -104,12 +147,14 @@
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Barplot</h1>
-    
+    <small class="dont-index">Source: <a href='https://github.com/livelihoods-and-landscapes/maplandscape/blob/master/R/make_barplot.R'><code>R/make_barplot.R</code></a></small>
     <div class="hidden name"><code>make_barplot.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Barplot</p>
+    <p>Generate and style a bar plot which visualises summary statistics (mean, sum,
+count) of values in a group. Designed to be used in  a Shiny application to
+visualise results of <code>group_by</code> and <code>summarise</code> operations.</p>
     </div>
 
     <pre class="usage"><span class='fu'>make_barplot</span><span class='op'>(</span><span class='va'>col_chart_df</span>, <span class='va'>x_lab</span>, <span class='va'>y_lab</span>, <span class='va'>axis_font_size</span>, <span class='va'>lab_font_size</span><span class='op'>)</span></pre>
@@ -118,20 +163,35 @@
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
+      <th>col_chart_df</th>
+      <td><p>a two column data frame. The first column specifies the
+groupings. The second column specifies the summary statistic per-group.</p></td>
+    </tr>
+    <tr>
+      <th>x_lab</th>
+      <td><p>a single element character vector specifying the X-axis label.</p></td>
+    </tr>
+    <tr>
+      <th>y_lab</th>
+      <td><p>a single element character vector specifying the Y-axis label.</p></td>
+    </tr>
+    <tr>
+      <th>axis_font_size</th>
+      <td><p>a numeric value specifying the font size for axis tick
+labels.</p></td>
+    </tr>
+    <tr>
       <th>lab_font_size</th>
-      <td></td>
+      <td><p>a numeric value specifying the font size for axis
+labels.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    
+    <p>a <a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a> object that can be passed to
+  renderPlot to display in a Shiny application.</p>
 
-
-
-    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
-    <pre class="examples"><div class='input'>
-</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -143,7 +203,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by The package maintainer.</p>
+  <p>Developed by John Duncan.</p>
 </div>
 
 <div class="pkgdown">

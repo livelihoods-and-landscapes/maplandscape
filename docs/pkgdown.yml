@@ -1,6 +1,15 @@
 pandoc: 2.7.3
 pkgdown: 1.6.1
 pkgdown_sha: ~
-articles: {}
-last_built: 2021-08-13T07:13Z
+articles:
+  add_columns: add_columns.html
+  admin_mode: admin_mode.html
+  charts: charts.html
+  deploy_google_cloud: deploy_google_cloud.html
+  filter_rows: filter_rows.html
+  group_by_summarise: group_by_summarise.html
+  oauth: oauth.html
+  spatial_join: spatial_join.html
+  web_mapping: web_mapping.html
+last_built: 2021-08-16T09:12Z
 

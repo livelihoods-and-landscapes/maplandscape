@@ -4,7 +4,7 @@
 
 A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages.
 
-A pre-built Shiny [Shiny](https://shiny.rstudio.com) is provided with this package which uses these functions and provides tools for:
+A pre-built [Shiny](https://shiny.rstudio.com) is provided with this package which uses these functions and provides tools for:
 
 * Syncing data stored in multiple GeoPackages.
 * Exploring GeoPackage layers in interactive tables, web maps, and charts.
@@ -15,7 +15,7 @@ A pre-built Shiny [Shiny](https://shiny.rstudio.com) is provided with this packa
 * Authenticated access to GeoPackages stored in Google Cloud Storage.
 * Admin mode for data cleaning and editing geometries and attribute values.
 
-This package was developed as part of the [Livelihoods and Landscapes] project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and application was to provide analysts with tools to analyse and visualise geospatial data collected 'in the field' using the [QField](https://qfield.org) mobile GIS application. 
+This package was developed as part of the [Livelihoods and Landscapes](https://livelihoods-and-landscapes.com) project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and Shiny application was to provide analysts with tools to analyse and visualise geospatial data collected 'in the field' using the [QField](https://qfield.org) mobile GIS application. 
 
 ## Use
 
@@ -63,6 +63,8 @@ cd maplandscape
 There is a sub-directory named `docker`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
 
 ```
+cd docker
+
 docker build -t maplandscape .
 ```
 

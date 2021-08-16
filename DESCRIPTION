@@ -1,12 +1,18 @@
 Package: maplandscape
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Shiny application to explore and visualise GeoPackage data.
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: 
+    c(person(given = "John",
+             family = "Duncan",
+             role = c("cre", "aut"),
+             email = "john.duncan@uwa.edu.au"))
+Description: A Shiny application to explore, visualise, and 
+    edit geospatial data stored in GeoPackeges in interactive 
+    tables, web maps, and charts. Either deploy and use a pre-built 
+    application or incorporate these functions in a custom Shiny app.
 License: GPL (>= 3)
+URL: https://github.com/livelihoods-and-landscapes/maplandscape
 Encoding: UTF-8
 LazyData: true
 Imports: 
