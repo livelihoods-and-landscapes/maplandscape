@@ -14,28 +14,83 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(maplandscape)
-```
+This vignette provides a set of instructions for deploying maplandscape on [Google Cloud Run](https://cloud.google.com/run). Google Cloud Run provides pay-per-use services for deploying containerised applications; this means you are only billed when the application is running.  
 
-This vignette provides a set of instructions for deploying maplandscape on [Google Cloud Run]().
-
-Google Cloud Run is a stateless service whereas Shiny is stateful and based on user sessions, successive user requests to a Shiny application depend on each other. 
-
-Each user's requests must be sent to the appropriate instance of a Shiny application. 
-
-Shiny apps can be deployed as containerised applications on Google Cloud Run. 
+Shiny apps can be deployed as containerised applications on Google Cloud Run with some configuration. 
 
 ## Build maplandscape as a docker image
 
+Clone the maplandscape GitHub repo:
+
+```
+git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
+
+cd maplandscape
+```
+
+There is a sub-directory named `docker`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
+
+```
+docker build -t maplandscape .
+```
+
+The image is based on the `rocker/shiny:latest` image which includes [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044) to host the maplandscape Shiny application. Shiny Server serves apps out of the `srv/shiny-server/` directory; building the docker image will install all the R packages required to run maplandscape, install the maplandscape package from github, and copy an `app.R` script into `srv/shiny-server/app` which contains the commands to launch maplandscape. 
+
+A customised `shiny-customised.config` file is used to set the `app_dir` to  the app directory where Shiny Server will launch and serve the app from. 
 
 ## Deploy a Shiny application on Google Cloud Run
 
-To get Shiny to run on Google Cloud Run:
+While Google Cloud Run supports WebSockets, it is stateless, does not provide [session affinity or sticky sessions](https://cloud.google.com/run/docs/triggering/websockets#sticky-sessions), and it is possible that user requests could be routed different container instances of Shiny applications. Thus, user requests could be routed to a different container instance than the one which stores their [session in memory](https://github.com/rstudio/shiny/issues/2455#issuecomment-497883381). To sidestep this issue, when deploying a containerised Shiny app on Google Cloud Run the service can be configured to limit the number of container instances to one. This ensures that user's requests are always routed to the same Shiny app instance. The trade-off with this approach is that the app won't dynamically scale if it receives more traffic than one instance can handle.  is possible to use higher CPU / RAM for a single container so it can better handle more traffic. 
 
-* limit number of instances to 1 - thus, requests are always routed to the correct Shiny instance. The cost is that the app won't scale if it recieves more traffic. 
-* disable websocket protocols in Shiny Server to keep only protocols that work with Google Cloud Run (see here: https://github.com/randy3k/shiny-cloudrun-demo).
-* one container on Cloud Run can service up to 80 requests concurrently. Thus, for Shiny apps to keep state they can only service 80 concurrent requests. 
-* use a higher CPU / RAM spec so that a single container can handle more traffic. 
+It is also necessary to disable some WebSocket protocols in Shiny Server that do not work with Google Cloud Run (see [here](https://github.com/randy3k/shiny-cloudrun-demo) for an example). The `shiny-customized.config` file in the `docker` directory of this package can be used to overwrite default shiny server configurations and disable WebSocket features not supported by Google Cloud Run. When building the docker image this file can be copied to `/etc/shiny-server/shiny-server.conf` as specified in the `Dockerfile`. 
 
-Use `shiny-customized.config` to overwrite default shiny server configurations disabling websocket features not supported by Google Cloud Run. 
+Setup a Google Cloud project and ensure [billing is enabled](https://cloud.google.com/billing/docs/how-to/modify-project). 
+
+Install the [Google Cloud SDK](https://cloud.google.com/sdk/docs/install) and initialise it:
+
+```
+gcloud init
+```
+
+Enable Google Container Registry:
+
+```
+gcloud services enable containerregistry.googleapis.com
+```
+
+Configure docker to work with Google Cloud and allow the docker client to make authenticated requests to [Google Container Registry](https://github.com/GoogleCloudPlatform/docker-credential-gcr). 
+
+```
+google auth configure-docker
+```
+
+Rename the image tag with a reference to a Google Container Registry image:
+
+```
+docker tag <tag name> gcr.io/<gcs project id>/<image name>
+```
+
+Push image to Google Container Registry:
+
+```
+docker push gcr.io./<project-id>/<image-name>
+```
+
+Deploy the containerised Shiny app on Google Cloud Run using `gcloud` command line tools:
+
+```
+gcloud run deploy <service name> --image gcr.io/<gcs project id>/<image name> --platform managed --port 3838 --memory 1Gi  --allow-unauthenticated 
+
+```
+
+Use the `--allow-unauthenticaed` flag to make the app public and allow it to be launched by unauthenticated users. 
+
+Set the `--max-instances 1` flag to ensure only Google Cloud Run only launches one Shiny instance. 
+
+## Further Reading
+
+Shiny on Google Cloud Run - Scale-to-Zero R Web Apps: https://code.markedmondson.me/shiny-cloudrun/
+
+Outstanding User Interfaces with Shiny - Chapters 5 and 11 provide an excellent overview of client-server concepts from a Shiny application perspective - https://unleash-shiny.rinterface.com/shiny-intro.html
+
+Deploying containerised applications on Google Cloud Run - https://cloud.google.com/run/docs/deploying#command-line

@@ -1,10 +1,9 @@
 test_that("make a ggplot2 scatter plot from a (sf) data fame", {
-  test_data_path <- paste0(here::here(), "/test-data/test-data/vavau-crop-survey.gpkg")
+  test_data_path <- paste0("vavau-crop-survey.gpkg")
   kava <- sf::st_read(test_data_path, layer="kava")
 
   test_scatter_ok <- make_scatter(
     kava,
-
     "kava_area",
     "area_acres",
     3,

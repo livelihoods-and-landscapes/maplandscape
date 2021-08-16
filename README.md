@@ -1,5 +1,21 @@
 # maplandscape
 
+## Overview
+
+A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages.
+
+A pre-built Shiny [Shiny](https://shiny.rstudio.com) is provided with this package which uses these functions and provides tools for:
+
+* Syncing data stored in multiple GeoPackages.
+* Exploring GeoPackage layers in interactive tables, web maps, and charts.
+* Options for customising and styling charts and web maps. 
+* Combining layers using spatial and non-spatial joins.
+* Generating summary tables through group-by and summarise operations. 
+* Generating new layers and add new columns to existing layers. 
+* Authenticated access to GeoPackages stored in Google Cloud Storage.
+* Admin mode for data cleaning and editing geometries and attribute values.
+
+This package was developed as part of the [Livelihoods and Landscapes] project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and application was to provide analysts with tools to analyse and visualise geospatial data collected 'in the field' using the [QField](https://qfield.org) mobile GIS application. 
 
 ## Use
 
@@ -27,8 +43,11 @@ The will launch a pre-built Shiny application to explore data in GeoPackages fro
 
 RStudio offers a free-tier hosting service for Shiny apps. Sign up at [shinyapps.io](https://www.shinyapps.io). 
 
-Follow the above commands to launch maplandscape (or your custom Shiny application). 
+Follow the above commands to launch maplandscape (or your custom Shiny application). In the top-right of the application window you will see a *Publish* button, click this button and follow the prompts to deploy the application to [shinyapps.io](https://www.shinyapps.io).
 
+<img src="man/figures/shiny-publish.png" width="40%" style="display: block; margin: auto;"/>
+
+RStudio provide a detailed tutorial for deploying apps to shinyapps.io [here](https://shiny.rstudio.com/articles/shinyapps.html).
 
 
 ### Docker and host in the cloud
@@ -57,3 +76,6 @@ Launch the docker container:
 docker run -p 3838:3838 maplandscape
 ```
 
+You can find more information about [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044) [here](https://shiny.rstudio.com/articles/shiny-server.html), at its [GitHub repo](https://github.com/rstudio/shiny-server), and following this [tutorial](https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/). 
+
+Please see the vignette Deploy: Google Cloud for a tutorial demonstrating how to deploy a containerised Shiny application on Google Cloud Run. 
