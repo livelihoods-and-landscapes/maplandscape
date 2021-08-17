@@ -79,7 +79,7 @@ docker push gcr.io./<project-id>/<image-name>
 Deploy the containerised Shiny app on Google Cloud Run using `gcloud` command line tools:
 
 ```
-gcloud run deploy <service name> --image gcr.io/<gcs project id>/<image name> --platform managed --port 3838 --memory 1Gi  --allow-unauthenticated 
+gcloud run deploy <service name> --image gcr.io/<gcs project id>/<image name> --platform managed --port 3838 --memory 2Gi  --allow-unauthenticated --cpu 1
 
 ```
 

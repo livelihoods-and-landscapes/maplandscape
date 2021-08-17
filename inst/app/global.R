@@ -4,17 +4,17 @@ library(shiny)
 # Google OAuth2.0 app
 if (interactive()) {
   # testing url
-  options(shiny.port = 8100)
-  APP_URL <- "http://localhost:8100/"
+  options(shiny.port = 3838)
+  APP_URL <- "http://localhost:3838/"
 } else {
   # deployed URL
-  APP_URL <- "https://map.livelihoods-and-landscape.com"
+  APP_URL <- config::get("app_url")
 }
 
 # Note that secret is not really secret, and it's fine to include inline
 app <- httr::oauth_app("shiny",
-                       key = "25228130184-l3g7lpo3b7vblf2orrc4it8i2r9p1dff.apps.googleusercontent.com",
-                       secret = "7lYDgQmFpZFDCI6Zr1L27gf9",
+                       key = config::get("oauth_key"),
+                       secret = config::get("oauth_secret"),
                        redirect_uri = APP_URL
 )
 

@@ -1562,6 +1562,34 @@ app_server <- function(input, output, session) {
 
   # Admin - data cleaning ---------------------------------------------------
 
+  # reveal FastAPI sync endpoint for authenticated users
+  output$sync_endpoint_ui <- renderUI({
+    if (!is.null(isolate(token()))) {
+      tagList(
+        h4("Sync edits to Google Cloud Storage"),
+
+        textInput(
+          inputId = "sync_endpoint",
+          label = "Endpoint for sync API"
+        ),
+
+        actionButton(
+          "sync_edits",
+          "sync edits",
+          class = "btn-primary m-2"
+        ),
+        actionButton(
+          "refresh_data",
+          "refresh data",
+          class = "btn-primary m-2"
+        )
+      )
+
+    } else {
+      return()
+    }
+  })
+
   # user uploaded files for data cleaning / editing
   # return table of files and file paths of data loaded to the server
   upload_edit_file <- mod_get_layers_Server(id = "edit_data")

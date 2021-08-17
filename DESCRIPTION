@@ -17,6 +17,7 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     bslib,
+    config,
     dplyr,
     DT,
     fs,

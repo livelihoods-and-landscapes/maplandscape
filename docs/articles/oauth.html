@@ -116,23 +116,84 @@
 <div id="oauth2-0-on-google-cloud" class="section level2">
 <h2 class="hasAnchor">
 <a href="#oauth2-0-on-google-cloud" class="anchor"></a>OAuth2.0 on Google Cloud</h2>
+<p>This vignette demonstrates how you can make authenticated requests to query and retrieve objects from Google Cloud Storage from a Shiny application and sets you up to use functions provided in maplandscape for listing Google Cloud Storage buckets, listing objects in Google Cloud Storage buckets, and downloading (GETting) objects from a Google Cloud Storage bucket into your app instance. Google Cloud Storage APIs use <a href="https://developers.google.com/identity/protocols/oauth2#basicsteps">OAuth2.0</a> for authentication</p>
+<div id="create-oauth2-0-authorisation-credentials" class="section level3">
+<h3 class="hasAnchor">
+<a href="#create-oauth2-0-authorisation-credentials" class="anchor"></a>Create OAuth2.0 Authorisation Credentials</h3>
+<p>The first stage of making authenticated requests to Google Cloud Storage APIs from a Shiny application is generating authorisation credentials used to identify the application to Google authentication servers. Read more <a href="https://developers.google.com/identity/protocols/oauth2/web-server#creatingcred">here</a>.</p>
 <p>Navigate to <em>APIs and services</em> in the Google Cloud Platform menu. Select <em>OAuth consent screen</em> and fill out the required information.</p>
+<p><img src="go-to-api-services.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
 <p>You will need to select <em>Cloud Storage API</em> as a sensitive scope. This will allow users to make authenticated requests to their Google Cloud Storage buckets and objects.</p>
-<p>If the app is in-development or testing phases, you can add test users. If you want to publish the app you will need to get it verified by Google (read more about this process <a href="https://support.google.com/cloud/answer/9110914#">here</a>).</p>
+<p>If the app is in-development or testing phases, you can add test users.</p>
+<p><img src="test-users.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>If you want to publish the app you will need to get it verified by Google (read more about this process <a href="https://support.google.com/cloud/answer/9110914#">here</a>).</p>
+<p><img src="publish-app.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
 <p>Next, head to the <em>Credentials</em> section and click <em>Create Credentials</em> and <em>OAuth client ID</em>.</p>
-<p>Select Application type as <em>Web application</em> and add URI (<em>Authorised redirect URIs</em>) for where you want authorised users to be redirected to (typically, an instance of a Shiny app where they can interact with their GeoPackages in Google Cloud Storage).</p>
-<p>Once you create your OAuth client, you will see that a Client ID and a Client Secret have been generated.</p>
+<p><img src="create-credentials.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Select Application type as <em>Web application</em> and add URI (<em>Authorised redirect URIs</em>) for where you want authourised users to be redirected to (typically, an instance of a Shiny app where they can interact with their GeoPackages in Google Cloud Storage).</p>
+<p><img src="create-web-application.png" width="40%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
+</div>
+<div id="httr-oauth_app" class="section level2">
+<h2 class="hasAnchor">
+<a href="#httr-oauth_app" class="anchor"></a>HTTR OAuth_app</h2>
+<p>Once you create your OAuth client, you will see that a Client ID and a Client Secret have been generated and you can use these to create an <a href="https://httr.r-lib.org/reference/oauth_app.html">OAuth app</a>. This will allow users to authenticate themselves using their Google identity (e.g. a gmail account) and make authenticated requests to their Google Cloud Storage.</p>
 <p>Head to the directory where you cloned the <code>maplandscape</code> package.</p>
 <pre><code>git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
 
 cd maplandscape</code></pre>
-<p>Navigate to the <code>global.R</code> file at <code>inst/app/global.R</code>.</p>
-<p>Add your Client ID and Client Secret to the <code><a href="https://httr.r-lib.org/reference/oauth_app.html">httr::oauth_app()</a></code> object. Also, set the <code>APP_URL</code> value to the redirect URI for your app.</p>
+<p>Navigate to the app directory at:</p>
+<pre><code>cd inst/app/</code></pre>
+<p>Create a <a href="https://rstudio.github.io/config/index.html">config</a> file to store your Client ID, Client Secret, and redirect URI using the following template:</p>
+<pre><code>touch config.yml</code></pre>
+<pre><code>default:
+  oauth_key: "&lt;Client ID here&gt;"
+  oauth_secret: "&lt;Client Secret here&gt;"
+  app_url: "&lt;redirect URL here&gt;"</code></pre>
+<p>If you want to keep your Client ID and Client Secret private you can include the <code>config.yml</code> file in <code>.gitignore</code> when using version control and public remote repositories.</p>
+<p>When you launch your app, the following code in the <code>inst/app/global.R</code> will be executed, reading the variables specified in the config.yml file, and creating an OAuth app that you can use within your Shiny app.</p>
 <pre><code>app &lt;- httr::oauth_app("shiny",
-                       key = "&lt;Client ID here&gt;",
-                       secret = "&lt;Client Secret here&gt;",
+                       key = config::get("oauth_key"),
+                       secret = config::get("oauth_secret"),
                        redirect_uri = APP_URL
 )</code></pre>
+<p>You can use this app with <a href="https://httr.r-lib.org/reference/oauth2.0_token.html">httr’s</a> <code>oauth2.0_token()</code> to retrieve a <code>token2.0()</code> object which will allow the Shiny app to make requests to the Google Cloud Storage API’s on behalf of the authenticated user. An example of this process can be seen <a href="https://gist.github.com/hadley/144c406871768d0cbe66b0b810160528">here</a> (a minimal example) and in this snipped taken from <code>inst/app/server.R</code>:</p>
+<pre><code>  ## Get token that can be used to make authenticated requests to Google Cloud Storage
+  token &lt;- reactive({
+
+    ## gets all the parameters in the URL. The auth code should be one of them.
+    pars &lt;- shiny::parseQueryString(session$clientData$url_search)
+
+    if (length(pars$code) &gt; 0) {
+      ## extract the authorization code
+      # Manually create a token
+      token &lt;- try(
+        httr::oauth2.0_token(
+          app = app,
+          endpoint = api,
+          credentials = httr::oauth2.0_access_token(api, app, pars$code),
+          cache = TRUE
+        )
+      )
+      if ("try-error" %in% class(token)) {
+        token &lt;- NULL
+      }
+    } else {
+      token &lt;- NULL
+    }
+
+    token
+  })</code></pre>
+<p>This generates a reactive object <code>token</code> which either has the value <code>NULL</code> when a user has not authenticated themselves to Google Cloud Storage and received an OAuth token or a value of a <code>token2.0()</code> object if authentication has been successful. Following successful authentication of a user to the Google Cloud Storage API, token can be included in HTTP requests to Google Cloud Storage API’s to query or retrieve items in Google Cloud Storage buckets. This package provides functions to list and get objects from Google Cloud Storage:</p>
+<ul>
+<li>
+<code>list_gcs_buckets</code> - list all buckets in Google Cloud project.</li>
+<li>
+<code>list_gcs_bucket_objects</code> - lists all objects in a Google Cloud Storage bucket.</li>
+<li>
+<code>get_gcs_object</code> - gets an object from a Google Cloud Storage bucket.</li>
+</ul>
+<p>A full list of Google Cloud Storage API methods, which can be used for interacting with Google Cloud Storage buckets and objects via HTTP requests, are listed <a href="https://cloud.google.com/storage/docs/json_api/v1/objects#methods">here</a></p>
 </div>
   </div>
 
