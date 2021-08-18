@@ -42,7 +42,8 @@
 <meta property="og:title" content="Barplot — make_barplot" />
 <meta property="og:description" content="Generate and style a bar plot which visualises summary statistics (mean, sum,
 count) of values in a group. Designed to be used in  a Shiny application to
-visualise results of group_by and summarise operations." />
+visualise results of group-by and
+summarise operations." />
 
 
 
@@ -154,7 +155,8 @@ visualise results of group_by and summarise operations." />
     <div class="ref-description">
     <p>Generate and style a bar plot which visualises summary statistics (mean, sum,
 count) of values in a group. Designed to be used in  a Shiny application to
-visualise results of <code>group_by</code> and <code>summarise</code> operations.</p>
+visualise results of group-by and
+<a href='https://dplyr.tidyverse.org/reference/summarise.html'>summarise</a> operations.</p>
     </div>
 
     <pre class="usage"><span class='fu'>make_barplot</span><span class='op'>(</span><span class='va'>col_chart_df</span>, <span class='va'>x_lab</span>, <span class='va'>y_lab</span>, <span class='va'>axis_font_size</span>, <span class='va'>lab_font_size</span><span class='op'>)</span></pre>
@@ -190,7 +192,7 @@ labels.</p></td>
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
     <p>a <a href='https://ggplot2.tidyverse.org/reference/ggplot.html'>ggplot</a> object that can be passed to
-  renderPlot to display in a Shiny application.</p>
+  <code><a href='https://rdrr.io/pkg/shiny/man/renderPlot.html'>renderPlot</a></code> to display in a Shiny application.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

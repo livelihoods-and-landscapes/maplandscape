@@ -2,7 +2,8 @@
 #'
 #' Generate and style a bar plot which visualises summary statistics (mean, sum,
 #' count) of values in a group. Designed to be used in  a Shiny application to
-#' visualise results of \code{group_by} and \code{summarise} operations.
+#' visualise results of \link[dplyr]{group-by} and
+#' \link[dplyr]{summarise} operations.
 #'
 #' @param col_chart_df a two column data frame. The first column specifies the
 #'   groupings. The second column specifies the summary statistic per-group.
@@ -14,7 +15,7 @@
 #'   labels.
 #'
 #' @return a \link[ggplot2]{ggplot} object that can be passed to
-#'   \link[Shiny]{renderPlot} to display in a Shiny application.
+#'   \code{\link[shiny]{renderPlot}} to display in a Shiny application.
 #'
 #' @export
 #'
