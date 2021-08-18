@@ -24,7 +24,6 @@
 
 
 make_histogram <- function(chart_active_df, hist_x_var, binwidth, x_lab, y_lab, axis_font_size, lab_font_size) {
-
   chart <-
     ggplot2::ggplot(chart_active_df, ggplot2::aes(.data[[hist_x_var]])) +
     ggplot2::geom_histogram(

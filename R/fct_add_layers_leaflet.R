@@ -38,7 +38,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, o
     map_df <- try(
       map_active_df %>%
         sf::st_transform(4326)
-      )
+    )
 
     if ("try-error" %in% class(map_df)) {
       waiter$hide()

@@ -23,29 +23,28 @@
 #'
 #' @export
 #'
-make_scatter <- function(chart_active_df, scatter_x_var, scatter_y_var, point, x_lab, y_lab, axis_font_size,lab_font_size) {
+make_scatter <- function(chart_active_df, scatter_x_var, scatter_y_var, point, x_lab, y_lab, axis_font_size, lab_font_size) {
+  chart <-
+    ggplot2::ggplot(
+      chart_active_df,
+      ggplot2::aes(.data[[scatter_x_var]], .data[[scatter_y_var]])
+    ) +
+    ggplot2::geom_point(color = "#78c2ad", size = point) +
+    ggplot2::xlab(x_lab) +
+    ggplot2::ylab(y_lab) +
+    ggplot2::theme(
+      plot.background = ggplot2::element_rect(fill = NA, colour = NA),
+      panel.background = ggplot2::element_rect(fill = NA, colour = "#78c2ad"),
+      axis.text.x = ggplot2::element_text(
+        angle = -45,
+        vjust = 1,
+        hjust = 0,
+        size = axis_font_size
+      ),
+      axis.text.y = ggplot2::element_text(size = axis_font_size),
+      axis.title.x = ggplot2::element_text(size = lab_font_size),
+      axis.title.y = ggplot2::element_text(size = lab_font_size)
+    )
 
-    chart <-
-      ggplot2::ggplot(
-        chart_active_df,
-        ggplot2::aes(.data[[scatter_x_var]], .data[[scatter_y_var]])
-      ) +
-      ggplot2::geom_point(color = "#78c2ad", size = point) +
-      ggplot2::xlab(x_lab) +
-      ggplot2::ylab(y_lab) +
-      ggplot2::theme(
-        plot.background = ggplot2::element_rect(fill = NA, colour = NA),
-        panel.background = ggplot2::element_rect(fill = NA, colour = "#78c2ad"),
-        axis.text.x = ggplot2::element_text(
-          angle = -45,
-          vjust = 1,
-          hjust = 0,
-          size = axis_font_size
-        ),
-        axis.text.y = ggplot2::element_text(size = axis_font_size),
-        axis.title.x = ggplot2::element_text(size = lab_font_size),
-        axis.title.y = ggplot2::element_text(size = lab_font_size)
-      )
-
-    chart
+  chart
 }

@@ -22,7 +22,6 @@
 #'
 
 add_column <- function(mutate_df, mutate_conditions, col_name) {
-
   mutate_expr <- tryCatch(
     error = function(cnd) {
       "mutate error"
