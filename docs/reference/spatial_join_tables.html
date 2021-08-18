@@ -42,7 +42,8 @@
 <meta property="og:title" content="Spatial join of two layers — spatial_join_tables" />
 <meta property="og:description" content="Perform a spatial inner join or left join operation on two layers based on
 largest intersection between spatial features. Spatial joins are performed
-using sf's st_join." />
+using sf's
+st_join." />
 
 
 
@@ -154,7 +155,8 @@ using sf's st_join." />
     <div class="ref-description">
     <p>Perform a spatial inner join or left join operation on two layers based on
 largest intersection between spatial features. Spatial joins are performed
-using sf's <code>st_join</code>.</p>
+using <a href='https://r-spatial.github.io/sf/index.html'>sf</a>'s
+<a href='https://r-spatial.github.io/sf/reference/st_join.html'>st_join</a>.</p>
     </div>
 
     <pre class="usage"><span class='fu'>spatial_join_tables</span><span class='op'>(</span><span class='va'>f_left</span>, <span class='va'>f_right</span>, <span class='va'>j_type</span><span class='op'>)</span></pre>
@@ -164,11 +166,13 @@ using sf's <code>st_join</code>.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>f_left</th>
-      <td><p>Left table in spatial joins.</p></td>
+      <td><p>left table in spatial joins - a spatial
+(<a href='https://r-spatial.github.io/sf/index.html'>sf</a>) data frame.</p></td>
     </tr>
     <tr>
       <th>f_right</th>
-      <td><p>Right table in spatial joins.</p></td>
+      <td><p>Right table in spatial joins - a spatial
+(<a href='https://r-spatial.github.io/sf/index.html'>sf</a>) data frame.</p></td>
     </tr>
     <tr>
       <th>j_type</th>
@@ -179,14 +183,16 @@ spatial joins include inner and left joins.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>j_df</code> A layer of class sf (i.e. spatial features and attribute
-  columns) returned by the spatial join.</p>
+    <p><code>j_df</code> A layer of class - a spatial
+  (<a href='https://r-spatial.github.io/sf/index.html'>sf</a>) data frame (i.e.
+  spatial features and attribute columns) returned by the spatial join.</p>
     <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
 
-    <p>Geometries of both spatial tables are checked for validity (using sf's
-<code>st_is_valid</code>) and that they are not empty (using sf's
-<code>st_is_empty</code>). Invalid geometries are dropped before performing spatial
-joins.</p>
+    <p>Geometries of both spatial tables are checked for validity (using
+<a href='https://r-spatial.github.io/sf/index.html'>sf</a>'s <code>st_is_valid</code>)
+and that they are not empty (using
+<a href='https://r-spatial.github.io/sf/index.html'>sf</a>'s <code>st_is_empty</code>).
+Invalid geometries are dropped before performing spatial joins.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

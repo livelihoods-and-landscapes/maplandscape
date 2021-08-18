@@ -113,8 +113,20 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/livelihoods-and-landscapes/maplandscape">maplandscape</a></span><span class="op">)</span></code></pre></div>
+<p><em>Combine Spatial Layers</em> provides tools for performing spatial joins. A spatial join allows you to combine attributes from two spatial layers based upon the feature’s relationship in space.</p>
+<p>A spatial join could be useful in the following scenario: you have been mapping farms using QField and have a spatial layer storing the outline of fields and attributes about each field (e.g. farmer name, fertiliser use etc.). You might want to combine your map of field outlines with another spatial layer (e.g. tax allotment, village boundaries, census boundaries). This would involve assigning attributes in your village boundary layer (e.g. village name, village id) to fields whose outline overlaps with the village extent.</p>
+<p>In this maplandscape features are joined based on the largest intersection (largest overlap) between two features (using <a href="https://r-spatial.github.io/sf/reference/st_join.html">sf</a>’s <code>st_join</code>). If 30% of a field overlapped with Village A and 70% of a field overlapped with Village B, the field would be assigned the attributes of Village B. Another way to think of this is: the field is getting the columns from the table associated with village boundaries with the values coming from the row in village boundaries table corresponding to the village with the largest overlap with the field.</p>
+<p>The following diagram illustrates the process of performing a spatial join using the field-to-village example.</p>
+<p><img src="spatial-join.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Use the <em>Table analysis</em> tools to select the <em>Combine Spatial Layers</em> option. Scroll down to the <em>Table Analysis</em> section in the side bar of the Data tab.</p>
+<p><img src="scroll-down-to-table-analysis.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>You will need to have two spatial layers loaded into the app to perform a spatial join. Under the <em>Select left table in join</em> and <em>Select right table in join</em> dropdown lists you will need to specify the two spatial layers you will join together. The attributes of the <em>right table</em> will be appended to the attribute table of the <em>left table</em> - which table you select as left and right matters.</p>
+<p>You can choose the <em>Join Type</em>. A <em>spatial - inner</em> join keeps only features in the left table that intersect with a feature in the right table. A <em>spatial - left</em> join keeps all features in the left table.</p>
+<p>Enter a <em>Table name</em> - this will be label for the output of the spatial join which you can select in the <em>Select active layer</em> dropdown list to explore in DataTables, web maps, or charts.</p>
+<p><img src="setup-spatial-join.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Scroll to the top of the side bar and select the output of the spatial join in the <em>Select active layer</em> dropdown list.</p>
+<p>You can explore the output of the spatial join in the DataTable - you should see the columns from the right table joined to the end (right) of the spatial join output.</p>
+<p><img src="spatial-join-output.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

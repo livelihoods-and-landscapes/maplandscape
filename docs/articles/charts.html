@@ -113,13 +113,49 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/livelihoods-and-landscapes/maplandscape">maplandscape</a></span><span class="op">)</span></code></pre></div>
+<p>Under the <em>Charts</em> tab are a range of tools to generate and style charts to visualise patterns in data loaded into the Shiny application. The charts are generated using the <a href="https://ggplot2.tidyverse.org">ggplot</a> package and can be exported as a .png file. For further information about best-practice for using charts <a href="https://clauswilke.com/dataviz/">Fundamentals of Data Visualisation</a> is recommended.</p>
+<div id="barplots" class="section level2">
+<h2 class="hasAnchor">
+<a href="#barplots" class="anchor"></a>Barplots</h2>
+<p><a href="https://clauswilke.com/dataviz/visualizing-amounts.html">Barplots</a> can be used to visualise amounts for a set of groups or categories. maplandscape uses ggplot’s <a href="https://ggplot2.tidyverse.org/reference/geom_bar.html">geom_col</a> to generate barplots.</p>
+<p>Head to the <em>Charts</em> tab in the navbar and select the layer that contains columns that you want to visualise on a barplot.</p>
+<p><img src="chart-navbar.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Select <em>bar plot</em> from the dropdown list of available <em>Chart type</em>s.</p>
+<p><img src="select-barplot.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Select the <em>Grouping variable</em> and the <em>Summary variable</em>; the <em>Grouping variable</em> specifies the set of groups that amounts of the of <em>Summary variable</em> will be computed for. You can select from <em>count</em>, <em>sum</em>, or <em>mean</em> to compute amounts of the <em>Summary variable</em> per-group.</p>
+<p><img src="setup-barplot.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>There are a range of other chart styling options you can set. You can use the slider to adjust the chart height to fill your display or requirements for export. There are also options to specify axis labels and font sizes.</p>
+<p><img src="style-barplot.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Click the <em>draw chart</em> button to render the barplot.</p>
+<p><img src="draw-button.png" width="10%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p><img src="draw-barplot.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
+<div id="histograms" class="section level2">
+<h2 class="hasAnchor">
+<a href="#histograms" class="anchor"></a>Histograms</h2>
+<p>Histograms are used to visualise the distribution of a continuous variable. Under the <em>Chart type</em> dropdown list select <em>Hisotgram</em>.</p>
+<p><img src="select-histogram.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Use the <em>X-axis variable</em> dropdown list to select the continuous variable to generate a histogram for and enter a <em>Histogram bin width</em> to specify the width of bins for the histogram.</p>
+<p><img src="setup-histogram.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Click the <em>draw chart</em> button to render the histogram.</p>
+<p><img src="draw-button.png" width="10%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p><img src="draw-histogram.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
+<div id="scatter-charts" class="section level2">
+<h2 class="hasAnchor">
+<a href="#scatter-charts" class="anchor"></a>Scatter Charts</h2>
+<p>Scatter charts are used to visualise the relationship (or correlation) between two variables. You can select select <em>scatter</em> from the dropdown list of <em>Chart type</em>s and select an <em>X-axis variable</em> and <em>Y-axis variable</em> to choose the two columns in the selected layer to plot on the scatter chart.</p>
+<p><img src="select-scatter.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>You can choose similar chart styling options for chart height, point size, and axis labels and fonts. When you are ready you can click the <em>draw chart</em> button to draw the scatter chart.</p>
+<p><img src="draw-scatter.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

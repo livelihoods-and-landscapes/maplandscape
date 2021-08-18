@@ -22,11 +22,11 @@ labels.}
 }
 \value{
 a \link[ggplot2]{ggplot} object that can be passed to
-  \code{\link[shiny]{renderPlot}} to display in a Shiny application.
+  \link[shiny]{renderPlot} to display in a Shiny application.
 }
 \description{
 Generate and style a bar plot which visualises summary statistics (mean, sum,
 count) of values in a group. Designed to be used in  a Shiny application to
-visualise results of \link[dplyr]{group-by} and
+visualise results of \link[dplyr]{group_by} and
 \link[dplyr]{summarise} operations.
 }

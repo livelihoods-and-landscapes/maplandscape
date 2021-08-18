@@ -60,4 +60,10 @@ Click the *draw chart* button to render the histogram.
 
 ## Scatter Charts
 
-Scatter charts are used to visualise the relationship (or correlation) between two variables. 
+Scatter charts are used to visualise the relationship (or correlation) between two variables. You can select select *scatter* from the dropdown list of *Chart type*s and select an *X-axis variable* and *Y-axis variable* to choose the two columns in the selected layer to plot on the scatter chart. 
+
+<img src="select-scatter.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
+
+You can choose similar chart styling options for chart height, point size, and axis labels and fonts. When you are ready you can click the *draw chart* button to draw the scatter chart. 
+
+<img src="draw-scatter.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>

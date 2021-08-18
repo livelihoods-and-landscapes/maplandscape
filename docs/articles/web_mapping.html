@@ -113,8 +113,16 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/livelihoods-and-landscapes/maplandscape">maplandscape</a></span><span class="op">)</span></code></pre></div>
+<p>Under the <em>Map</em> tab are a range of tools to generate and style web maps of spatial data in GeoPackage files using <a href="https://rstudio.github.io/leaflet/">Leaflet</a>.</p>
+<p><img src="map-navbar.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>In the side bar, <em>Select active layer</em> presents a dropdown list of layers that you can render on the map. If you try to select a non-spatial layer you will get a warning.</p>
+<p><em>Select variable</em> is a dropdown list of columns associated with the selected layer, the values of this column will be mapped to a colour palette when visualising features on the map.</p>
+<p>There are a range of other map styling options such as picking the <em>Fill colour palette</em> (refer to this <a href="https://clauswilke.com/dataviz/color-basics.html">reference</a> for useful advice on choosing colour palettes), <em>Opacity</em> of features, <em>Line width</em>, and whether to display a legend.</p>
+<p><img src="setup-map-1.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>You can scroll down the sidebar to find more options such as whether to display a legend and to create a legend title.</p>
+<p><img src="setup-map-2.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>At the bottom of the side bar is a widget where you can select one or more columns from the layer to generate popup labels. When you click on a feature on the map, that feature’s values for the selected columns will appear as a popup.</p>
+<p><img src="popup.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

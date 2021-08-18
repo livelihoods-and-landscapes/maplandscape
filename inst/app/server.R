@@ -551,7 +551,7 @@ app_server <- function(input, output, session) {
   # select tables for spatial joins
   # select "left" table in spatial join
   observe({
-    df <- app$data_file
+    df <- app_data$data_file
     joined_df <- app_data$joined_df
     choices <- unique(df$layer_disp_name_idx)
     nm_jdf <- names(joined_df)
