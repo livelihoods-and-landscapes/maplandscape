@@ -1,8 +1,5 @@
 # maplandscape
 
-<!-- badges: start -->
-  [![R-CMD-check](https://github.com/livelihoods-and-landscapes/maplandscape/workflows/R-CMD-check/badge.svg)](https://github.com/livelihoods-and-landscapes/maplandscape/actions)
-  <!-- badges: end -->
 
 ## Overview
 
