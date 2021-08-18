@@ -1,5 +1,9 @@
 # maplandscape
 
+<!-- badges: start -->
+  [![R-CMD-check](https://github.com/livelihoods-and-landscapes/maplandscape/workflows/R-CMD-check/badge.svg)](https://github.com/livelihoods-and-landscapes/maplandscape/actions)
+  <!-- badges: end -->
+
 ## Overview
 
 A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages.

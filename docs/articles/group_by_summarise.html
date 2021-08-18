@@ -113,8 +113,15 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/livelihoods-and-landscapes/maplandscape">maplandscape</a></span><span class="op">)</span></code></pre></div>
+<p>If you look at the top of the <em>Data</em> tab you will see two options <em>Data: Raw</em> and <em>Data: Summary</em>. You can use the <em>Data: Summary</em> tab to visualise custom summary tables of layers in a GeoPackage. The summary tables allow you to visualise the results of <a href="https://r4ds.had.co.nz/transform.html#grouped-summaries-with-summarise"><code>group_by</code> and <code>summarise</code> operations</a> where summary statistics for a selection of columns are computed for a set of groups. An example, computing the area of croplands in each village (where village is the grouping variable).</p>
+<p><img src="summary-tab.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Scroll down to the <em>Table Analysis</em> section of the side bar and select <em>Summary Tables</em>.</p>
+<p><img src="summary-table-1.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>In the <em>Grouping variable(s)</em> widget select one or more columns in the active layer that describe each group that you wish to compute summary statistics for.</p>
+<p>In the <em>Summarising variable(s)</em> widget select one or more columns in the active layer that you wish to compute summary statistics for within each group. For categorical variables the count of observations per-group is returned and for numeric variables the mean and sum are computed.</p>
+<p><img src="summary-table-2.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Click on the <em>Data: Summary</em> tab to view the summary table.</p>
+<p><img src="summary-table-output.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
