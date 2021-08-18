@@ -24,6 +24,7 @@
 #' @export
 #'
 make_scatter <- function(chart_active_df, scatter_x_var, scatter_y_var, point, x_lab, y_lab, axis_font_size,lab_font_size) {
+
     chart <-
       ggplot2::ggplot(
         chart_active_df,

@@ -1353,8 +1353,7 @@ app_server <- function(input, output, session) {
     color = "rgba(44,62,80,.6)"
   )
 
-  # Map options
-  # update select input for mapping layer
+  # update select input for chart layer
   observe({
     df <- app_data$data_file
     joined_df <- app_data$joined_df
