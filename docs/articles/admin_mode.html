@@ -113,12 +113,49 @@
 
     
     
-
+<p>The <em>Admin</em> tab provides tools for data cleaning and editing data in GeoPackage layers. You can use the <em>Admin mode</em> to edit the geometries of features using a map interface or edit attribute records using an editable data table.</p>
+<div id="load-data" class="section level2">
+<h2 class="hasAnchor">
+<a href="#load-data" class="anchor"></a>Load Data</h2>
+<p>You can load GeoPackages into the <em>Admin</em> tab through the <em>Upload local data</em> file input (uploading local GeoPackages) or, if you are signed in with your Google identity, loading a file from your Google Cloud storage - click the <em>Download GCS object</em> button to load GeoPackage from Google Cloud Storage into the app in admin mode.</p>
+<p><img src="admin-mode-ui.jpg" width="100%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
+<div id="editing-options" class="section level2">
+<h2 class="hasAnchor">
+<a href="#editing-options" class="anchor"></a>Editing Options</h2>
+<p>Use the <em>Select layer to edit</em> dropdown list to select the layer in the GeoPackage that you’d like to edit. If the layer is spatial you will be able to edit in the map interface (i.e. adjust the feature’s geometry) or in the table interface (i.e. edit feature attribute values)</p>
+<p><img src="admin-mode-1.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<div id="edit-shapes" class="section level3">
+<h3 class="hasAnchor">
+<a href="#edit-shapes" class="anchor"></a>Edit Shapes</h3>
+<p>To edit a feature’s geometry make sure the layer selected is spatial. Then click on the feature you wish to edit in the map. This will bring up a popup map zoomed in on the feature. Click on the edit icon to edit a feature’s geometry (either move vertices or move the shape). Click on the delete icon to delete the feature.</p>
+<p><img src="admin-mode-edit-map.png" width="100%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>If you have selected a non-spatial layer you will get a warning around the <em>Select layer to edit</em> dropdown list.</p>
+<p><img src="admin-mode-5.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
+<div id="edit-tables" class="section level3">
+<h3 class="hasAnchor">
+<a href="#edit-tables" class="anchor"></a>Edit Tables</h3>
+<p>Clicking on the <em>Table</em> tab will render the active layer in an editable data table. You can click on a cell and enter or edit values. The app will check that the value you enter can be converted to the column type before applying the edit.</p>
+<p><img src="admin-mode-6.jpg" width="100%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>You can select one or more rows and delete them. To delete rows you need to specify an ID column (or ID suffix pattern common across ID columns in all layers in the GeoPackage - e.g. <code>_id</code>). This allows associated records for the deleted row to also be dropped from other tables in the GeoPackage.</p>
+<p>As you edit and delete rows in GeoPackage layers, these edits are applied to a temporary copy of the layer in-memory. To apply these edits or deletes back to the GeoPackage file loaded into the app instance click either <em>save edits</em> or <em>delete records</em>.</p>
+<p><img src="delete-rows.jpg" width="100%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+</div>
+</div>
+<div id="save-edits" class="section level2">
+<h2 class="hasAnchor">
+<a href="#save-edits" class="anchor"></a>Save Edits</h2>
+<p>To download a copy of your edited GeoPackage click <em>download edits</em>. This will download the edited GeoPackae and a log of edits applied to a .zip file.</p>
+<p>If you are signed in with Google, you will a <em>Sync edits to Google Cloud Storage</em> section in the sidebar. You can enter the URI for an API where you can POST your edits to which can handle your edited GeoPackage (e.g. update your Google Cloud Storage with latest version of the GeoPackage with edits applied or data cleaned). An example of an app that can handle POSTing edited GeoPackages in maplandscape and store the edited or cleaned GeoPackage is <a href="https://github.com/livelihoods-and-landscapes/syncmaplandscape">here</a>: a <a href="https://fastapi.tiangolo.com">FastAPI</a> app which creates backup of GeoPackages in Google Cloud Storage before saving the edited data.</p>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

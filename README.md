@@ -20,11 +20,11 @@ This package was developed as part of the [Livelihoods and Landscapes](https://l
 
 ## Use
 
-The vignettes provide a range of tutorials for exploring and analysing data in GeoPackages using the maplandscape app.
+The vignettes provide a range of tutorials for exploring and analysing data in GeoPackages using the maplandscape app. These include tutorials demonstrating how to perform a range of table analysis operations (add columns, filter rows, join tables), spatial analysis operations (spatial join - combine spatial layers), style your own web maps, and create a range of charts to visualise data in your GeoPackages. 
 
-The figure below provides an overview of the UI for the maplandscape app provided with this package. 
+The figure below provides an overview of the UI for the maplandscape app provided with this package. Each of the main tabs in the app have a similar layout with a scrollable sidebar containing options for loading GeoPackages into the app, selecting a layer in a GeoPackage, querying and analysing GeoPackage data, and styling charts and web maps. The data in GeoPackage layers is rendered in the main panel of the page in either table, web map, or chart formats.  
 
-<img src="man/figures/ui-overview.png" width="100%" style="display: block; margin: auto;"/>
+<img src="man/figures/ui-overview.jpg" width="100%" style="display: block; margin: auto;"/>
 
 ### Local R Package
 
