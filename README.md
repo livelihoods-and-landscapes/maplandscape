@@ -70,7 +70,7 @@ cd maplandscape
 There is a sub-directory named `docker`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
 
 ```
-cd docker
+cd /inst/docker
 
 docker build -t maplandscape .
 ```
