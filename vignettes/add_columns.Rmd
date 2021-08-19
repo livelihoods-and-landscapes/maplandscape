@@ -26,4 +26,4 @@ This will bring up a modal popup window where you can enter the name of the colu
 
 <img src="add-column-2.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
 
-Depending on whether the result of the `add_column` operation was successful or not you will get a success or error notification. You can select the layer that you added a column to in the *Select active layer* widget to inspect the new column. 
+Depending on whether the result of the `add_column` operation was successful or not you will get a success or error notification. You can select the layer that you added a column to in the *Select active layer* widget to inspect the new column.

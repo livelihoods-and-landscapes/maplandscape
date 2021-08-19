@@ -1,6 +1,6 @@
 Package: maplandscape
 Type: Package
-Title: Shiny application to explore and visualise GeoPackage data.
+Title: Shiny application to explore and visualise GeoPackage data
 Version: 0.1.0
 Authors@R: 
     c(person(given = "John",
@@ -48,7 +48,6 @@ Imports:
 RoxygenNote: 7.1.1
 Suggests: 
     testthat (>= 3.0.0),
-    knitr,
-    shinytest
-VignetteBuilder: knitr
+    knitr
 Config/testthat/edition: 3
+VignetteBuilder: knitr
