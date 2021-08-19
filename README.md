@@ -20,6 +20,12 @@ This package was developed as part of the [Livelihoods and Landscapes](https://l
 
 ## Use
 
+The vignettes provide a range of tutorials for exploring and analysing data in GeoPackages using the maplandscape app.
+
+The figure below provides an overview of the UI for the maplandscape app provided with this package. 
+
+<img src="man/figures/ui-overview.png" width="100%" style="display: block; margin: auto;"/>
+
 ### Local R Package
 
 Install as an R package:
