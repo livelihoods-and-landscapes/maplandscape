@@ -5,7 +5,7 @@
 
 A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages.
 
-A pre-built [Shiny](https://shiny.rstudio.com) is provided with this package which uses these functions and provides tools for:
+A pre-built [Shiny](https://shiny.rstudio.com) application is provided with this package which uses these functions and provides tools for:
 
 * Syncing data stored in multiple GeoPackages.
 * Exploring GeoPackage layers in interactive tables, web maps, and charts.
