@@ -100,7 +100,7 @@
 
       
 
-      </header><script src="add_columns_files/accessible-code-block-0.0.1/empty-anchor.js"></script><div class="row">
+      </header><script src="add_columns_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Add Columns</h1>
@@ -113,8 +113,13 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/livelihoods-and-landscapes/maplandscape">maplandscape</a></span><span class="op">)</span></code></pre></div>
+<p>maplandscape’s Shiny app provides tools for adding new columns to layers in GeoPackages as a function of values in existing columns. This is based on dplyr’s <a href="https://r4ds.had.co.nz/transform.html#add-new-variables-with-mutate">mutate</a> function.</p>
+<p>To add a column to a layer in the app scroll down to the <em>Table Analysis</em> section of the side bar and select <em>Add Column</em> under the <em>Select analysis</em> dropdown list.</p>
+<p><img src="add-column-1.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Choose the layer that you wish to add a column to and click the <em>Add Column Options</em> button.</p>
+<p>This will bring up a modal popup window where you can enter the name of the column you wish to create and specify how to compute values in this new column. Standard <a href="https://r4ds.had.co.nz/transform.html#add-new-variables-with-mutate">R</a> and <a href="https://dplyr.tidyverse.org">dyplr</a> syntax can be used here. For example, <code>time_minutes * 60</code> would convert numeric values representing minutes in a <code>time_minutes</code> column to a new set of values in seconds.</p>
+<p><img src="add-column-2.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Depending on whether the result of the <code>add_column</code> operation was successful or not you will get a success or error notification. You can select the layer that you added a column to in the <em>Select active layer</em> widget to inspect the new column.</p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

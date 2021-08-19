@@ -33,7 +33,6 @@ mod_get_layers_UI <- function(id, label, multiple, accept) {
 #'   input; file_path - temporary file path to data; and file_type - file type.
 #'
 #' @import shiny
-#'
 #' @export
 
 mod_get_layers_Server <- function(id) {

@@ -15,9 +15,10 @@
 #'
 #' @return \link[leaflet]{leaflet} proxy object.
 #'
+#' @importFrom magrittr %>%
 #' @export
 #'
-#' @importFrom magrittr %>%
+#'
 
 
 add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, opacity, map_line_width, map_line_colour, waiter) {

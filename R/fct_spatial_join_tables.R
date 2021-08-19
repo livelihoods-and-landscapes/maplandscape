@@ -21,7 +21,7 @@
 #' @return \code{j_df} A layer of class - a spatial
 #'   (\href{https://r-spatial.github.io/sf/index.html}{sf}) data frame (i.e.
 #'   spatial features and attribute columns) returned by the spatial join.
-#'
+#' @export
 
 spatial_join_tables <- function(f_left, f_right, j_type) {
 

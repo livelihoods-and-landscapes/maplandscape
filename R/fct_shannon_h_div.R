@@ -25,7 +25,7 @@ shannon_h_div <- function(...) {
   # check only numeric vectors uploaded
   types <- purrr::map_df(df, class)
   if (any(types %in% c("numeric", "integer", "double")) == FALSE) {
-    return
+    return()
   }
 
   # rescale all values to add up to 1

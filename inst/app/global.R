@@ -1,5 +1,6 @@
 library(magrittr)
 library(shiny)
+library(maplandscape)
 
 # Google OAuth2.0 app
 if (interactive()) {

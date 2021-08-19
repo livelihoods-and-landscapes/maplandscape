@@ -20,6 +20,7 @@
 #'   class \href{https://r-spatial.github.io/sf/index.html}{sf}(i.e. spatial features) if f_left is spatial and of class
 #'   \href{https://r-spatial.github.io/sf/index.html}{sf}. Otherwise returns a data frame.
 #'
+#' @import rlang
 #' @export
 
 join_tables <- function(f_left, f_right, j_type, pk, fk) {

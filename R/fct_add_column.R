@@ -18,6 +18,7 @@
 #'
 #' @return appends a new column to \code{mutate_df}.
 #'
+#' @import rlang
 #' @export
 #'
 
@@ -30,7 +31,7 @@ add_column <- function(mutate_df, mutate_conditions, col_name) {
       mutate_expr <-
         call2(
           dplyr::mutate,
-          rlang::parse_expr("mutate_df"),
+          parse_expr("mutate_df"),
           !!col_name := parse_expr(mutate_conditions)
         )
     }
