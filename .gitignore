@@ -10,3 +10,5 @@ notes/
 inst/doc
 
 dev/
+
+inst/app/rsconnect/
