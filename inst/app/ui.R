@@ -7,8 +7,23 @@ navbarPage(
   id = "navbar",
   tabPanel(
     "Home",
+    shinyjs::useShinyjs(),
     includeCSS(file.path("www", "style.css")),
     fluidPage(
+      # Loading screen
+      div(
+        id = "loading-screen",
+        fluidRow(
+          style = "min-height: 25%; min-height: 25vh;"
+        ),
+        fluidRow(
+          style = "min-height: 25%; min-height: 25vh;",
+          h2("Loading app...",
+             class = "mx-auto text-center")
+        )
+
+      ),
+
       fluidRow(
         style = "min-height: 25%; min-height: 25vh;"
       ),

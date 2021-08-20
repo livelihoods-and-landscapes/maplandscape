@@ -4,6 +4,16 @@ options(shiny.maxRequestSize = 5000 * 1024^2)
 
 app_server <- function(input, output, session) {
 
+  # hold the loading screen for 1 second
+  Sys.sleep(1)
+
+  # hide loading screen
+  shinyjs::hide(
+    id = "loading-screen",
+    anim = TRUE,
+    animType = "fade"
+    )
+
   # move to data tab when action button pressed on landing page
   observeEvent(input$enter, {
     updateNavbarPage(session, "navbar", selected = "Data")

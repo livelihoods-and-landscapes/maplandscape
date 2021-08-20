@@ -37,6 +37,7 @@ Imports:
     sf,
     shiny,
     shinyFeedback,
+    shinyjs,
     shinythemes,
     shinyWidgets,
     stringr,
