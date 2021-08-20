@@ -59,7 +59,7 @@ RStudio provide a detailed tutorial for deploying apps to shinyapps.io [here](ht
 
 ### Docker and host in the cloud
 
-Clone the maplandscape GitHub repo:
+This requires installing [git](https://git-scm.com/downloads) and [docker](https://www.docker.com). Clone the maplandscape GitHub repo:
 
 ```
 git clone https://github.com/livelihoods-and-landscapes/maplandscape.git

@@ -25,10 +25,10 @@ Clone the maplandscape GitHub repo:
 ```
 git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
 
-cd maplandscape
+cd maplandscape/inst/docker
 ```
 
-There is a sub-directory named `docker`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
+There is a sub-directory named `inst/docker`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
 
 ```
 docker build -t maplandscape .
