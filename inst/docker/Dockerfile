@@ -38,6 +38,9 @@ RUN R -e 'install.packages(c( \
 
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
 
+# add shiny to the staff group to write app_cache and sass to site-library dir
+RUN usermod -a -G staff shiny
+
 # expose port
 EXPOSE 3838
 
