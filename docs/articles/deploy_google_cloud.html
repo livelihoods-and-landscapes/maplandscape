@@ -144,7 +144,7 @@ cd maplandscape/inst/docker</code></pre>
 <p>Push image to Google Container Registry:</p>
 <pre><code>docker push gcr.io./&lt;project-id&gt;/&lt;image-name&gt;</code></pre>
 <p>Deploy the containerised Shiny app on Google Cloud Run using <code>gcloud</code> command line tools:</p>
-<pre><code>gcloud run deploy &lt;service name&gt; --image gcr.io/&lt;gcs project id&gt;/&lt;image name&gt; --platform managed --port 3838 --memory 2Gi  --allow-unauthenticated --cpu 1
+<pre><code>gcloud run deploy &lt;service name&gt; --image gcr.io/&lt;gcs project id&gt;/&lt;image name&gt; --platform managed --port 3838 --memory 2Gi  --allow-unauthenticated --cpu 1 --max-instances 1
 </code></pre>
 <p>Use the <code>--allow-unauthenticaed</code> flag to make the app public and allow it to be launched by unauthenticated users.</p>
 <p>Set the <code>--max-instances 1</code> flag to ensure only Google Cloud Run only launches one Shiny instance.</p>

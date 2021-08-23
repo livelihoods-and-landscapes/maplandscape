@@ -29,10 +29,10 @@ There are a range of other map styling options such as picking the *Fill colour 
 
 You can scroll down the sidebar to find more options such as whether to display a legend and to create a legend title. 
 
-<img src="setup-map-2.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
+<img src="setup-map-2.png" width="95%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
 
 At the bottom of the side bar is a widget where you can select one or more columns from the layer to generate popup labels. When you click on a feature on the map, that feature's values for the selected columns will appear as a popup. 
 
-<img src="popup.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
+<img src="popup.png" width="95%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
 
 

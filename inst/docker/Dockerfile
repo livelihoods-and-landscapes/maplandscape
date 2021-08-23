@@ -9,7 +9,6 @@ libcurl4-openssl-dev \
 libgdal-dev \
 libgeos-dev \
 libgeos++-dev \
-liblwgeom-dev \
 libgit2-dev \
 libicu-dev \
 libpng-dev \

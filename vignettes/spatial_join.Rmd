@@ -40,5 +40,5 @@ Scroll to the top of the side bar and select the output of the spatial join in t
 
 You can explore the output of the spatial join in the DataTable - you should see the columns from the right table joined to the end (right) of the spatial join output. 
 
-<img src="spatial-join-output.png" width="50%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
+<img src="spatial-join-output.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
 
