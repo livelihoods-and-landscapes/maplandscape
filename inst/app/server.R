@@ -5,7 +5,7 @@ options(shiny.maxRequestSize = 5000 * 1024^2)
 app_server <- function(input, output, session) {
 
   # hold the loading screen for 1 second
-  Sys.sleep(1)
+  Sys.sleep(3)
 
   # hide loading screen
   shinyjs::hide(
