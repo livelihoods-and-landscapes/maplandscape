@@ -5,18 +5,20 @@ FROM rocker/shiny:latest
 RUN apt-get update && apt-get install -y  \
 gdal-bin \
 git-core \
-libcairo2-dev \
 libcurl4-openssl-dev \
 libgdal-dev \
 libgeos-dev \
 libgeos++-dev \
+liblwgeom-dev \
 libgit2-dev \
 libicu-dev \
 libpng-dev \
 libproj-dev \
+libsqlite3-dev \
+sqlite3 \
 libssl-dev \
 libudunits2-dev \
-libxml2-dev make pandoc pandoc-citeproc \
+libxml2-dev \
 && rm -rf /var/lib/apt/lists/*
 
 ## update system libraries
