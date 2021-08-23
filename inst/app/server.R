@@ -796,7 +796,7 @@ app_server <- function(input, output, session) {
       return()
     }
 
-    if (filter_out == "filter error") {
+    if (is.character(filter_out) & ("filter error" %in% filter_out)) {
       shiny::showNotification(
         "error filtering rows",
         type = "error",
@@ -809,7 +809,7 @@ app_server <- function(input, output, session) {
 
     # filter_rows() should return an object of class data frame
     # sf objects extend class data frame
-    if ("data.frame" %in% class(filter_out) & filter_out != "filter error") {
+    if ("data.frame" %in% class(filter_out)) {
       app_data$joined_df[[input$filter_tbl_name]] <- filter_out
       shiny::showNotification(
         "filter complete - new table in active layers",
@@ -942,7 +942,7 @@ app_server <- function(input, output, session) {
       return()
     }
 
-    if (mutate_out == "mutate error") {
+    if (is.character(mutate_out) & ("mutate error" %in% mutate_out)) {
       shiny::showNotification(
         "error adding column - check condition",
         type = "error",

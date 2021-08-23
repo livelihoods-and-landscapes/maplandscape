@@ -33,6 +33,7 @@
 #' @export
 
 filter_rows <- function(filter_df, filter_conditions) {
+
   filter_expr <- tryCatch(
     error = function(cnd) {
       "filter error"
