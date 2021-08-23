@@ -43,3 +43,6 @@ Generate and style a histogram from a column in a (spatial -
 be used in a Shiny application to visualise the distribution of continuous
 variables in layers in a GeoPackage.
 }
+\details{
+This is a helper function to pass user defined data, aesthetic mappings, and chart styling parameters to \link[ggplot2]{ggplot} within a Shiny app.
+}

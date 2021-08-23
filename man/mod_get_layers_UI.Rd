@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_get_layers.R
 \name{mod_get_layers_UI}
 \alias{mod_get_layers_UI}
-\title{get_layers UI}
+\title{Upload GeoPackages to a Shiny App}
 \usage{
 mod_get_layers_UI(id, label, multiple, accept)
 }
@@ -16,5 +16,5 @@ mod_get_layers_UI(id, label, multiple, accept)
 \item{accept}{file types to accept - vector of strings indicating extensions or MIME type}
 }
 \description{
-Generate UI for file upload using shiny's \code{fileInput}.
+Generate UI component for file upload using Shiny's \code{fileInput} to allow users to upload GeoPackages to a Shiny app.
 }

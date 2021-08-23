@@ -1,6 +1,6 @@
-#' get_layers UI
+#' Upload GeoPackages to a Shiny App
 #'
-#' @description Generate UI for file upload using shiny's \code{fileInput}.
+#' @description Generate UI component for file upload using Shiny's \code{fileInput} to allow users to upload GeoPackages to a Shiny app.
 #'
 #' @param id inputID for file upload UI component.
 #' @param label label for file upload widget on the UI.
@@ -21,10 +21,10 @@ mod_get_layers_UI <- function(id, label, multiple, accept) {
   )
 }
 
-#' get_layers Server
+#' Process user uploaded GeoPackages within a Shiny app
 #'
 #' @description Process files (GeoPackages) uploaded by the user. For each file
-#'   uploaded, call \code{list_layers()} to list all layers in the GeoPacakge
+#'   uploaded, call \code{list_layers} to list all layers in the GeoPacakge
 #'   and the temporary location of the GeoPackage.
 #' @param id inputID to correspond to file upload UI component.
 #'

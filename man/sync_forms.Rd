@@ -10,7 +10,7 @@ sync_forms(template, forms)
 \item{template}{A data frame of the format returned by
 shiny's \code{fileInput}. This data frame stores the path of a single
 GeoPackage which can either be a central database that data collected in
-the field is synced to or the "clean" QGS project with no data and an empty
+the field is synced to or a "clean" empty
 GeoPackage with the same layers as the uploaded forms.}
 
 \item{forms}{A data frame of the format returned by

@@ -5,6 +5,8 @@
 #' visualise results of \link[dplyr]{group_by} and
 #' \link[dplyr]{summarise} operations.
 #'
+#' This is a helper function to pass user defined data, aesthetic mappings, and chart styling parameters to \link[ggplot2]{ggplot} within a Shiny app.
+#'
 #' @param col_chart_df a two column data frame. The first column specifies the
 #'   groupings. The second column specifies the summary statistic per-group.
 #' @param x_lab a single element character vector specifying the X-axis label.

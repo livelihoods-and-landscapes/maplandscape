@@ -7,18 +7,18 @@
 list_gcs_bucket_objects(token, bucket)
 }
 \arguments{
-\item{token}{an OAuth2.0 token which allows a user to make authenticated HTTP
+\item{token}{a \href{https://httr.r-lib.org/reference/oauth2.0_token.html}{httr OAuth2.0 token} which allows a user to make authenticated HTTP
 requests to the Google Cloud Storage API.}
 
 \item{bucket}{name of Google Cloud Storage bucket to list objects in.}
 }
 \value{
-items - a character vector listing the names of GeoPacakges in Google
+items - a character vector of the names of GeoPacakges in the Google
   Cloud Storage bucket.
 }
 \description{
 Makes a request to a user specified Google Cloud Storage bucket to list all
 objects in the bucket. Filters the response to return a list of GeoPackages
-(if any). This function uses the \code{httr} package for making authenticated
+(if any). This function uses the \href{https://httr.r-lib.org/reference/index.html}{httr} package for making authenticated
 HTTP requests and processing responses.
 }

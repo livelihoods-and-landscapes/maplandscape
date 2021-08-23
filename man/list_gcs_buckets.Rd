@@ -7,7 +7,7 @@
 list_gcs_buckets(token, project_id)
 }
 \arguments{
-\item{token}{an OAuth2.0 token which allows a user to make authenticated HTTP
+\item{token}{a \href{https://httr.r-lib.org/reference/oauth2.0_token.html}{httr OAuth2.0 token} which allows a user to make authenticated HTTP
 requests to the Google Cloud Storage API.}
 
 \item{project_id}{single element character vector of Google Cloud project id.}
@@ -16,5 +16,5 @@ requests to the Google Cloud Storage API.}
 vector of bucket names.
 }
 \description{
-Makes a request to a user specified Google Cloud project to list storage bucekts
+Makes a request to a user specified Google Cloud project to list storage buckets
 }

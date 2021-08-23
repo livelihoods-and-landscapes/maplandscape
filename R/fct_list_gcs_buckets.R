@@ -1,8 +1,8 @@
 #' List Google Cloud Storage buckets
 #'
-#' Makes a request to a user specified Google Cloud project to list storage bucekts
+#' Makes a request to a user specified Google Cloud project to list storage buckets
 #'
-#' @param token an OAuth2.0 token which allows a user to make authenticated HTTP
+#' @param token a \href{https://httr.r-lib.org/reference/oauth2.0_token.html}{httr OAuth2.0 token} which allows a user to make authenticated HTTP
 #'   requests to the Google Cloud Storage API.
 #' @param project_id single element character vector of Google Cloud project id.
 #'

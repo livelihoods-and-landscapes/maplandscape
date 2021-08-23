@@ -4,6 +4,8 @@
 #' \href{https://r-spatial.github.io/sf/index.html}{sf}) data frame. Designed to
 #' be used in a Shiny application to visualise the bivariate relationship between two variables.
 #'
+#' This is a helper function to pass user defined data, aesthetic mappings, and chart styling parameters to \link[ggplot2]{ggplot} within a Shiny app.
+#'
 #' @param chart_active_df data frame containing a column whose values will be
 #'   used to generate a histogram.
 #' @param scatter_x_var a single element character vector specifying the name of

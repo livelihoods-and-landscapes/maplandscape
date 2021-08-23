@@ -40,7 +40,7 @@
 
 
 <meta property="og:title" content="Write a layer to a GeoPackage file — write_tables" />
-<meta property="og:description" content="Write a layer to a GeoPackage file" />
+<meta property="og:description" content="Write a (spatial - sf) data frame to layer in a GeoPackage." />
 
 
 
@@ -150,7 +150,7 @@
     </div>
 
     <div class="ref-description">
-    <p>Write a layer to a GeoPackage file</p>
+    <p>Write a (spatial - <a href='https://r-spatial.github.io/sf/index.html'>sf</a>) data frame to layer in a GeoPackage.</p>
     </div>
 
     <pre class="usage"><span class='fu'>write_tables</span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>gpkg_dir</span>, <span class='va'>lyr</span><span class='op'>)</span></pre>
@@ -160,7 +160,7 @@
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>df</th>
-      <td><p>Data frame or spatial data frame (sf) to write to GeoPackage.</p></td>
+      <td><p>Data frame or spatial data frame (<a href='https://r-spatial.github.io/sf/index.html'>sf</a>) to write to GeoPackage.</p></td>
     </tr>
     <tr>
       <th>gpkg_dir</th>
@@ -172,6 +172,9 @@
     </tr>
     </table>
 
+    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+
+    <p>Designed to be used with Shiny apps where a GeoPackage is in a temporary directory within the app instance.</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -184,7 +187,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by John Duncan.</p>
+  <p>Developed by John Duncan, Kevin Davies.</p>
 </div>
 
 <div class="pkgdown">

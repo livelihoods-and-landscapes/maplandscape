@@ -46,3 +46,6 @@ Generate and style a scatter plot from two numeric columns in a (spatial -
 \href{https://r-spatial.github.io/sf/index.html}{sf}) data frame. Designed to
 be used in a Shiny application to visualise the bivariate relationship between two variables.
 }
+\details{
+This is a helper function to pass user defined data, aesthetic mappings, and chart styling parameters to \link[ggplot2]{ggplot} within a Shiny app.
+}

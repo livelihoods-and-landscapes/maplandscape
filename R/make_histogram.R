@@ -5,6 +5,8 @@
 #' be used in a Shiny application to visualise the distribution of continuous
 #' variables in layers in a GeoPackage.
 #'
+#' This is a helper function to pass user defined data, aesthetic mappings, and chart styling parameters to \link[ggplot2]{ggplot} within a Shiny app.
+#'
 #' @param chart_active_df data frame containing a column whose values will be
 #'   used to generate a histogram.
 #' @param hist_x_var a single element character vector specifying the name of

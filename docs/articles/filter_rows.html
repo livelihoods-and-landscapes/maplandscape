@@ -113,7 +113,14 @@
 
     
     
-
+<p>Filter rows from a layer based on values in existing columns using maplandscape’s <code>filter_rows</code> function. This is based on dplyr’s <a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a>.</p>
+<p>In the Data tab scroll down in the sidebar to the <em>Table Analysis</em> section and select <em>Filter Rows</em> from the dropdown list.</p>
+<p>In the <em>Filter Rows</em> section pick the layer you want to filter rows from using the <em>Select table to filter</em> dropdown list. Click the <em>Filter Options</em> button.</p>
+<p><img src="filter-rows-1-labels.png" width="95%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Enter a condition that evaluates to TRUE to filter rows from the selected layer. Conditions should be specified using dplyr’s <a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a> or R’s syntax; for example, <code>area &gt; 50</code> will select all rows where the <code>area</code> column has a value greater than 50. Enter a name for the layer to store the filtered rows.</p>
+<p><img src="filter-rows-2-labels.png" width="75%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
+<p>Inspect the result of your filter operation by selecting the new filtered layer in the <em>Active Layer</em> dropdown list.</p>
+<p><img src="filter-rows-3-labels.png" width="95%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -125,7 +132,7 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by John Duncan.</p>
+  <p>Developed by John Duncan, Kevin Davies.</p>
 </div>
 
 <div class="pkgdown">

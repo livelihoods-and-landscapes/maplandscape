@@ -2,7 +2,7 @@
 % Please edit documentation in R/mod_get_layers.R
 \name{mod_get_layers_Server}
 \alias{mod_get_layers_Server}
-\title{get_layers Server}
+\title{Process user uploaded GeoPackages within a Shiny app}
 \usage{
 mod_get_layers_Server(id)
 }
@@ -16,6 +16,6 @@ mod_get_layers_Server(id)
 }
 \description{
 Process files (GeoPackages) uploaded by the user. For each file
-  uploaded, call \code{list_layers()} to list all layers in the GeoPacakge
+  uploaded, call \code{list_layers} to list all layers in the GeoPacakge
   and the temporary location of the GeoPackage.
 }

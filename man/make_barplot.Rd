@@ -30,3 +30,6 @@ count) of values in a group. Designed to be used in  a Shiny application to
 visualise results of \link[dplyr]{group_by} and
 \link[dplyr]{summarise} operations.
 }
+\details{
+This is a helper function to pass user defined data, aesthetic mappings, and chart styling parameters to \link[ggplot2]{ggplot} within a Shiny app.
+}

@@ -6,7 +6,11 @@ Authors@R:
     c(person(given = "John",
              family = "Duncan",
              role = c("cre", "aut"),
-             email = "john.duncan@uwa.edu.au"))
+             email = "john.duncan@uwa.edu.au"),
+      person(given = "Kevin",
+             family = "Davies",
+             role = c("aut"),
+             email = "kevin.davies@sydney.edu.au"))
 Description: A Shiny application to explore, visualise, and 
     edit geospatial data stored in GeoPackeges in interactive 
     tables, web maps, and charts. Either deploy and use a pre-built 
