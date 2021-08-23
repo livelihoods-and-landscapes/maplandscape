@@ -1853,6 +1853,12 @@ app_server <- function(input, output, session) {
     } else if (!is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
       edit_df <- edit_df %>%
         sf::st_transform(4326)
+      # make geometry column the end column
+      # this then gets dropped before being rendered on data table
+      # and ensures edits are written to correct row and column index
+      geom_col <- attr(edit_df, "sf_column")
+      edit_df <- edit_df %>%
+        dplyr::relocate(geom_col, .after = tidyselect::last_col())
     } else if (is.na(edit_layer_crs)) {
       edit_df <- edit_df
     }
