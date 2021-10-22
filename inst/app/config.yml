@@ -1,4 +1,4 @@
 default:
   oauth_key: "25228130184-l3g7lpo3b7vblf2orrc4it8i2r9p1dff.apps.googleusercontent.com"
   oauth_secret: "7lYDgQmFpZFDCI6Zr1L27gf9"
-  app_url: "https://map.livelihoods-and-landscapes.com"
+  app_url: "https://livelihoods-and-landscapes.shinyapps.io/demo/"
