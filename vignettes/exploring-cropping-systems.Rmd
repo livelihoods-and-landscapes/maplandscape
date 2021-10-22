@@ -40,7 +40,20 @@ Kava is a shrub plant that is harvested for its roots which are used to make a d
 
 # Getting started
 
-Head to a live version of maplandscape <a href="https://livelihoods-and-landscapes.shinyapps.io/demo/" target="_blank">here</a>.
+Head to a live version of maplandscape <a href="https://livelihoods-and-landscapes.shinyapps.io/demo/" target="_blank">here</a>. Or, if you're familiar with docker you can build and run it locally.
+
+```
+git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
+
+cd maplandscape
+
+cd /inst/docker
+
+docker build -t maplandscape .
+
+docker run -p 3838:3838 maplandscape
+
+```
 
 The image below is a screen grab of the maplandscape user interface highlighting the main widgets and tools to be aware of. In particular, take note of the navbar at the top of the screen that lets you move between tabs for exploring your data in table, web map, or chart formats. 
 

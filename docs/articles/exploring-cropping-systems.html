@@ -103,7 +103,7 @@
 
       
 
-      </header><script src="exploring-cropping-systems_files/header-attrs-2.10/header-attrs.js"></script><div class="row">
+      </header><script src="exploring-cropping-systems_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Exploring Cropping Systems</h1>
@@ -143,7 +143,17 @@
 <div id="getting-started" class="section level1">
 <h1 class="hasAnchor">
 <a href="#getting-started" class="anchor"></a>Getting started</h1>
-<p>Head to a live version of maplandscape <a href="https://livelihoods-and-landscapes.shinyapps.io/demo/" target="_blank">here</a>.</p>
+<p>Head to a live version of maplandscape <a href="https://livelihoods-and-landscapes.shinyapps.io/demo/" target="_blank">here</a>. Or, if you’re familiar with docker you can build and run it locally.</p>
+<pre><code>git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
+
+cd maplandscape
+
+cd /inst/docker
+
+docker build -t maplandscape .
+
+docker run -p 3838:3838 maplandscape
+</code></pre>
 <p>The image below is a screen grab of the maplandscape user interface highlighting the main widgets and tools to be aware of. In particular, take note of the navbar at the top of the screen that lets you move between tabs for exploring your data in table, web map, or chart formats.</p>
 <p><img src="ui-overview.png" width="100%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"></p>
 <div id="upload-data" class="section level2">
