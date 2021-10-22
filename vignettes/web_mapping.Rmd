@@ -36,3 +36,4 @@ At the bottom of the side bar is a widget where you can select one or more colum
 <img src="popup.png" width="95%" height="auto" style="display: block; margin-left: auto; margin-right: auto; padding: 5px; border: thin silver solid;"/>
 
 
+
