@@ -14,3 +14,7 @@ dev/
 inst/app/rsconnect/
 
 drawio/
+
+*.gpkg-shm
+
+*.gpkg-wal
