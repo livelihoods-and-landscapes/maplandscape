@@ -41,7 +41,10 @@ app_server <- function(input, output, session) {
       map_edits_zoom = 0,
       admin_buckets = NULL, # name of GCS buckets in GCS project
       admin_fname = NULL, # name of GeoPackage currently being edited
-      admin_current_bucket = NULL # name of GCS bucket where GeoPackage currently being edited is stored
+      admin_current_bucket = NULL, # name of GCS bucket where GeoPackage currently being edited is stored
+      qfieldcloud_token = NULL, # qfieldcloud token obtained from successful login
+      qfieldcloud_projects = NULL, # dataframe of qfieldcloud projects and project ids
+      qfieldcloud_files = NULL # dataframe of qfieldcloud project files and project ids
     )
 
   # Data Sync ---------------------------------------------------------------
@@ -189,6 +192,183 @@ app_server <- function(input, output, session) {
     })
   })
 
+
+  # QFieldCloud data
+
+  # get QFieldCloud token
+  observeEvent(input$qfieldcloud_login, {
+
+    username <- input$qfieldcloud_username
+    password <- input$qfieldcloud_password
+    endpoint <- input$qfieldcloud_url
+
+    token <-  qfieldcloud_login(
+      username,
+      password,
+      endpoint
+      )
+
+    if (token$status == "success") {
+      app_data$qfieldcloud_token <- token$token
+
+      login_message <- paste0("logged in as ", username)
+
+      output$qfieldcloud_login_status <- renderUI({
+          tags$p(login_message)
+      })
+    } else {
+      output$qfieldcloud_login_status <- renderUI({
+        tags$p("login error - check user email and password")
+      })
+      app_data$qfieldcloud_token <- NULL
+    }
+
+  })
+
+  # get list of QFieldCloud projects
+  observeEvent(input$list_qfieldcloud_projects, {
+    req(app_data$qfieldcloud_token)
+
+    qfieldcloud_projects <- get_qfieldcloud_projects(
+      app_data$qfieldcloud_token,
+      input$qfieldcloud_url
+    )
+
+    app_data$qfieldcloud_projects <- qfieldcloud_projects
+
+  })
+
+  # update select input with list of QFieldCloud projects
+  observe({
+    req(app_data$qfieldcloud_projects)
+    req(app_data$qfieldcloud_token)
+    app_data$qfieldcloud_projects
+
+    projects <- app_data$qfieldcloud_projects
+    projects <- projects$name
+
+    if (!is.null(app_data$qfieldcloud_projects)) {
+      updateSelectInput(
+        session,
+        "qfieldcloud_projects",
+        choices = projects
+      )
+    }
+
+  })
+
+  # update select input with list of QFieldCloud project GeoPackages
+  observe({
+    req(input$qfieldcloud_projects)
+    req(app_data$qfieldcloud_token)
+    input$qfieldcloud_projects
+
+    projects <- app_data$qfieldcloud_projects %>%
+      dplyr::filter(name == input$qfieldcloud_projects)
+
+    project_id <- projects[, 2]
+
+    files <- list_qfieldcloud_gpkg(
+      app_data$qfieldcloud_token,
+      input$qfieldcloud_url,
+      project_id
+    )
+
+    app_data$qfieldcloud_files <- files
+
+
+    updateSelectInput(
+      session,
+      "qfieldcloud_gpkg",
+      choices = files$name
+    )
+
+  })
+
+  # clean up select inputs on logout
+  observe({
+
+    if (is.null(app_data$qfieldcloud_token)) {
+
+      updateSelectInput(
+        session,
+        "qfieldcloud_projects",
+        choices = ""
+      )
+
+      updateSelectInput(
+        session,
+        "qfieldcloud_gpkg",
+        choices = ""
+      )
+    }
+
+  })
+
+  # add user selected QFieldCloud file to list of layers
+  # write GeoPackage to app_data$data_file and unpack layers in GeoPackage
+  observeEvent(input$get_qfieldcloud_gpkg, {
+    req(input$qfieldcloud_gpkg)
+    req(input$qfieldcloud_projects)
+    req(app_data$qfieldcloud_token)
+
+    filename <- input$qfieldcloud_gpkg
+
+    projects <- app_data$qfieldcloud_projects %>%
+      dplyr::filter(name == input$qfieldcloud_projects)
+
+    project_id <- projects[, 2]
+
+    qfieldcloud_gpkg <- NULL
+
+    download_waiter <- waiter::Waiter$new(
+      html = download_screen,
+      color = "rgba(44,62,80,.6)"
+    )
+
+    download_waiter$show()
+
+    qfieldcloud_gpkg <- try(
+      get_qfieldcloud_gpkg(
+        app_data$qfieldcloud_token,
+        input$qfieldcloud_url,
+        project_id,
+        filename
+      )
+    )
+
+    download_waiter$hide()
+
+    f_lyrs <- NULL
+
+    if (!"try-error" %in% class(qfieldcloud_gpkg) & !is.null(qfieldcloud_gpkg) & !any(stringr::str_detect(qfieldcloud_gpkg, "cannot load GeoPackage from QFieldCloud"))) {
+      f_lyrs <- tryCatch(
+        error = function(cnd) NULL,
+        purrr::map2(
+          qfieldcloud_gpkg$f_path,
+          qfieldcloud_gpkg$f_name,
+          list_layers
+        ) %>%
+          dplyr::bind_rows()
+      )
+
+      isolate({
+        df <- dplyr::bind_rows(
+          app_data$data_file,
+          f_lyrs
+        )
+        # unique number id next to each layer to catch uploads of tables with same name
+        rows <- nrow(df)
+        row_idx <- 1:rows
+        df$layer_disp_name_idx <-
+          paste0(df$layer_disp_name, "_", row_idx, sep = "")
+        app_data$data_file <- df
+      })
+    }
+  })
+
+
+# Google Cloud Storage ----------------------------------------------------
   # Get GeoPackages from Google Cloud Storage
 
   # display login with Google button if token is not valid
@@ -319,6 +499,7 @@ app_server <- function(input, output, session) {
     selected_gcs_object <- input$gcs_bucket_objects
 
     gcs_gpkg <- NULL
+
     gcs_gpkg <- try(
       get_gcs_object(
         token(),

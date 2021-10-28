@@ -84,6 +84,71 @@ navbarPage(
           multiple = TRUE,
           accept = c(".gpkg", ".zip", ".csv")
         ),
+
+        # QFieldCloud login
+        hr(style = "border-color: #343a40 !important;"),
+        h4("QFieldCloud Data"),
+
+        textInput("qfieldcloud_url",
+          "QFieldCloud app URL",
+          value = "",
+          placeholder = "tip: omit https:// and trailing /"
+        ),
+
+        textInput("qfieldcloud_username",
+          "QFieldCloud email",
+          value = "",
+          placeholder = ""
+        ),
+
+        passwordInput("qfieldcloud_password",
+          "QFieldCloud password",
+          value = "",
+          placeholder = ""
+        ),
+
+        # login to QFieldCloud
+        actionButton(
+          "qfieldcloud_login",
+          "Login to QFieldCloud",
+          class = "btn-primary m-2"
+        ),
+
+        uiOutput("qfieldcloud_login_status"),
+
+        # get list of QFieldCloud projects
+        actionButton(
+          "list_qfieldcloud_projects",
+          "Get QFieldCloud Projects",
+          class = "btn-primary m-2"
+        ),
+
+        # select QFieldCloud project
+        selectInput(
+          "qfieldcloud_projects",
+          "Select QFieldCloud Project",
+          choices = NULL,
+          selected = NULL,
+          multiple = FALSE
+        ),
+
+        # download QFieldCloud GeoPackage
+        selectInput(
+          "qfieldcloud_gpkg",
+          "Select QFieldCloud Dataset",
+          choices = NULL,
+          selected = NULL,
+          multiple = FALSE
+        ),
+
+        # get list of QFieldCloud projects
+        actionButton(
+          "get_qfieldcloud_gpkg",
+          "Download QFieldCloud File",
+          class = "btn-primary m-2"
+        ),
+
+        # Google Cloud login
         hr(style = "border-color: #343a40 !important;"),
         h4("Google Cloud Data"),
 
