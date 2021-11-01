@@ -11,6 +11,7 @@ mod_single_input_Server <- function(id, s_df) {
 
     # update select input for active layer
     observe({
+
       if (any(class(s_df()) == "data.frame" | class(s_df()) == "sf") & ("layer_disp_name_idx" %in% names(s_df()))) {
         choices <- unique(s_df()$layer_disp_name_idx)
       } else if (any(class(s_df()) == "data.frame" | class(s_df()) == "sf") & !("layer_disp_name_idx" %in% names(s_df()))) {

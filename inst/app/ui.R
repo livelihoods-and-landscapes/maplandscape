@@ -1,42 +1,46 @@
 
 
 navbarPage(
-  theme = bslib::bs_theme(bootswatch = "minty"),
+  theme = bslib::bs_theme(bootswatch = "pulse", version = 4),
   "",
   collapsible = TRUE,
   id = "navbar",
+
+
+  # Landing Page ------------------------------------------------------------
+
   tabPanel(
     "Home",
     shinyjs::useShinyjs(),
     includeCSS(file.path("www", "style.css")),
+
     fluidPage(
       # Loading screen
-      div(
-        id = "loading-screen",
-        fluidRow(
-          style = "min-height: 25%; min-height: 25vh;"
-        ),
-        fluidRow(
-          style = "min-height: 25%; min-height: 25vh;",
-          h2("Loading app...",
-             class = "mx-auto text-center")
-        )
-
-      ),
-
+      # div(
+      #   id = "loading-screen",
+      #   fluidRow(
+      #     style = "min-height: 25%; min-height: 25vh;"
+      #   ),
+      #   fluidRow(
+      #     style = "min-height: 25%; min-height: 25vh;",
+      #     h2("Loading app...",
+      #       class = "mx-auto text-center"
+      #     )
+      #   )
+      # ),
       fluidRow(
         style = "min-height: 25%; min-height: 25vh;"
       ),
       fluidRow(
         tags$h1(
-          "map.landscape",
+          "maplandscape",
           class = "mx-auto text-center"
         ),
         class = "justify-content-center"
       ),
       fluidRow(
         tags$h4(
-          "Quickly explore geospatial data",
+          "Explore QFieldCloud data",
           class = "mx-auto text-center"
         ),
         class = "justify-content-center"
@@ -56,28 +60,31 @@ navbarPage(
 
   # Data Tab ----------------------------------------------------------------
 
+  # tabPanel(
+  #   "Data",
+  #   sidebarLayout(
+  #     sidebarPanel(),
+  #     mainPanel()
+  #   )
+  # ),
+
+  # Table Tab ---------------------------------------------------------------
+
   tabPanel(
-    "Data",
-    waiter::use_waiter(),
+    "Table",
     shinyFeedback::useShinyFeedback(),
+    waiter::use_waiter(),
     sidebarLayout(
-      # Sidebar panel for inputs ----
       sidebarPanel(
-        id = "dataSidePanel",
-        h4("Active Layer"),
+        class = "sidePanelStyle",
+        h4("Active layer"),
         selectInput(
           "active_layer",
           "Select active layer",
           choices = NULL
         ),
         hr(style = "border-color: #5a5a5a !important;"),
-        h4("Sync Completed Forms"),
-        actionButton(
-          "sync_forms",
-          "Sync forms"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-        h4("Upload Data"),
+        h4("Upload data"),
         mod_get_layers_UI(
           id = "user_data",
           label = "Select .gpkg or .zip file(s)",
@@ -87,120 +94,63 @@ navbarPage(
 
         # QFieldCloud login
         hr(style = "border-color: #343a40 !important;"),
-        h4("QFieldCloud Data"),
-
+        h4("QFieldCloud data"),
         textInput("qfieldcloud_url",
           "QFieldCloud app URL",
           value = "",
           placeholder = "tip: omit https:// and trailing /"
         ),
-
         textInput("qfieldcloud_username",
           "QFieldCloud email",
           value = "",
           placeholder = ""
         ),
-
         passwordInput("qfieldcloud_password",
           "QFieldCloud password",
           value = "",
           placeholder = ""
         ),
-
-        # login to QFieldCloud
         actionButton(
           "qfieldcloud_login",
           "Login to QFieldCloud",
           class = "btn-primary m-2"
         ),
-
         uiOutput("qfieldcloud_login_status"),
-
-        # get list of QFieldCloud projects
         actionButton(
           "list_qfieldcloud_projects",
-          "Get QFieldCloud Projects",
+          "Get QFieldCloud projects",
           class = "btn-primary m-2"
         ),
-
-        # select QFieldCloud project
         selectInput(
           "qfieldcloud_projects",
-          "Select QFieldCloud Project",
+          "Select QFieldCloud project",
           choices = NULL,
           selected = NULL,
           multiple = FALSE
         ),
-
-        # download QFieldCloud GeoPackage
         selectInput(
           "qfieldcloud_gpkg",
-          "Select QFieldCloud Dataset",
+          "Select QFieldCloud dataset",
           choices = NULL,
           selected = NULL,
           multiple = FALSE
         ),
-
-        # get list of QFieldCloud projects
         actionButton(
           "get_qfieldcloud_gpkg",
-          "Download QFieldCloud File",
+          "Download QFieldCloud file",
           class = "btn-primary m-2"
         ),
 
-        # Google Cloud login
-        hr(style = "border-color: #343a40 !important;"),
-        h4("Google Cloud Data"),
-
-        # Google Cloud login button - show when there is not a valid token
-        uiOutput("login_warning"),
-        uiOutput("login_button"),
-
-        # Google Cloud Storage project
-        textInput("gcs_project_id",
-          "Google Cloud Storage project ID",
-          value = "",
-          placeholder = ""
-        ),
-
-        # get list of GeoPackages in Google Cloud Storage bucket
-        actionButton(
-          "list_google_files",
-          "Get GCS buckets",
-          class = "btn-primary m-2"
-        ),
-
-        # name of Google Cloud Storage bucket to get GeoPackages from
-        selectInput(
-          "gcs_bucket_name",
-          "GCS bucket name",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
-        selectInput(
-          "gcs_bucket_objects",
-          "Select object from GCS",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
-
-        # get list of GeoPackages in Google Cloud Storage bucket
-        actionButton(
-          "get_objects",
-          "Download GCS object",
-          class = "btn-primary m-2"
-        ),
+        # table analysis
         hr(style = "border-color: #5a5a5a !important;"),
-        h4("Table Analysis"),
+        h4("Table analysis"),
         selectInput(
           "analysis", "Select analysis",
-          c("Summary Tables", "Combine Tables", "Combine Spatial Layers", "Filter Rows", "Add Column")
+          c("Summary tables", "Combine tables", "Combine spatial layers", "Filter rows", "Add column")
         ),
         conditionalPanel(
-          condition = "input.analysis == 'Summary Tables'",
-          h4("Summary Tables"),
+          condition = "input.analysis == 'Summary tables'",
+          h4("Summary tables"),
           mod_multiple_input_UI(
             id = "grouping_var",
             label = "Grouping variable(s)"
@@ -211,8 +161,8 @@ navbarPage(
           )
         ),
         conditionalPanel(
-          condition = "input.analysis == 'Combine Tables'",
-          h4("Combine Tables"),
+          condition = "input.analysis == 'Combine tables'",
+          h4("Combine tables"),
           selectInput(
             "table_left",
             label = "Select left table in join",
@@ -243,9 +193,9 @@ navbarPage(
           ),
           textInput(
             "join_tbl_name",
-            "Table name",
+            "Layer name",
             value = "",
-            placeholder = "enter table name for output"
+            placeholder = "enter layer name for output"
           ),
           actionButton(
             "table_join_button",
@@ -254,16 +204,16 @@ navbarPage(
           )
         ),
         conditionalPanel(
-          condition = "input.analysis == 'Combine Spatial Layers'",
-          h4("Combine Spatial Layers"),
+          condition = "input.analysis == 'Combine spatial layers'",
+          h4("Combine spatial layers"),
           selectInput(
             "spatial_table_left",
-            label = "Select left table in join",
+            label = "Select left layer in join",
             choices = NULL
           ),
           selectInput(
             "spatial_table_right",
-            label = "Select right table in join",
+            label = "Select right layer in join",
             choices = NULL
           ),
           radioButtons(
@@ -277,9 +227,9 @@ navbarPage(
           ),
           textInput(
             "spjoin_tbl_name",
-            "Table name",
+            "Layer name",
             value = "",
-            placeholder = "enter table name for output"
+            placeholder = "enter layer name for output"
           ),
           actionButton(
             "spatial_join_button",
@@ -288,158 +238,150 @@ navbarPage(
           )
         ),
         conditionalPanel(
-          condition = "input.analysis == 'Filter Rows'",
-          h4("Filter Rows"),
+          condition = "input.analysis == 'Filter rows'",
+          h4("Filter rows"),
           selectInput(
             "table_filter",
-            label = "Select table to filter",
+            label = "Select layer to filter",
             choices = NULL
           ),
           actionButton(
             "filter",
-            "Filter Options",
+            "Filter options",
             class = "btn-primary m-2"
           ),
         ),
         conditionalPanel(
-          condition = "input.analysis == 'Add Column'",
-          h4("Add New Column"),
+          condition = "input.analysis == 'Add column'",
+          h4("Add new column"),
           selectInput(
             "table_mutate",
-            label = "Select table to add new column",
+            label = "Select layer to add new column",
             choices = NULL
           ),
           actionButton(
             "add_column",
-            "Add Column Options",
+            "Add column options",
             class = "btn-primary m-2"
           ),
         ),
       ),
 
       # show data tables
-      mainPanel(tabsetPanel(
-        type = "tabs",
-        tabPanel(
-          "Data: Raw",
-          br(),
-          downloadButton(
-            "download_data_raw",
-            "Download Data",
-            class = "btn-primary m-2"
-          ),
-          hr(),
-          div(
-            style = "overflow-x:scroll; overflow-y:scroll",
+      mainPanel(
+        class = "mainPanelStyle",
+        tabsetPanel(
+          type = "tabs",
+          tabPanel(
+            "Data: Raw",
+            downloadButton(
+              "download_data_raw",
+              "Download Data",
+              class = "btn-primary m-2"
+            ),
+            hr(),
             mod_render_dt_UI(id = "data_raw")
-          )
-        ),
-        tabPanel(
-          "Data: Summary",
-          br(),
-          downloadButton(
-            "download_data_summarised",
-            "Download Summarised Data",
-            class = "btn-primary m-2"
           ),
-          hr(),
-          div(
-            style = "overflow-x:scroll; overflow-y:scroll",
+          tabPanel(
+            "Data: Summary",
+            downloadButton(
+              "download_data_summarised",
+              "Download Summarised Data",
+              class = "btn-primary m-2"
+            ),
+            hr(),
             mod_render_dt_UI(id = "data_summary")
           )
         )
-      )),
+      ),
     ),
   ),
-
 
   # Map Tab -----------------------------------------------------------------
 
   tabPanel(
     "Map",
-    leaflet::leafletOutput("web_map"),
-    absolutePanel(
-      top = "55px",
-      left = "0px",
-      width = "250px",
-      height = "100vh",
-      id = "mapSidePanel",
-      h4("Map controls"),
-      actionButton(
-        "create_map",
-        "draw map",
-        class = "btn-primary m-2"
+    sidebarLayout(
+      sidebarPanel(
+        class = "sidePanelStyle",
+        h4("Map"),
+        actionButton(
+          "create_map",
+          "Draw map",
+          class = "btn-primary m-2"
+        ),
+        selectInput(
+          "map_active_layer",
+          "Active layer",
+          choices = NULL
+        ),
+        mod_single_input_UI(
+          id = "map_var",
+          label = "Attribute"
+        ),
+        selectInput(
+          "map_colour",
+          "Fill colour palette:",
+          choices = colour_mappings
+        ),
+        sliderInput(
+          "opacity",
+          "Opacity",
+          min = 0,
+          max = 1,
+          value = 0.8,
+          step = 0.1
+        ),
+        numericInput(
+          "map_line_width",
+          "Line width",
+          0.5,
+          min = 0,
+          max = 2
+        ),
+        selectInput(
+          "map_line_colour",
+          "Line colour",
+          choices = line_colours
+        ),
+        helpText("Check box to display legend:"),
+        checkboxInput(
+          "legend",
+          label = "Legend",
+          value = FALSE
+        ),
+        textInput(
+          "map_legend_title",
+          "Legend title",
+          value = ""
+        ),
+        mod_multiple_input_UI(
+          id = "label_vars",
+          label = "Popup labels"
+        )
       ),
-      selectInput(
-        "map_active_layer",
-        "Select active layer",
-        choices = NULL
-      ),
-      mod_single_input_UI(
-        id = "map_var",
-        label = "Select variable"
-      ),
-      selectInput(
-        "map_colour",
-        "Fill colour palette",
-        choices = colour_mappings
-      ),
-      sliderInput(
-        "opacity",
-        "Opacity:",
-        min = 0,
-        max = 1,
-        value = 0.8,
-        step = 0.1
-      ),
-      numericInput(
-        "map_line_width",
-        "Line width",
-        0.5,
-        min = 0,
-        max = 2
-      ),
-      selectInput(
-        "map_line_colour",
-        "Select line colour",
-        choices = line_colours
-      ),
-      helpText("Check box to display legend."),
-      checkboxInput(
-        "legend",
-        label = "Legend",
-        value = FALSE
-      ),
-      textInput(
-        "map_legend_title",
-        "Legend title:",
-        value = ""
-      ),
-      mod_multiple_input_UI(
-        id = "label_vars",
-        label = "Popup labels"
+      mainPanel(
+        leaflet::leafletOutput("web_map")
       )
     )
   ),
-
 
   # Charts Tab --------------------------------------------------------------
 
   tabPanel(
     "Charts",
     sidebarLayout(
-      # Sidebar panel for inputs ----
       sidebarPanel(
-        id = "chartSidePanel",
+        class = "sidePanelStyle",
         h4("Charts"),
         selectInput(
           "chart_active_layer",
-          "Select active layer",
+          "Active layer",
           choices = NULL
         ),
         actionButton(
           "create_chart",
-          "draw chart",
+          "Draw chart",
           class = "btn-primary m-2"
         ),
         selectInput(
@@ -482,15 +424,15 @@ navbarPage(
           condition = "input.plotType == 'bar plot'",
           mod_single_input_UI(
             id = "col_grouping_var",
-            label = "Grouping variable"
+            label = "Grouping attribute"
           ),
           mod_single_input_UI(
             id = "col_summarising_var",
-            label = "Summary variable"
+            label = "Summary attribute"
           ),
           radioButtons(
             "bar_plot_type",
-            "Bar plot type:",
+            "Bar plot type",
             c(
               "count" = "count_records",
               "sum" = "sum_values",
@@ -500,7 +442,7 @@ navbarPage(
         ),
         sliderInput(
           "chart_height",
-          "Chart Height:",
+          "Chart Height",
           min = 100,
           max = 1500,
           value = 400,
@@ -539,123 +481,6 @@ navbarPage(
           height = "auto"
         )
       )
-    )
-  ),
-
-
-  # Admin Tab ---------------------------------------------------------------
-
-  tabPanel(
-    "Admin",
-    sidebarLayout(
-      sidebarPanel(
-        id = "adminSidePanel",
-        h4("Upload local data"),
-        mod_get_layers_UI(
-          id = "edit_data",
-          label = "Select .gpkg or .zip file(s)",
-          multiple = FALSE,
-          accept = c(".gpkg")
-        ),
-        h4("Edit Google Cloud data"),
-
-        # Google Cloud Storage project
-        textInput(
-          "admin_gcs_project_id",
-          "Google Cloud Storage project ID",
-          value = "",
-          placeholder = ""
-        ),
-
-        # get list of GeoPackages in Google Cloud Storage bucket
-        actionButton(
-          "admin_list_google_files",
-          "Get GCS buckets",
-          class = "btn-primary m-2"
-        ),
-
-        # name of Google Cloud Storage bucket to get GeoPackages from
-        selectInput(
-          "admin_gcs_bucket_name",
-          "GCS bucket name",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
-        selectInput(
-          "admin_gcs_bucket_objects",
-          "Select object from GCS",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
-
-        # get list of GeoPackages in Google Cloud Storage bucket
-        actionButton(
-          "admin_get_objects",
-          "Download GCS object",
-          class = "btn-primary m-2"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-        h4("Editing options"),
-        selectInput(
-          "edit_layer",
-          "Select layer to edit",
-          choices = NULL
-        ),
-        textInput(
-          inputId = "row_id",
-          label = "ID column (or ID pattern)"
-        ),
-        actionButton(
-          "save_edits",
-          "save edits",
-          class = "btn-primary m-2"
-        ),
-        actionButton(
-          "delete_records",
-          "delete records",
-          class = "btn-primary m-2"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-
-        # Download edits locally
-        h4("Download edits"),
-        downloadButton(
-          "download_edits",
-          "download edits",
-          class = "btn-primary m-2"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-
-        # URL / endpoint for sync API
-        uiOutput("sync_endpoint_ui"),
-      ),
-      mainPanel(tabsetPanel(
-        type = "tabs",
-        id = "edit_data_view",
-        tabPanel(
-          "Map",
-          value = "edit_map",
-          tags$style(
-            type = "text/css",
-            "#edit_leafmap {height: calc(100vh - 135px) !important;}",
-          ),
-          leaflet::leafletOutput("edit_leafmap"),
-        ),
-        tabPanel(
-          "Table",
-          value = "edit_table",
-          tags$br(),
-          hr(),
-          div(
-            style = "overflow-x:scroll; overflow-y:scroll",
-            mod_render_dt_UI(
-              id = "edit_data_dt"
-            )
-          )
-        )
-      ))
     )
   ),
 
