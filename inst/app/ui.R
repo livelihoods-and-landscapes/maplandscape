@@ -1,7 +1,7 @@
 
 
 navbarPage(
-  theme = bslib::bs_theme(bootswatch = "minty"),
+  theme = bslib::bs_theme(bootswatch = "pulse"),
   "",
   collapsible = TRUE,
   id = "navbar",
@@ -67,7 +67,7 @@ navbarPage(
         h4("Active Layer"),
         selectInput(
           "active_layer",
-          "Select active layer",
+          "Select active layer:",
           choices = NULL
         ),
         hr(style = "border-color: #5a5a5a !important;"),
@@ -80,7 +80,7 @@ navbarPage(
         h4("Upload Data"),
         mod_get_layers_UI(
           id = "user_data",
-          label = "Select .gpkg or .zip file(s)",
+          label = "Select .gpkg or .zip file(s):",
           multiple = TRUE,
           accept = c(".gpkg", ".zip", ".csv")
         ),
@@ -108,14 +108,14 @@ navbarPage(
         # name of Google Cloud Storage bucket to get GeoPackages from
         selectInput(
           "gcs_bucket_name",
-          "GCS bucket name",
+          "GCS bucket name:",
           choices = NULL,
           selected = NULL,
           multiple = FALSE
         ),
         selectInput(
           "gcs_bucket_objects",
-          "Select object from GCS",
+          "Select object from GCS:",
           choices = NULL,
           selected = NULL,
           multiple = FALSE
@@ -130,7 +130,7 @@ navbarPage(
         hr(style = "border-color: #5a5a5a !important;"),
         h4("Table Analysis"),
         selectInput(
-          "analysis", "Select analysis",
+          "analysis", "Select analysis:",
           c("Summary Tables", "Combine Tables", "Combine Spatial Layers", "Filter Rows", "Add Column")
         ),
         conditionalPanel(
@@ -138,34 +138,34 @@ navbarPage(
           h4("Summary Tables"),
           mod_multiple_input_UI(
             id = "grouping_var",
-            label = "Grouping variable(s)"
+            label = "Grouping variable(s):"
           ),
           mod_multiple_input_UI(
             id = "summarising_var",
-            label = "Summarising variable(s)"
+            label = "Summarising variable(s):"
           )
         ),
         conditionalPanel(
-          condition = "input.analysis == 'Combine Tables'",
+          condition = "input.analysis == 'Combine Layers'",
           h4("Combine Tables"),
           selectInput(
             "table_left",
-            label = "Select left table in join",
+            label = "Select left layer in join:",
             choices = NULL
           ),
           selectInput(
             "table_right",
             label =
-              "Select right table in join",
+              "Select right layer in join:",
             choices = NULL
           ),
           mod_multiple_input_UI(
             id = "joining_p_key_left",
-            label = "Select primary key(s) - left table"
+            label = "Select primary key(s) - left layer:"
           ),
           mod_multiple_input_UI(
             id = "joining_f_key_right",
-            label = "Select foreign key(s) - right table"
+            label = "Select foreign key(s) - right layer:"
           ),
           radioButtons(
             "key_join_type",
@@ -178,9 +178,9 @@ navbarPage(
           ),
           textInput(
             "join_tbl_name",
-            "Table name",
+            "Layer name",
             value = "",
-            placeholder = "enter table name for output"
+            placeholder = "enter layer name for output:"
           ),
           actionButton(
             "table_join_button",
@@ -193,12 +193,12 @@ navbarPage(
           h4("Combine Spatial Layers"),
           selectInput(
             "spatial_table_left",
-            label = "Select left table in join",
+            label = "Select left layer in join:",
             choices = NULL
           ),
           selectInput(
             "spatial_table_right",
-            label = "Select right table in join",
+            label = "Select right layer in join:",
             choices = NULL
           ),
           radioButtons(
@@ -212,9 +212,9 @@ navbarPage(
           ),
           textInput(
             "spjoin_tbl_name",
-            "Table name",
+            "Layer name",
             value = "",
-            placeholder = "enter table name for output"
+            placeholder = "enter layer name for output:"
           ),
           actionButton(
             "spatial_join_button",
@@ -227,7 +227,7 @@ navbarPage(
           h4("Filter Rows"),
           selectInput(
             "table_filter",
-            label = "Select table to filter",
+            label = "Select layer to filter:",
             choices = NULL
           ),
           actionButton(
@@ -241,7 +241,7 @@ navbarPage(
           h4("Add New Column"),
           selectInput(
             "table_mutate",
-            label = "Select table to add new column",
+            label = "Select layer to add new column:",
             choices = NULL
           ),
           actionButton(
@@ -307,16 +307,16 @@ navbarPage(
       ),
       selectInput(
         "map_active_layer",
-        "Select active layer",
+        "Select active layer:",
         choices = NULL
       ),
       mod_single_input_UI(
         id = "map_var",
-        label = "Select variable"
+        label = "Select column:"
       ),
       selectInput(
         "map_colour",
-        "Fill colour palette",
+        "Fill colour palette:",
         choices = colour_mappings
       ),
       sliderInput(
@@ -329,17 +329,18 @@ navbarPage(
       ),
       numericInput(
         "map_line_width",
-        "Line width",
-        0.5,
+        "Line width:",
+        0.1,
         min = 0,
-        max = 2
+        max = 1,
+        step = 0.05
       ),
       selectInput(
         "map_line_colour",
-        "Select line colour",
+        "Select line colour:",
         choices = line_colours
       ),
-      helpText("Check box to display legend."),
+      helpText("Check box to display legend:"),
       checkboxInput(
         "legend",
         label = "Legend",
@@ -352,7 +353,7 @@ navbarPage(
       ),
       mod_multiple_input_UI(
         id = "label_vars",
-        label = "Popup labels"
+        label = "Popup labels:"
       )
     )
   ),
@@ -369,28 +370,28 @@ navbarPage(
         h4("Charts"),
         selectInput(
           "chart_active_layer",
-          "Select active layer",
+          "Select active layer:",
           choices = NULL
         ),
         actionButton(
           "create_chart",
-          "draw chart",
+          "Draw chart",
           class = "btn-primary m-2"
         ),
         selectInput(
           "plotType",
-          "Chart type",
+          "Chart type:",
           c("histogram", "scatter", "bar plot")
         ),
         conditionalPanel(
           condition = "input.plotType == 'histogram'",
           mod_single_input_UI(
             id = "hist_x_axis_var",
-            label = "X-axis variable"
+            label = "X-axis variable:"
           ),
           numericInput(
             "binwidth",
-            "Histogram bin width",
+            "Histogram bin width:",
             100
           )
         ),
@@ -398,15 +399,15 @@ navbarPage(
           condition = "input.plotType == 'scatter'",
           mod_single_input_UI(
             id = "scatter_x_axis_var",
-            label = "X-axis variable"
+            label = "X-axis variable:"
           ),
           mod_single_input_UI(
             id = "scatter_y_axis_var",
-            label = "Y-axis variable"
+            label = "Y-axis variable:"
           ),
           numericInput(
             "scatter_point_size",
-            "Point size",
+            "Point size:",
             min = 1,
             max = 20,
             value = 3,
@@ -417,11 +418,11 @@ navbarPage(
           condition = "input.plotType == 'bar plot'",
           mod_single_input_UI(
             id = "col_grouping_var",
-            label = "Grouping variable"
+            label = "Grouping variable:"
           ),
           mod_single_input_UI(
             id = "col_summarising_var",
-            label = "Summary variable"
+            label = "Summary variable:"
           ),
           radioButtons(
             "bar_plot_type",
@@ -443,17 +444,17 @@ navbarPage(
         ),
         textInput(
           "x_axis_label",
-          "X-axis label",
+          "X-axis label:",
           ""
         ),
         textInput(
           "y_axis_label",
-          "Y-axis label",
+          "Y-axis label:",
           ""
         ),
         numericInput(
           "lab_font",
-          "Axis label - text size",
+          "Axis label - text size:",
           min = 10,
           max = 36,
           value = 14,
@@ -461,7 +462,7 @@ navbarPage(
         ),
         numericInput(
           "axis_font",
-          "Axis value - text size",
+          "Axis value - text size:",
           min = 6,
           max = 35,
           value = 10,
@@ -475,149 +476,149 @@ navbarPage(
         )
       )
     )
-  ),
+  )
 
 
   # Admin Tab ---------------------------------------------------------------
-
-  tabPanel(
-    "Admin",
-    sidebarLayout(
-      sidebarPanel(
-        id = "adminSidePanel",
-        h4("Upload local data"),
-        mod_get_layers_UI(
-          id = "edit_data",
-          label = "Select .gpkg or .zip file(s)",
-          multiple = FALSE,
-          accept = c(".gpkg")
-        ),
-        h4("Edit Google Cloud data"),
-
-        # Google Cloud Storage project
-        textInput(
-          "admin_gcs_project_id",
-          "Google Cloud Storage project ID",
-          value = "",
-          placeholder = ""
-        ),
-
-        # get list of GeoPackages in Google Cloud Storage bucket
-        actionButton(
-          "admin_list_google_files",
-          "Get GCS buckets",
-          class = "btn-primary m-2"
-        ),
-
-        # name of Google Cloud Storage bucket to get GeoPackages from
-        selectInput(
-          "admin_gcs_bucket_name",
-          "GCS bucket name",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
-        selectInput(
-          "admin_gcs_bucket_objects",
-          "Select object from GCS",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
-
-        # get list of GeoPackages in Google Cloud Storage bucket
-        actionButton(
-          "admin_get_objects",
-          "Download GCS object",
-          class = "btn-primary m-2"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-        h4("Editing options"),
-        selectInput(
-          "edit_layer",
-          "Select layer to edit",
-          choices = NULL
-        ),
-        textInput(
-          inputId = "row_id",
-          label = "ID column (or ID pattern)"
-        ),
-        actionButton(
-          "save_edits",
-          "save edits",
-          class = "btn-primary m-2"
-        ),
-        actionButton(
-          "delete_records",
-          "delete records",
-          class = "btn-primary m-2"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-
-        # Download edits locally
-        h4("Download edits"),
-        downloadButton(
-          "download_edits",
-          "download edits",
-          class = "btn-primary m-2"
-        ),
-        hr(style = "border-color: #5a5a5a !important;"),
-
-        # URL / endpoint for sync API
-        uiOutput("sync_endpoint_ui"),
-      ),
-      mainPanel(tabsetPanel(
-        type = "tabs",
-        id = "edit_data_view",
-        tabPanel(
-          "Map",
-          value = "edit_map",
-          tags$style(
-            type = "text/css",
-            "#edit_leafmap {height: calc(100vh - 135px) !important;}",
-          ),
-          leaflet::leafletOutput("edit_leafmap"),
-        ),
-        tabPanel(
-          "Table",
-          value = "edit_table",
-          tags$br(),
-          hr(),
-          div(
-            style = "overflow-x:scroll; overflow-y:scroll",
-            mod_render_dt_UI(
-              id = "edit_data_dt"
-            )
-          )
-        )
-      ))
-    )
-  ),
+#
+#   tabPanel(
+#     "Admin",
+#     sidebarLayout(
+#       sidebarPanel(
+#         id = "adminSidePanel",
+#         h4("Upload local data"),
+#         mod_get_layers_UI(
+#           id = "edit_data",
+#           label = "Select .gpkg or .zip file(s)",
+#           multiple = FALSE,
+#           accept = c(".gpkg")
+#         ),
+#         h4("Edit Google Cloud data"),
+#
+#         # Google Cloud Storage project
+#         textInput(
+#           "admin_gcs_project_id",
+#           "Google Cloud Storage project ID",
+#           value = "",
+#           placeholder = ""
+#         ),
+#
+#         # get list of GeoPackages in Google Cloud Storage bucket
+#         actionButton(
+#           "admin_list_google_files",
+#           "Get GCS buckets",
+#           class = "btn-primary m-2"
+#         ),
+#
+#         # name of Google Cloud Storage bucket to get GeoPackages from
+#         selectInput(
+#           "admin_gcs_bucket_name",
+#           "GCS bucket name",
+#           choices = NULL,
+#           selected = NULL,
+#           multiple = FALSE
+#         ),
+#         selectInput(
+#           "admin_gcs_bucket_objects",
+#           "Select object from GCS",
+#           choices = NULL,
+#           selected = NULL,
+#           multiple = FALSE
+#         ),
+#
+#         # get list of GeoPackages in Google Cloud Storage bucket
+#         actionButton(
+#           "admin_get_objects",
+#           "Download GCS object",
+#           class = "btn-primary m-2"
+#         ),
+#         hr(style = "border-color: #5a5a5a !important;"),
+#         h4("Editing options"),
+#         selectInput(
+#           "edit_layer",
+#           "Select layer to edit",
+#           choices = NULL
+#         ),
+#         textInput(
+#           inputId = "row_id",
+#           label = "ID column (or ID pattern)"
+#         ),
+#         actionButton(
+#           "save_edits",
+#           "save edits",
+#           class = "btn-primary m-2"
+#         ),
+#         actionButton(
+#           "delete_records",
+#           "delete records",
+#           class = "btn-primary m-2"
+#         ),
+#         hr(style = "border-color: #5a5a5a !important;"),
+#
+#         # Download edits locally
+#         h4("Download edits"),
+#         downloadButton(
+#           "download_edits",
+#           "download edits",
+#           class = "btn-primary m-2"
+#         ),
+#         hr(style = "border-color: #5a5a5a !important;"),
+#
+#         # URL / endpoint for sync API
+#         uiOutput("sync_endpoint_ui"),
+#       ),
+#       mainPanel(tabsetPanel(
+#         type = "tabs",
+#         id = "edit_data_view",
+#         tabPanel(
+#           "Map",
+#           value = "edit_map",
+#           tags$style(
+#             type = "text/css",
+#             "#edit_leafmap {height: calc(100vh - 135px) !important;}",
+#           ),
+#           leaflet::leafletOutput("edit_leafmap"),
+#         ),
+#         tabPanel(
+#           "Table",
+#           value = "edit_table",
+#           tags$br(),
+#           hr(),
+#           div(
+#             style = "overflow-x:scroll; overflow-y:scroll",
+#             mod_render_dt_UI(
+#               id = "edit_data_dt"
+#             )
+#           )
+#         )
+#       ))
+#     )
+#   ),
 
   # Docs Tab ----------------------------------------------------------------
 
-  tabPanel(
-    "Documentation",
-    fixedPage(
-      tabsetPanel(
-        tabPanel(
-          "About",
-          tags$div(
-            class = "docs",
-            tags$h2("About", style = "text-align:left;"),
-            tags$br(),
-            tags$div(HTML("<em>map.landscape</em> is developed as part of the ACIAR funded <a href='https://livelihoods-and-landscapes.com' target='_blank'>livelihoods and landscapes</a> project: a collaboration between stakeholders in Fiji, Tonga, Australia, and New Zealand.")),
-            tags$br()
-          )
-        ),
-        tabPanel(
-          "Docs",
-          tags$div(
-            class = "docs",
-            tags$div(HTML("Documentation and vignettes for <em>map.landscape</em> can be found <a href='https://livelihoods-and-landscapes.com/maplandscape' target='_blank'>here</a>"))
-          )
-        )
-      )
-    )
-  )
+  # tabPanel(
+  #   "Documentation",
+  #   fixedPage(
+  #     tabsetPanel(
+  #       tabPanel(
+  #         "About",
+  #         tags$div(
+  #           class = "docs",
+  #           tags$h2("About", style = "text-align:left;"),
+  #           tags$br(),
+  #           tags$div(HTML("<em>map.landscape</em> is developed as part of the ACIAR funded <a href='https://livelihoods-and-landscapes.com' target='_blank'>livelihoods and landscapes</a> project: a collaboration between stakeholders in Fiji, Tonga, Australia, and New Zealand.")),
+  #           tags$br()
+  #         )
+  #       ),
+  #       tabPanel(
+  #         "Docs",
+  #         tags$div(
+  #           class = "docs",
+  #           tags$div(HTML("Documentation and vignettes for <em>map.landscape</em> can be found <a href='https://livelihoods-and-landscapes.com/maplandscape' target='_blank'>here</a>"))
+  #         )
+  #       )
+  #     )
+  #   )
+  # )
 )

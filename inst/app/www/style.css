@@ -1,5 +1,5 @@
 body {
-  background-image: url('farm-bg-fade-2.jpg');
+  /*background-image: url('farm-bg-fade-2.jpg');
   background-position: center center;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -7,12 +7,12 @@ body {
   background-color: #464646;
   -webkit-background-size: cover;
   -moz-background-size: cover;
-  -o-background-size: cover;
+  -o-background-size: cover;*/
 }
 
 #loading-screen {
   position: absolute;
-  background: #ecf0f1;
+  background: #ffffff;
   opacity: 0.75;
   z-index: 100;
   top: 0;
@@ -20,7 +20,7 @@ body {
   right: 0;
   height: 100vh;
   text-align: center;
-  color: #343a40;
+  color: #17141f;
 }
 
 .shiny-notification {
@@ -41,8 +41,8 @@ body {
   max-height: 100vh;
   position:relative;
   padding: 5px !important;
-  border-color: #ecf0f1 !important;
-  background: #ecf0f1;
+  border-color: #f9f8fc !important;
+  background: #f9f8fc;
 }
 
 #web_map {
