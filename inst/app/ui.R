@@ -68,7 +68,7 @@ navbarPage(
         selectInput(
           "cloud",
           "Select cloud:",
-          c("QFieldCloud", "Google Cloud")
+          c("Google Cloud", "QFieldCloud")
         ),
         conditionalPanel(
           condition = "input.cloud == 'QFieldCloud'",
