@@ -506,7 +506,7 @@ navbarPage(
         h4("Active layer"),
         selectInput(
           "chart_active_layer",
-          "Select active layer",
+          "Select active layer:",
           choices = NULL
         ),
 
@@ -619,32 +619,5 @@ navbarPage(
         )
       )
     )
-  ),
-
-  # Docs Tab ----------------------------------------------------------------
-
-  tabPanel(
-    "Documentation",
-    fixedPage(
-      tabsetPanel(
-        tabPanel(
-          "About",
-          tags$div(
-            class = "docs",
-            tags$h2("About", style = "text-align:left;"),
-            tags$br(),
-            tags$div(HTML("<em>map.landscape</em> is developed as part of the ACIAR funded <a href='https://livelihoods-and-landscapes.com' target='_blank'>livelihoods and landscapes</a> project: a collaboration between stakeholders in Fiji, Tonga, Australia, and New Zealand.")),
-            tags$br()
-          )
-        ),
-        tabPanel(
-          "Docs",
-          tags$div(
-            class = "docs",
-            tags$div(HTML("Documentation and vignettes for <em>map.landscape</em> can be found <a href='https://livelihoods-and-landscapes.com/maplandscape' target='_blank'>here</a>"))
-          )
-        )
-      )
-    )
   )
-)
+
