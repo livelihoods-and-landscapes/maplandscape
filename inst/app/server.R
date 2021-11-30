@@ -1,6 +1,5 @@
 
-
-options(shiny.maxRequestSize = 5000 * 1024^2)
+options(shiny.maxRequestSize = 10000 * 1024^2)
 
 app_server <- function(input, output, session) {
 
@@ -12,7 +11,7 @@ app_server <- function(input, output, session) {
     id = "loading-screen",
     anim = TRUE,
     animType = "fade"
-    )
+  )
 
   # move to data tab when action button pressed on landing page
   observeEvent(input$enter, {
@@ -28,28 +27,71 @@ app_server <- function(input, output, session) {
       data_file = data.frame(), # dataframe of listing layers and temporary locations of data a user has uploaded
       map_drawn = 0, # indicator for state of map (if 0, zoom to data's bbox)
       joined_df = list(), # list of layers created through joins, spatial joins, or filtering rows
+      flush_add_column = 0, # trigger re-render of active layer in data table after adding column
+      qfieldcloud_token = NULL, # qfieldcloud token obtained from successful login
+      qfieldcloud_projects = NULL, # dataframe of qfieldcloud projects and project ids
+      qfieldcloud_files = NULL, # dataframe of qfieldcloud project files and project ids
       buckets = NULL, # list of buckets in users GCS project
       items = NULL, # items in GCS bucket
-      flush_add_column = 0, # trigger re-render of active layer in data table after adding column
-      edit_data_file = data.frame(), # data frame / spatial layer to edit
-      tmp_edits = data.frame(), # temporary record of user edits to records in Data Table
-      edit_log = NULL,
-      flush_deletes = 1, # trigger reload of data and map after deleting features
-      flush_edits = 1, # trigger reload of data and map after editing features
-      flush_geometry_edits = 1, # trigger reload of data and map after editing geometries
-      event_tmp = NULL, # events caused by user clicking on edit_leafmap to edit features
-      map_edits_zoom = 0,
-      admin_buckets = NULL, # name of GCS buckets in GCS project
-      admin_fname = NULL, # name of GeoPackage currently being edited
-      admin_current_bucket = NULL # name of GCS bucket where GeoPackage currently being edited is stored
     )
+
+  # render layers as data table in UI
+  layers_df <- reactive({
+
+    layers_df <- app_data$data_file
+
+    if (nrow(layers_df) <= 0){
+      return()
+    }
+
+    layers_df <- layers_df %>%
+      dplyr::select(c("layers", "layer_disp_name", "file_type", "source", "layer_disp_name_idx"))
+
+    joined_df <- app_data$joined_df
+
+    if (length(joined_df) > 0) {
+      tmp_layer_names <- names(joined_df)
+      tmp_layers <- data.frame(layers = tmp_layer_names)
+      tmp_layers$layer_disp_name <- "user generated"
+      tmp_layers$file_type <- "app"
+      tmp_layers$source <- "user generated"
+      tmp_layers$layer_disp_name_idx <- "user generated"
+
+      layers_df <- layers_df %>%
+        dplyr::bind_rows(tmp_layers) %>%
+        dplyr::select(c("layers", "layer_disp_name", "source", "layer_disp_name_idx")) %>%
+        dplyr::rename(
+          layer = layers,
+          `sourcefile` = layer_disp_name,
+          source = source,
+          `layer display name` = layer_disp_name_idx
+        )
+    } else {
+      layers_df <- layers_df %>%
+        dplyr::select(c("layers", "layer_disp_name", "source", "layer_disp_name_idx")) %>%
+        dplyr::rename(
+          layer = layers,
+          `sourcefile` = layer_disp_name,
+          source = source,
+          `layer display name` = layer_disp_name_idx
+        )
+    }
+
+    layers_df
+  })
+
+  mod_render_dt_Server(
+    id = "app_layers",
+    dt = layers_df,
+    editable = FALSE
+  )
 
   # Data Sync ---------------------------------------------------------------
 
   # sync forms with database / template
   sync_waiter <- waiter::Waiter$new(
     html = sync_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # select template db to sync forms to
@@ -134,8 +176,6 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # Data Upload -------------------------------------------------------------
-
   # add synced files to app
   sync_file <- reactive({
     req(
@@ -166,6 +206,8 @@ app_server <- function(input, output, session) {
     })
   })
 
+  # Data Upload -------------------------------------------------------------
+
   # user uploaded files
   # return table of files and file paths of data loaded to the server
   upload_file <- mod_get_layers_Server(id = "user_data")
@@ -175,6 +217,9 @@ app_server <- function(input, output, session) {
     req(upload_file())
 
     upload_file <- isolate(upload_file())
+
+    upload_file$source <- "Local file"
+
     isolate({
       df <- dplyr::bind_rows(
         app_data$data_file,
@@ -189,7 +234,177 @@ app_server <- function(input, output, session) {
     })
   })
 
-  # Get GeoPackages from Google Cloud Storage
+  # QFieldCloud data --------------------------------------------------------
+
+  # get QFieldCloud token
+  observeEvent(input$qfieldcloud_login, {
+    username <- input$qfieldcloud_username
+    password <- input$qfieldcloud_password
+    endpoint <- input$qfieldcloud_url
+
+    token <- qfieldcloud_login(
+      username,
+      password,
+      endpoint
+    )
+
+    if (token$status == "success") {
+      app_data$qfieldcloud_token <- token$token
+
+      login_message <- paste0("logged in as ", username)
+
+      output$qfieldcloud_login_status <- renderUI({
+        tags$p(login_message)
+      })
+    } else {
+      output$qfieldcloud_login_status <- renderUI({
+        tags$p("login error - check user email and password")
+      })
+      app_data$qfieldcloud_token <- NULL
+    }
+  })
+
+  # get list of QFieldCloud projects
+  observeEvent(input$list_qfieldcloud_projects, {
+    req(app_data$qfieldcloud_token)
+
+    qfieldcloud_projects <- get_qfieldcloud_projects(
+      app_data$qfieldcloud_token,
+      input$qfieldcloud_url
+    )
+
+    app_data$qfieldcloud_projects <- qfieldcloud_projects
+  })
+
+  # update select input with list of QFieldCloud projects
+  observe({
+    req(app_data$qfieldcloud_projects)
+    req(app_data$qfieldcloud_token)
+    app_data$qfieldcloud_projects
+
+    projects <- app_data$qfieldcloud_projects
+    projects <- projects$name
+
+    if (!is.null(app_data$qfieldcloud_projects)) {
+      updateSelectInput(
+        session,
+        "qfieldcloud_projects",
+        choices = projects
+      )
+    }
+  })
+
+  # update select input with list of QFieldCloud project GeoPackages
+  observe({
+    req(input$qfieldcloud_projects)
+    req(app_data$qfieldcloud_token)
+    input$qfieldcloud_projects
+
+    projects <- app_data$qfieldcloud_projects %>%
+      dplyr::filter(name == input$qfieldcloud_projects)
+
+    project_id <- projects[, 2]
+
+    files <- list_qfieldcloud_gpkg(
+      app_data$qfieldcloud_token,
+      input$qfieldcloud_url,
+      project_id
+    )
+
+    app_data$qfieldcloud_files <- files
+
+
+    updateSelectInput(
+      session,
+      "qfieldcloud_gpkg",
+      choices = files$name
+    )
+  })
+
+  # clean up select inputs on logout
+  observe({
+    if (is.null(app_data$qfieldcloud_token)) {
+      updateSelectInput(
+        session,
+        "qfieldcloud_projects",
+        choices = ""
+      )
+
+      updateSelectInput(
+        session,
+        "qfieldcloud_gpkg",
+        choices = ""
+      )
+    }
+  })
+
+  # add user selected QFieldCloud file to list of layers
+  # write GeoPackage to app_data$data_file and unpack layers in GeoPackage
+  observeEvent(input$get_qfieldcloud_gpkg, {
+    req(input$qfieldcloud_gpkg)
+    req(input$qfieldcloud_projects)
+    req(app_data$qfieldcloud_token)
+
+    filename <- input$qfieldcloud_gpkg
+
+    projects <- app_data$qfieldcloud_projects %>%
+      dplyr::filter(name == input$qfieldcloud_projects)
+
+    project_id <- projects[, 2]
+
+    qfieldcloud_gpkg <- NULL
+
+    download_waiter <- waiter::Waiter$new(
+      html = download_screen,
+      color = "rgba(89,49,150,.6)"
+    )
+
+    download_waiter$show()
+
+    qfieldcloud_gpkg <- try(
+      get_qfieldcloud_gpkg(
+        app_data$qfieldcloud_token,
+        input$qfieldcloud_url,
+        project_id,
+        filename
+      )
+    )
+
+    download_waiter$hide()
+
+    f_lyrs <- NULL
+
+    if (!"try-error" %in% class(qfieldcloud_gpkg) & !is.null(qfieldcloud_gpkg) & !any(stringr::str_detect(qfieldcloud_gpkg, "cannot load GeoPackage from QFieldCloud"))) {
+      f_lyrs <- tryCatch(
+        error = function(cnd) NULL,
+        purrr::map2(
+          qfieldcloud_gpkg$f_path,
+          qfieldcloud_gpkg$f_name,
+          list_layers
+        ) %>%
+          dplyr::bind_rows()
+      )
+
+      if (!is.null(f_lyrs)) {
+        f_lyrs$source <- "QFieldCloud"
+      }
+
+      isolate({
+        df <- dplyr::bind_rows(
+          app_data$data_file,
+          f_lyrs
+        )
+        # unique number id next to each layer to catch uploads of tables with same name
+        rows <- nrow(df)
+        row_idx <- 1:rows
+        df$layer_disp_name_idx <-
+          paste0(df$layer_disp_name, "_", row_idx, sep = "")
+        app_data$data_file <- df
+      })
+    }
+  })
+
+  # Google Cloud Data -------------------------------------------------------
 
   # display login with Google button if token is not valid
   output$login_warning <- renderUI({
@@ -340,6 +555,10 @@ app_server <- function(input, output, session) {
           dplyr::bind_rows()
       )
 
+      if (!is.null(f_lyrs)) {
+        f_lyrs$source <- "Google Cloud Storage"
+      }
+
       isolate({
         df <- dplyr::bind_rows(
           app_data$data_file,
@@ -354,6 +573,8 @@ app_server <- function(input, output, session) {
       })
     }
   })
+
+  # Active layer ------------------------------------------------------------
 
   # select one table as active layer from files loaded to the server
   observe({
@@ -396,6 +617,7 @@ app_server <- function(input, output, session) {
   )
 
   # Summary Tables ----------------------------------------------------------
+
   # Perform group-by and summarise operations on active layer
 
   # Select input for grouping and summarising variables
@@ -533,7 +755,7 @@ app_server <- function(input, output, session) {
 
   join_waiter <- waiter::Waiter$new(
     html = join_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # join left table to right table
@@ -641,7 +863,7 @@ app_server <- function(input, output, session) {
 
   spatial_join_waiter <- waiter::Waiter$new(
     html = join_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # join left table to right table
@@ -734,7 +956,6 @@ app_server <- function(input, output, session) {
       choices = choices
     )
   })
-
 
   filter_df <- reactive({
     req(input$table_filter)
@@ -977,7 +1198,6 @@ app_server <- function(input, output, session) {
               append = FALSE
             )
             app_data$flush_add_column <- app_data$flush_add_column + 1
-
           }
         )
         removeModal()
@@ -1242,6 +1462,50 @@ app_server <- function(input, output, session) {
     }
   })
 
+  # update line colour
+  observeEvent(input$map_line_colour, {
+    req(map_active_df())
+
+    if (app_data$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
+        add_layers_leaflet_no_zoom(
+          map_object = "web_map",
+          map_active_df = map_active_df(),
+          map_var = map_var(),
+          map_colour = input$map_colour,
+          opacity = input$opacity,
+          map_line_width = input$map_line_width,
+          map_line_colour = input$map_line_colour,
+          waiter = map_waiter
+        )
+      }
+    }
+  })
+
+  # update line colour
+  observeEvent(input$map_line_width, {
+    req(map_active_df())
+
+    if (app_data$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
+        add_layers_leaflet_no_zoom(
+          map_object = "web_map",
+          map_active_df = map_active_df(),
+          map_var = map_var(),
+          map_colour = input$map_colour,
+          opacity = input$opacity,
+          map_line_width = input$map_line_width,
+          map_line_colour = input$map_line_colour,
+          waiter = map_waiter
+        )
+      }
+    }
+  })
+
   # add popup labels
   observe({
     leaflet::leafletProxy("web_map") %>% leaflet::clearPopups()
@@ -1298,15 +1562,67 @@ app_server <- function(input, output, session) {
       value = FALSE
     )
 
-    leaflet::leafletProxy("map") %>%
+    leaflet::leafletProxy("web_map") %>%
       leaflet::clearControls() %>%
       leaflet::clearShapes() %>%
       leaflet::clearMarkers()
   })
 
-  # add legend on top of leaflet object
-  observe({
+  # # add legend on top of leaflet object
+  # observe({
+  #   req(map_active_df())
+  #   req(app_data$map_drawn == 1)
+  #
+  #   if ("sf" %in% class(map_active_df()) &
+  #     is.atomic(map_active_df()[[map_var()]]) &
+  #     nrow(map_active_df()) > 0) {
+  #
+  #     # Catch GeoPackages with non-spatial tables that GeoPandas has added empty
+  #     # GeometryCollection column to.
+  #     if (any(is.na(sf::st_crs(map_active_df())))) {
+  #       return()
+  #     }
+  #
+  #     # make map active layer epsg 4326
+  #     # make this an if statement
+  #     map_df <- try(
+  #       map_active_df() %>%
+  #         sf::st_transform(4326)
+  #     )
+  #
+  #     if ("try-error" %in% class(map_df)) {
+  #       return()
+  #     }
+  #
+  #     bbox <- sf::st_bbox(map_df) %>%
+  #       as.vector()
+  #
+  #     if (class(map_df[[map_var()]]) != "numeric" &
+  #       class(map_df[[map_var()]]) != "integer") {
+  #       pal <- leaflet::colorFactor(input$map_colour, map_df[[map_var()]])
+  #     } else {
+  #       pal <- leaflet::colorNumeric(input$map_colour, map_df[[map_var()]])
+  #     }
+  #
+  #     if (input$legend == TRUE) {
+  #       leaflet::leafletProxy("web_map") %>%
+  #         leaflet::clearControls() %>%
+  #         leaflet::addLegend(
+  #           pal = pal,
+  #           values = map_df[[map_var()]],
+  #           position = "topright",
+  #           title = input$map_legend_title
+  #         )
+  #     } else {
+  #       leaflet::leafletProxy("webMap") %>%
+  #         leaflet::clearControls()
+  #     }
+  #   }
+  # })
+
+  observeEvent(input$legend, {
     req(map_active_df())
+    req(app_data$map_drawn == 1)
 
     if ("sf" %in% class(map_active_df()) &
       is.atomic(map_active_df()[[map_var()]]) &
@@ -1353,8 +1669,12 @@ app_server <- function(input, output, session) {
           leaflet::clearControls()
       }
     }
-  })
 
+    if (input$legend == FALSE) {
+      leaflet::leafletProxy("web_map") %>%
+        leaflet::clearControls()
+    }
+  })
 
   # Charts ------------------------------------------------------------------
 
@@ -1506,7 +1826,6 @@ app_server <- function(input, output, session) {
       chart_active_df <- isolate(chart_active_df())
 
       if (chart_type == "histogram") {
-
         binwidth <- isolate(input$binwidth)
         hist_x_var <- isolate(hist_x_axis_vars())
         chart <- make_histogram(
@@ -1518,28 +1837,25 @@ app_server <- function(input, output, session) {
           axis_font_size,
           lab_font_size
         )
-
       }
 
       if (chart_type == "scatter") {
-
-          scatter_x_var <- isolate(scatter_x_axis_vars())
-          scatter_y_var <- isolate(scatter_y_axis_vars())
-          point <- isolate(input$scatter_point_size)
-          chart <- make_scatter(
-            chart_active_df,
-            scatter_x_var,
-            scatter_y_var,
-            point,
-            x_lab,
-            y_lab,
-            axis_font_size,
-            lab_font_size
-          )
+        scatter_x_var <- isolate(scatter_x_axis_vars())
+        scatter_y_var <- isolate(scatter_y_axis_vars())
+        point <- isolate(input$scatter_point_size)
+        chart <- make_scatter(
+          chart_active_df,
+          scatter_x_var,
+          scatter_y_var,
+          point,
+          x_lab,
+          y_lab,
+          axis_font_size,
+          lab_font_size
+        )
       }
 
       if (chart_type == "bar plot") {
-
         bar_x_var <- isolate(col_summarised_df()[, 1])
 
         if (bar_plot_type == "count_records") {
@@ -1569,915 +1885,5 @@ app_server <- function(input, output, session) {
     bg = "transparent"
   )
 
-  # Admin - data cleaning ---------------------------------------------------
-
-  # reveal FastAPI sync endpoint for authenticated users
-  output$sync_endpoint_ui <- renderUI({
-    if (!is.null(isolate(token()))) {
-      tagList(
-        h4("Sync edits to Google Cloud Storage"),
-
-        textInput(
-          inputId = "sync_endpoint",
-          label = "Endpoint for sync API"
-        ),
-
-        actionButton(
-          "sync_edits",
-          "sync edits",
-          class = "btn-primary m-2"
-        ),
-        actionButton(
-          "refresh_data",
-          "refresh data",
-          class = "btn-primary m-2"
-        )
-      )
-
-    } else {
-      return()
-    }
-  })
-
-  # user uploaded files for data cleaning / editing
-  # return table of files and file paths of data loaded to the server
-  upload_edit_file <- mod_get_layers_Server(id = "edit_data")
-
-  # user can download a file to clean  / edit from Google Cloud Storage
-  # get list of GCS Buckets associated with a project ID
-  observeEvent(input$admin_list_google_files, {
-    req(token())
-    req(input$admin_gcs_project_id)
-
-    buckets <- try(
-      list_gcs_buckets(
-        token(),
-        input$admin_gcs_project_id
-      )
-    )
-
-    if ("try-error" %in% buckets) {
-      shiny::showNotification(
-        "Error listing buckets Google Cloud Storage",
-        type = "error",
-        duration = 5
-      )
-      return()
-    }
-
-    if ("no items returned" %in% buckets | is.null(buckets)) {
-      shiny::showNotification(
-        "No buckets available in Google Cloud Storage",
-        type = "error",
-        duration = 5
-      )
-    } else {
-      # update admin_buckets element of app_data with list of buckets in GCS project
-      app_data$admin_buckets <- buckets
-    }
-  })
-
-  # update selectInput with list GCS buckets in GCS project
-  observe({
-    app_data$admin_buckets
-
-    if (length(app_data$admin_buckets) > 0 & !"no items returned" %in% app_data$admin_buckets) {
-      updateSelectInput(
-        session,
-        "admin_gcs_bucket_name",
-        choices = app_data$admin_buckets
-      )
-    }
-  })
-
-  # get list of objects in selected GCS bucket
-  observe({
-    req(input$admin_gcs_bucket_name)
-
-    items <- list_gcs_bucket_objects(
-      token(),
-      input$admin_gcs_bucket_name
-    )
-
-    if ("no items returned" %in% items | is.null(items)) {
-      shiny::showNotification(
-        "No GeoPackages returned from Google Cloud Storage bucket query",
-        type = "error",
-        duration = 5
-      )
-      app_data$admin_items <- NULL
-    } else {
-      # update admin_items object of app_data with list of GeoPackages in GCS bucket
-      app_data$admin_items <- items
-    }
-  })
-
-  # update selectInput with list of objects in GCS bucket
-  observe({
-    app_data$admin_items
-
-    if (length(app_data$admin_items) > 0 & !"no items returned" %in% app_data$admin_items) {
-      updateSelectInput(
-        session,
-        "admin_gcs_bucket_objects",
-        choices = app_data$admin_items
-      )
-    } else {
-      updateSelectInput(
-        session,
-        "admin_gcs_bucket_objects",
-        choices = ""
-      )
-    }
-  })
-
-  # add user selected GCS object to list of layers
-  # add info for GeoPackage downloaded from Google Cloud Storage to app_data$data_file and unpack layers in GeoPackage
-  observeEvent(input$admin_get_objects, {
-    req(input$admin_gcs_bucket_objects)
-
-    selected_gcs_object <- input$admin_gcs_bucket_objects
-
-    gcs_gpkg <- NULL
-    gcs_gpkg <- try(
-      # returns a 2-element list - temporary path to GeoPackage and name of GeoPackage to display
-      get_gcs_object(
-        token(),
-        input$admin_gcs_bucket_name,
-        selected_gcs_object
-      )
-    )
-
-    f_lyrs <- NULL
-
-    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
-      f_lyrs <- try(
-        # list layers and temporary path to GeoPackage downloaded from GCS
-        purrr::map2(
-          gcs_gpkg$f_path,
-          gcs_gpkg$f_name,
-          list_layers
-        ) %>%
-          dplyr::bind_rows()
-      )
-
-      # keep track of GeoPackage being edited (f_name) and its GCS Bucket (admin_current_bucket) for syncing edits back to files on GCS
-      app_data$admin_fname <- gcs_gpkg$f_name # name of GeoPacakge being edited
-      app_data$admin_current_bucket <- input$admin_gcs_bucket_name # name of GCS bucket where GeoPackage being edited is stored
-
-      isolate({
-        # clear previously uploaded data
-        app_data$edit_data_file <- data.frame()
-        df <- dplyr::bind_rows(
-          app_data$edit_data_file,
-          f_lyrs
-        )
-        # unique number id next to each layer to catch uploads of tables with same name
-        rows <- nrow(df)
-        row_idx <- 1:rows
-        df$layer_disp_name_idx <-
-          paste0(df$layer_disp_name, "_", row_idx, sep = "")
-        app_data$edit_data_file <- df
-
-        # create new log for edits
-        # log file for any errors
-        app_data$edit_log <- NULL
-        log <-
-          fs::file_temp(
-            pattern = "log",
-            tmp_dir = tempdir(),
-            ext = "txt"
-          )
-        app_data$edit_log <- log
-      })
-
-      # reset map zoom to new data's extent
-      app_data$map_edits_zoom <- 0
-    }
-  })
-
-  # handle file uploads from user's local machine
-  # add info for GeoPackage uploaded by user to app_data$data_file and unpack layers in GeoPackage
-  observe({
-    req(upload_edit_file())
-
-    upload_edit_file <- isolate(upload_edit_file())
-    isolate({
-      # clear previously uploaded data
-      app_data$edit_data_file <- data.frame()
-      df <- dplyr::bind_rows(app_data$edit_data_file, upload_edit_file)
-      # unique number id next to each layer to catch uploads of tables with same name
-      rows <- nrow(df)
-      row_idx <- 1:rows
-      df$layer_disp_name_idx <-
-        paste0(df$layer_disp_name, "_", row_idx, sep = "")
-      app_data$edit_data_file <- df
-
-      # create new log for edits
-      # log file for any errors
-      app_data$edit_log <- NULL
-      log <-
-        fs::file_temp(
-          pattern = "log",
-          tmp_dir = tempdir(),
-          ext = "txt"
-        )
-      app_data$edit_log <- log
-    })
-
-    # reset map zoom to new data's extent
-    app_data$map_edits_zoom <- 0
-  })
-
-  # select one layer to edit
-  observe({
-    df <- app_data$edit_data_file
-    choices <- unique(df$layer_disp_name_idx)
-    updateSelectInput(
-      session,
-      "edit_layer",
-      choices = choices
-    )
-  })
-
-  # edit df - read the layer to edit into a (sf) data frame to edit
-  edit_df <- reactive({
-    req(input$edit_layer)
-    req(app_data$flush_deletes) # update the data frame after features / rows are deleted
-    req(app_data$flush_edits) # update the data frame after features / cells are edited
-    req(app_data$flush_geometry_edits) # update the data frame after feature geometries are edited
-
-    # get info on path to GeoPackage storing layer to edit
-    df <- try(
-      isolate(app_data$edit_data_file)
-    )
-    if ("try-error" %in% class(df)) {
-      shiny::showNotification(
-        "Data could not be loaded",
-        type = "error",
-        duration = 5
-      )
-      return()
-    }
-
-    # read layer / table to edit into a (sf) data frame
-    edit_df <- try(
-      read_tables(
-        df,
-        input$edit_layer
-      )
-    )
-
-    if ("try-error" %in% class(edit_df)) {
-      shiny::showNotification(
-        "Data could not be loaded",
-        type = "error",
-        duration = 5
-      )
-      return()
-    }
-
-    # check if layer to be edited is spatial
-    # if not spatial drop geometry and convert to data frame
-    # if spatial transform to 4326 for leaflet
-    edit_layer_crs <- NA
-
-    if ("sf" %in% class(edit_df)) {
-      edit_layer_crs <- sf::st_crs(edit_df)
-    }
-
-    if (is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
-      edit_df <- edit_df %>%
-        sf::st_drop_geometry() %>%
-        as.data.frame()
-    } else if (!is.na(edit_layer_crs) & "sf" %in% class(edit_df)) {
-      edit_df <- edit_df %>%
-        sf::st_transform(4326)
-      # make geometry column the end column
-      # this then gets dropped before being rendered on data table
-      # and ensures edits are written to correct row and column index
-      geom_col <- attr(edit_df, "sf_column")
-      edit_df <- edit_df %>%
-        dplyr::relocate(geom_col, .after = tidyselect::last_col())
-    } else if (is.na(edit_layer_crs)) {
-      edit_df <- edit_df
-    }
-
-    edit_df
-  })
-
-  # render data frame to edit as editable data table
-  mod_render_dt_Server(
-    id = "edit_data_dt",
-    dt = edit_df,
-    editable = TRUE
-  )
-
-  # add editing layer to map
-  # edit_leafmap is the web map object for editing feature geometries
-  output$edit_leafmap <- leaflet::renderLeaflet({
-    base_map <- leaflet::leaflet() %>%
-      leaflet::addTiles(group = "OSM (default)") %>%
-      leaflet::addProviderTiles(
-        leaflet::providers$Esri.WorldImagery,
-        options = leaflet::providerTileOptions(maxZoom = 17),
-        group = "ESRI Satellite"
-      ) %>%
-      leaflet::setView(0, 0, 3) %>%
-      leaflet::addLayersControl(
-        baseGroups = c("OSM (default)", "ESRI Satellite"),
-        options = leaflet::layersControlOptions(collapsed = FALSE),
-        position = c("bottomright")
-      ) %>%
-      leaflet::addMeasure(
-        position = "bottomright",
-        primaryLengthUnit = "meters",
-        primaryAreaUnit = "sqmeters",
-        activeColor = "#3D535D",
-        completedColor = "#7D4479"
-      )
-
-    base_map
-  })
-
-  # add spatial data to edit to edit_leafmap
-  observe({
-    req(edit_df())
-
-    # add layerID to edit_df - this to identify features associated with user click events
-    edit_df <- edit_df()
-    if (nrow(edit_df) > 0) {
-      edit_df$layer_id <- as.character(1:nrow(edit_df))
-    }
-
-    edit_layer <- isolate(input$edit_layer)
-
-    # only render map if it is spatial (of class sf)
-    if ("sf" %in% class(edit_df) &
-      nrow(edit_df) > 0 &
-      input$edit_data_view == "edit_map" &
-      app_data$map_edits_zoom == 0) {
-      edit_map_proxy <- add_layers_leaflet(
-        map_object = "edit_leafmap",
-        map_active_df = edit_df,
-        map_var = edit_layer,
-        map_colour = "#00ffff",
-        opacity = 0.75,
-        map_line_width = 0.15,
-        map_line_colour = "blue",
-        waiter = map_waiter
-      )
-    } else if ("sf" %in% class(edit_df) &
-      nrow(edit_df) > 0 &
-      input$edit_data_view == "edit_map" &
-      app_data$map_edits_zoom > 0) {
-      edit_map_proxy <- add_layers_leaflet_no_zoom(
-        map_object = "edit_leafmap",
-        map_active_df = edit_df,
-        map_var = edit_layer,
-        map_colour = "#00ffff",
-        opacity = 0.75,
-        map_line_width = 0.15,
-        map_line_colour = "blue",
-        waiter = map_waiter
-      )
-    }
-
-    # show warning if edit is not spatial (class sf)
-    shinyFeedback::feedbackWarning(
-      "edit_layer",
-      !("sf" %in% class(edit_df)),
-      "Not a spatial layer"
-    )
-  })
-
-  # listen for user clicking a feature to edit
-  observe({
-    # capture click events
-    # event_shape captures a user click on a shape object
-    # event_marker captures a user click on a marker object
-    event_shape <- input$edit_leafmap_shape_click
-    event_marker <- input$edit_leafmap_marker_click
-
-    # if a user has not clicked on a marker or object leave event as null
-    event <- NULL
-
-    if (!is.null(event_shape)) {
-      event <- event_shape
-    }
-
-    if (!is.null(event_marker)) {
-      event <- event_marker
-    }
-
-    if (is.null(event)) {
-      return()
-    }
-
-    # filter the feature associated with the user click
-    event <- event$id
-    app_data$event_tmp <- as.numeric(event) # keep track of the user's click event
-    edit_df <- isolate(edit_df())
-    feature <- edit_df[as.numeric(event), ]
-    feature$layer_id <- 1
-
-    # get bounding box for the extent of the feature clicked by the user
-    bbox <- sf::st_bbox(feature) %>%
-      as.vector()
-
-    # add editing feature to edit_zoommap
-    # edit_zoommap is a popup map to display the feature to edit and allow interactive editing
-    output$edit_zoommap <- leaflet::renderLeaflet({
-      zoom_map <- leaflet::leaflet() %>%
-        leaflet::addTiles(group = "OSM (default)") %>%
-        leaflet::addProviderTiles(
-          leaflet::providers$Esri.WorldImagery,
-          options = leaflet::providerTileOptions(maxZoom = 17),
-          group = "ESRI Satellite"
-        ) %>%
-        leaflet::fitBounds(bbox[1], bbox[2], bbox[3], bbox[4]) %>%
-        leaflet::addLayersControl(
-          baseGroups = c("OSM (default)", "ESRI Satellite"),
-          options = leaflet::layersControlOptions(collapsed = FALSE),
-          position = c("bottomright")
-        ) %>%
-        leaflet::addPolygons(
-          data = feature,
-          group = "feature",
-          layerId = feature$layer_id
-        ) %>%
-        leaflet.extras::addDrawToolbar(
-          targetGroup = "feature",
-          polylineOptions = FALSE,
-          polygonOptions = FALSE,
-          circleOptions = FALSE,
-          rectangleOptions = FALSE,
-          markerOptions = FALSE,
-          circleMarkerOptions = FALSE,
-          editOptions = leaflet.extras::editToolbarOptions()
-        )
-      zoom_map
-    })
-
-    showModal(
-      modalDialog(
-        tags$h4("Edit feature"),
-        leaflet::leafletOutput("edit_zoommap"),
-        modalButton("close"),
-        easyClose = TRUE,
-        footer = NULL
-      )
-    )
-  })
-
-  # Listen for editing feature geometry event
-  observeEvent(input$edit_zoommap_draw_edited_features, {
-    req(edit_df())
-    edits <- input$edit_zoommap_draw_edited_features
-    # convert return from leaflet.draw to json so it can be read by st_read
-    edits_to_json <- jsonlite::toJSON(
-      edits,
-      auto_unbox = TRUE,
-      force = TRUE,
-      digits = NA
-    )
-    edits_to_sf <- sf::st_read(edits_to_json)
-
-    # data frame of layer currently being edited
-    edit_df <- edit_df()
-    colnames <- colnames(edit_df)
-    # row in data frame associated with the feature being edited
-    row_to_edit <- app_data$event_tmp
-
-    # replace old geometry with new geometry generated by the user
-    if ("sf" %in% class(edit_df)) {
-      if ("geom" %in% colnames) {
-        geom <- edits_to_sf$geometry
-        edit_df[row_to_edit, ]$geom <- geom
-      }
-
-      if ("geometry" %in% colnames) {
-        geom <- edits_to_sf$geometry
-        edit_df[row_to_edit, ]$geometry <- geom
-      }
-    }
-
-    # write edited layer back to GeoPackage
-    write_tables(
-      edit_df,
-      isolate(app_data$edit_data_file),
-      input$edit_layer
-    )
-    app_data$map_edits_zoom <- app_data$map_edits_zoom + 1
-    app_data$flush_geometry_edits <- app_data$flush_geometry_edits + 1 # trigger reload of layer from GeoPackage with newly edited features
-    app_data$event_tmp <- NULL # reset event_tmp to NULL ready for next user click
-  })
-
-  # Listen for users deleting features events
-  observeEvent(input$edit_zoommap_draw_deleted_features, {
-    req(edit_df())
-    # convert return from leaflet.draw to json so it can be read by st_read
-    deletes <- input$edit_zoommap_draw_deleted_features
-    deletes_to_json <- jsonlite::toJSON(
-      deletes,
-      auto_unbox = TRUE,
-      force = TRUE,
-      digits = NA
-    )
-    deletes_to_sf <- sf::st_read(deletes_to_json)
-
-    # get data frame to delete feature from
-    edit_df <- edit_df()
-    row_to_delete <- app_data$event_tmp
-
-    if (nrow(deletes_to_sf) > 0) {
-      edit_df <- edit_df %>%
-        dplyr::filter(dplyr::row_number() != row_to_delete)
-      # write layer with feature deleted to GeoPackage
-      write_tables(
-        edit_df,
-        isolate(app_data$edit_data_file),
-        input$edit_layer
-      )
-      app_data$flush_geometry_edits <- app_data$flush_geometry_edits + 1 # trigger reload of layer from GeoPackage with feature deleted
-    }
-
-    app_data$map_edits_zoom <- app_data$map_edits_zoom + 1
-    app_data$event_tmp <- NULL # reset event_tmp to NULL ready for next user click
-  })
-
-  # waiter object to display while deleting features
-  delete_waiter <- waiter::Waiter$new(
-    html = delete_screen,
-    color = "rgba(44,62,80,.6)"
-  )
-
-  # Table-based editing of layer in a Data Table
-  # delete selected rows from GeoPackage
-  observeEvent(input$delete_records, {
-    delete_waiter$show()
-    selected_rows <- input$`edit_data_dt-data_table_rows_selected`
-    id_str <- input$row_id
-    edit_df_colnames <- colnames(edit_df())
-
-    # layer that is edited prior to any deletions - keep to preserve row indexes
-    pre_edit_df <- edit_df()
-
-    # check if there is a unique column id that can be used to propagate deletes through related tables (e.g. suffix == "_id")
-    # this would be better handled using a QGS file???
-    if (nchar(id_str) > 0) {
-      # find column in edit_df that stores row ids
-      id_col <- stringr::str_detect(edit_df_colnames, id_str)
-      id_col <- edit_df_colnames[id_col]
-      if (length(id_col) > 1) {
-        id_col <- NULL
-      }
-    } else {
-      id_col <- NULL
-    }
-
-    shinyFeedback::feedbackWarning(
-      "row_id",
-      is.null(id_col),
-      "Cannot uniquely identify id column"
-    )
-
-    if (length(selected_rows) > 0 & !is.null(id_col)) {
-      for (i in selected_rows) {
-        # this is unique row id that defines row to be deleted
-        id_to_delete <- pre_edit_df[i, ][[id_col]]
-
-        # only delete rows if selected row-column is not null or NA
-        if (!is.na(id_to_delete) & !is.null(id_to_delete)) {
-          # get layer to delete row from
-          edit_gpkg <- app_data$edit_data_file
-          layers <- unique(edit_gpkg$layer_disp_name_idx)
-          # iterate over layers, delete row, and sync changes to GeoPackage
-          for (ii in layers) {
-            tmp_edit_df <- read_tables(
-              isolate(app_data$edit_data_file),
-              ii
-            )
-            tmp_edit_df_colnames <- colnames(tmp_edit_df)
-            tmp_edit_df_id_col <- stringr::str_detect(tmp_edit_df_colnames, id_str)
-            tmp_edit_df_id_col <- tmp_edit_df_colnames[tmp_edit_df_id_col]
-
-            if (length(tmp_edit_df_id_col) > 1) {
-              tmp_edit_df_id_col <- NULL
-              # write delete fail error message to log
-              readr::write_lines(
-                paste0("cannot delete row in layer: ", ii, " - cannot uniquely identify id column"),
-                app_data$edit_log,
-                sep = "\n",
-                na = "NA",
-                append = TRUE
-              )
-            } else if (length(tmp_edit_df_id_col) == 0) {
-              tmp_edit_df_id_col <- NULL
-              # write delete fail error message to log
-              readr::write_lines(
-                paste0("cannot delete row in layer: ", ii, " - id column missing"),
-                app_data$edit_log,
-                sep = "\n",
-                na = "NA",
-                append = TRUE
-              )
-            } else {
-              delete_message <- tryCatch(
-                error = function(cnd) paste0("cannot delete row-id: ", id_to_delete, "from layer: ", ii),
-                {
-                  # include | condition in filter as dplyr filter removes NA rows - this prevents that from occurring
-                  # this should not present unexpected behaviour as users are prevented from deleting NA rows
-                  tmp_edit_df <- tmp_edit_df %>%
-                    dplyr::filter(.data[[tmp_edit_df_id_col]] != id_to_delete | is.na(.data[[tmp_edit_df_id_col]]))
-                  # write layer to GeoPackage with row deleted
-                  write_tables(
-                    tmp_edit_df,
-                    isolate(app_data$edit_data_file),
-                    ii
-                  )
-                  paste0("deleted row-id: ", id_to_delete, "from layer: ", ii)
-                }
-              )
-              # write record of row deletion in log
-              readr::write_lines(
-                delete_message,
-                app_data$edit_log,
-                sep = "\n",
-                na = "NA",
-                append = TRUE
-              )
-            }
-          }
-        }
-      }
-    }
-    app_data$flush_deletes <- app_data$flush_deletes + 1 # trigger reload of layer from GeoPackage with row deleted
-    delete_waiter$hide()
-  })
-
-  # watier object to display while applying edits
-  edit_waiter <- waiter::Waiter$new(
-    html = edit_screen,
-    color = "rgba(44,62,80,.6)"
-  )
-
-  # Table-based editing of layer in a Data Table
-  # listen for user edits to records in Data Table
-  observeEvent(input$`edit_data_dt-data_table_cell_edit`, {
-    tmp_edits <- app_data$tmp_edits
-    edited_rows <- input$`edit_data_dt-data_table_cell_edit`
-    tmp_edits <- dplyr::bind_rows(
-      tmp_edits,
-      edited_rows
-    )
-    app_data$tmp_edits <- tmp_edits # temporary record of user edits to records in Data Table
-  })
-
-  # apply edits and updating GeoPackage
-  observeEvent(input$save_edits, {
-
-    # layer that is edited prior to any edits
-    df_to_edit <- edit_df()
-
-    #  drop sticky geometry column if layer is sf object
-    if ("sf" %in% class(df_to_edit)) {
-      df_to_edit_not_sf <- df_to_edit %>%
-        sf::st_drop_geometry()
-    } else {
-      df_to_edit_not_sf <- df_to_edit
-    }
-
-    # user generated edits to apply to data frame
-    tmp_edits <- app_data$tmp_edits
-
-    if (nrow(tmp_edits) > 0) {
-      edit_waiter$show()
-      edits <- edit_data_frame(
-        tmp_edits,
-        df_to_edit,
-        df_to_edit_not_sf,
-        input$edit_layer
-      )
-      df_to_edit <- edits[[1]]
-      # update GeoPackage with user generated edits to records in layer
-      write_tables(
-        df_to_edit,
-        isolate(app_data$edit_data_file),
-        input$edit_layer
-      )
-      edits_log <- edits[[2]]
-
-      # update log with status of applying user generated edits
-      for (i in edits_log) {
-        readr::write_lines(
-          i,
-          app_data$edit_log,
-          sep = "\n",
-          na = "NA",
-          append = TRUE
-        )
-      }
-      edit_waiter$hide()
-    }
-
-    # reset edits object to empty after applying them GeoPackage
-    app_data$tmp_edits <- data.frame()
-    app_data$flush_edits <- app_data$flush_edits + 1 # trigger reload of layer with user generated edits applied
-  })
-
-  # apply edits and update GeoPackage upon change in editing layer
-  observeEvent(input$edit_layer, {
-    # layer that is edited prior to any edits
-    df_to_edit <- edit_df()
-
-    if ("sf" %in% class(df_to_edit)) {
-      df_to_edit_not_sf <- df_to_edit %>%
-        sf::st_drop_geometry()
-    } else {
-      df_to_edit_not_sf <- df_to_edit
-    }
-
-    # user generated edits to apply to data frame
-    tmp_edits <- app_data$tmp_edits
-
-    if (nrow(tmp_edits) > 0) {
-      edit_waiter$show()
-      edits <- edit_data_frame(
-        tmp_edits,
-        df_to_edit,
-        df_to_edit_not_sf,
-        input$edit_layer
-      )
-      df_to_edit <- edits[[1]]
-      write_tables(
-        df_to_edit,
-        isolate(app_data$edit_data_file),
-        input$edit_layer
-      )
-      edits_log <- edits[[2]]
-      for (i in edits_log) {
-        readr::write_lines(
-          i,
-          app_data$edit_log,
-          sep = "\n",
-          na = "NA",
-          append = TRUE
-        )
-      }
-      edit_waiter$hide()
-    }
-
-    # reset edits object after applying edits to the GeoPackage
-    app_data$tmp_edits <- data.frame()
-    app_data$flush_edits <- app_data$flush_edits + 1
-  })
-
-  # sync edited GeoPackage back to Google Cloud Storage
-  # update selectInput with list of Google Cloud Storage buckets
-  observe({
-    app_data$admin_buckets
-
-    if (length(app_data$admin_buckets) > 0 & !"no items returned" %in% app_data$admin_buckets) {
-      updateSelectInput(
-        session,
-        "sync_gcs_bucket_name",
-        choices = app_data$admin_buckets
-      )
-    }
-  })
-
-  # waiter to display while syncing edits back to Google Cloud Storage
-  sync_edit_waiter <- waiter::Waiter$new(
-    html = edit_screen,
-    color = "rgba(44,62,80,.6)"
-  )
-
-  observeEvent(input$sync_edits, {
-    req(input$sync_endpoint)
-    req(edit_df())
-
-    sync_edit_waiter$show()
-    # get file name of GeoPackage to sync to server
-    fname <- app_data$admin_fname
-
-    # FastAPI endpoint for sync edits operations
-    endpoint <- input$sync_endpoint
-
-    # rename local file in Shiny App to match file in Google Cloud Storage
-    path_file_to_post <- app_data$edit_data_file
-    path_file_to_post <- path_file_to_post$file_path[1]
-    tmp_dir <- dirname(path_file_to_post)
-    sync_tmp_path <- paste0(tmp_dir, "/", fname)
-    fs::file_copy(
-      path_file_to_post,
-      sync_tmp_path,
-      overwrite = TRUE
-    )
-
-    # post GeoPackage with edits applied to FastAPI endpoint
-    req <- try(httr::POST(
-      url = endpoint,
-      config = httr::config(token = token()),
-      body = list(file = httr::upload_file(sync_tmp_path))
-    ))
-
-    if ("try-error" %in% class(req)) {
-      shiny::showNotification(
-        paste0("Edits could not be synced"),
-        duration = 5
-      )
-    } else {
-      shiny::showNotification(
-        paste0("Sync response status: ", req$status_code),
-        duration = 5
-      )
-    }
-
-    sync_edit_waiter$hide()
-  })
-
-  # update data in app with latest GeoPackage stored on Google Cloud Storage
-  observeEvent(input$refresh_data, {
-    selected_gcs_object <- app_data$admin_fname
-    admin_current_bucket <- app_data$admin_current_bucket
-
-    gcs_gpkg <- NULL
-    gcs_gpkg <- try(
-      # returns a 2-element list - temporary path to GeoPackage and name of GeoPackage to display
-      get_gcs_object(
-        token(),
-        admin_current_bucket,
-        selected_gcs_object
-      )
-    )
-
-    f_lyrs <- NULL
-
-    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
-      f_lyrs <- tryCatch(
-        error = function(cnd) NULL,
-        purrr::map2(
-          gcs_gpkg$f_path,
-          gcs_gpkg$f_name,
-          list_layers
-        ) %>%
-          dplyr::bind_rows()
-      )
-
-      # keep track of GeoPackage being edited (f_name) and its GCS Bucket (admin_current_bucket) for syncing edits back to files on GCS
-      app_data$admin_fname <- gcs_gpkg$f_name
-      app_data$admin_current_bucket <- admin_current_bucket
-
-      isolate({
-        # clear previously uploaded data
-        app_data$edit_data_file <- data.frame()
-        df <- dplyr::bind_rows(app_data$edit_data_file, f_lyrs)
-        # unique number id next to each layer to catch uploads of tables with same name
-        rows <- nrow(df)
-        row_idx <- 1:rows
-        df$layer_disp_name_idx <-
-          paste0(df$layer_disp_name, "_", row_idx, sep = "")
-        app_data$edit_data_file <- df
-
-        # create new log for edits
-        # log file for any errors
-        app_data$edit_log <- NULL
-        log <-
-          fs::file_temp(
-            pattern = "log",
-            tmp_dir = tempdir(),
-            ext = "txt"
-          )
-        app_data$edit_log <- log
-      })
-
-      # reset map zoom to new data's extent
-      app_data$map_edits_zoom <- 0
-    }
-
-  })
-
-  # download edited data as a zip file
-  output$download_edits <- downloadHandler(
-    filename = function() {
-      req(nrow(app_data$edit_data_file) >= 1)
-
-      paste("edited_", dt(), ".zip", sep = "")
-    },
-    content = function(file) {
-      req(nrow(app_data$edit_data_file) >= 1)
-
-      dpath <- app_data$edit_data_file
-      # row 1 should be the path to the GeoPackage that is being edited as a user can only load and edit one GeoPackage at a time
-      dpath <- dpath[1, ][["file_path"]]
-      log_path <- app_data$edit_log
-      zip(
-        zipfile = file,
-        files = c(dpath, log_path),
-        flags = "-r9Xj"
-      )
-    },
-    contentType = "application/zip"
-  )
+  # END ---------------------------------------------------------------------
 }

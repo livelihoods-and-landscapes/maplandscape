@@ -21,7 +21,7 @@ add_popups <- function(in_df, layer_id, label_vars) {
   feature <- in_df()[in_df()$layer_id == layer_id, ]
 
   popup_text <- vector()
-  popup_text <- c(popup_text, "<p style='color:#343a40; background-color:#f8f9fa;'>")
+  popup_text <- c(popup_text, "<p style='color:#17141f; background-color:#fff;'>")
 
   for (i in seq_along(label_vars())) {
     ii <- label_vars()[i]

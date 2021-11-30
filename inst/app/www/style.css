@@ -1,13 +1,5 @@
 body {
-  /*background-image: url('farm-bg-fade-2.jpg');
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-size: cover;
-  background-color: #464646;
-  -webkit-background-size: cover;
-  -moz-background-size: cover;
-  -o-background-size: cover;*/
+  overflow: hidden;
 }
 
 #loading-screen {
@@ -23,6 +15,25 @@ body {
   color: #17141f;
 }
 
+
+/* sidebar and main panel layouts -
+need to set height to absolute units (i.e. not %) to use scroll
+on the element*/
+
+.sidePanelStyle {
+  max-height: calc(100vh - 105px);
+  overflow-y:scroll;
+  padding: 5px;
+}
+
+.mainPanelStyle {
+  max-height: calc(100vh - 105px);
+  overflow-y: scroll;
+  overflow-x: scroll;
+  padding: 0px;
+}
+
+/* Shiny */
 .shiny-notification {
   z-index: 800;
   position: fixed;
@@ -30,30 +41,33 @@ body {
   left: calc(50%);
 }
 
-#dataSidePanel {
-  overflow-y:scroll;
-  max-height: 90vh;
-  position:relative;
+/*set colour on sliders*/
+.irs--shiny .irs-bar {
+    top: 25px;
+    height: 8px;
+    border-top: 1px solid #593196;
+    border-bottom: 1px solid #593196;
+    background: #593196;
 }
 
-#mapSidePanel {
-  overflow-y:scroll;
-  max-height: 100vh;
-  position:relative;
-  padding: 5px !important;
-  border-color: #f9f8fc !important;
-  background: #f9f8fc;
+.irs-to, .irs--shiny .irs-single {
+    color: #fff;
+    text-shadow: none;
+    padding: 1px 3px;
+    background-color: #593196;
+    border-radius: 3px;
+    font-size: 11px;
+    line-height: 1.333;
 }
+
+/* Leaflet */
 
 #web_map {
-  height: calc(100vh - 55px) !important;
-  width: calc(100vw - 250px) !important;
-  position: fixed;
-  top: 55px;
-  left: 250px;
+  min-height: calc(100vh - 105px);
+  position: relative;
   right: 0;
   bottom: 0;
-  padding: 0;
+  padding-right: 10px;
   overflow: hidden;
 }
 
@@ -65,21 +79,7 @@ body {
   z-index: auto;
 }
 
-#chartSidePanel {
-  overflow-y:scroll;
-  max-height: 90vh;
-  position:relative;
-}
-
-#adminSidePanel {
-  overflow-y:scroll;
-  max-height: 90vh;
-  position:relative;
-}
-
-#edit_leafmap {
-  height: calc(100vh - 135px) !important;
-}
+/* docs tab */
 
 .docs {
   padding-top: 10px;
@@ -94,4 +94,19 @@ body {
   margin-right: auto;
   padding: 5px;
   border: thin silver solid;
+}
+
+
+/* Misc */
+/* purple horizontal rule*/
+
+.hr-purple {
+  border-color: #593196 !important;
+}
+
+.dt-scroll {
+  max-height: calc(100vh - 300px);
+  overflow-y: scroll;
+  overflow-x: scroll;
+  padding: 0px;
 }

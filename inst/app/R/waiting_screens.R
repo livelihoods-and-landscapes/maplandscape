@@ -11,6 +11,11 @@ join_screen <- shiny::tagList(
   shiny::h4("Joining tables...")
 )
 
+download_screen <- shiny::tagList(
+  waiter::spin_flower(),
+  shiny::h4("Downloading file...")
+)
+
 sync_screen <- shiny::tagList(
   waiter::spin_flower(),
   shiny::h4("Syncing forms...")

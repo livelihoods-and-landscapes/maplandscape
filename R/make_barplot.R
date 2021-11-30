@@ -28,12 +28,12 @@ make_barplot <- function(col_chart_df, x_lab, y_lab, axis_font_size, lab_font_si
       col_chart_df,
       ggplot2::aes(col_chart_df[, 1], col_chart_df[, 2])
     ) +
-    ggplot2::geom_col(color = "#78c2ad", fill = "#78c2ad") +
+    ggplot2::geom_col(color = "#593196", fill = "#593196") +
     ggplot2::xlab(x_lab) +
     ggplot2::ylab(y_lab) +
     ggplot2::theme(
       plot.background = ggplot2::element_rect(fill = NA, colour = NA),
-      panel.background = ggplot2::element_rect(fill = NA, colour = "#78c2ad"),
+      panel.background = ggplot2::element_rect(fill = NA, colour = "#17141f"),
       axis.text.x = ggplot2::element_text(
         angle = -45,
         vjust = 1,
