@@ -2,9 +2,9 @@ body {
   overflow: hidden;
 }
 
-/*#loadingScreen {
+#loading-screen {
   position: absolute;
-  background: #ecf0f1;
+  background: #ffffff;
   opacity: 0.75;
   z-index: 100;
   top: 0;
@@ -12,9 +12,9 @@ body {
   right: 0;
   height: 100vh;
   text-align: center;
-  color: #343a40;
+  color: #17141f;
 }
-*/
+
 
 /* sidebar and main panel layouts -
 need to set height to absolute units (i.e. not %) to use scroll
@@ -34,7 +34,6 @@ on the element*/
 }
 
 /* Shiny */
-
 .shiny-notification {
   z-index: 800;
   position: fixed;
@@ -95,4 +94,19 @@ on the element*/
   margin-right: auto;
   padding: 5px;
   border: thin silver solid;
+}
+
+
+/* Misc */
+/* purple horizontal rule*/
+
+.hr-purple {
+  border-color: #593196 !important;
+}
+
+.dt-scroll {
+  max-height: calc(100vh - 300px);
+  overflow-y: scroll;
+  overflow-x: scroll;
+  padding: 0px;
 }

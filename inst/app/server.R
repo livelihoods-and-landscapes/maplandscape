@@ -1,5 +1,4 @@
 
-
 options(shiny.maxRequestSize = 10000 * 1024^2)
 
 app_server <- function(input, output, session) {
@@ -12,7 +11,7 @@ app_server <- function(input, output, session) {
     id = "loading-screen",
     anim = TRUE,
     animType = "fade"
-    )
+  )
 
   # move to data tab when action button pressed on landing page
   observeEvent(input$enter, {
@@ -20,7 +19,7 @@ app_server <- function(input, output, session) {
   })
 
 
-# app data ----------------------------------------------------------------
+  # app data ----------------------------------------------------------------
 
   # object storing data to pass between reactive objects during app's execution
   app_data <-
@@ -31,10 +30,183 @@ app_server <- function(input, output, session) {
       flush_add_column = 0, # trigger re-render of active layer in data table after adding column
       qfieldcloud_token = NULL, # qfieldcloud token obtained from successful login
       qfieldcloud_projects = NULL, # dataframe of qfieldcloud projects and project ids
-      qfieldcloud_files = NULL # dataframe of qfieldcloud project files and project ids
+      qfieldcloud_files = NULL, # dataframe of qfieldcloud project files and project ids
+      buckets = NULL, # list of buckets in users GCS project
+      items = NULL, # items in GCS bucket
     )
 
-# Data Upload -------------------------------------------------------------
+  # render layers as data table in UI
+  layers_df <- reactive({
+
+    layers_df <- app_data$data_file
+
+    if (nrow(layers_df) <= 0){
+      return()
+    }
+
+    layers_df <- layers_df %>%
+      dplyr::select(c("layers", "layer_disp_name", "file_type", "source", "layer_disp_name_idx"))
+
+    joined_df <- app_data$joined_df
+
+    if (length(joined_df) > 0) {
+      tmp_layer_names <- names(joined_df)
+      tmp_layers <- data.frame(layers = tmp_layer_names)
+      tmp_layers$layer_disp_name <- "user generated"
+      tmp_layers$file_type <- "app"
+      tmp_layers$source <- "user generated"
+      tmp_layers$layer_disp_name_idx <- "user generated"
+
+      layers_df <- layers_df %>%
+        dplyr::bind_rows(tmp_layers) %>%
+        dplyr::select(c("layers", "layer_disp_name", "source", "layer_disp_name_idx")) %>%
+        dplyr::rename(
+          layer = layers,
+          `sourcefile` = layer_disp_name,
+          source = source,
+          `layer display name` = layer_disp_name_idx
+        )
+    } else {
+      layers_df <- layers_df %>%
+        dplyr::select(c("layers", "layer_disp_name", "source", "layer_disp_name_idx")) %>%
+        dplyr::rename(
+          layer = layers,
+          `sourcefile` = layer_disp_name,
+          source = source,
+          `layer display name` = layer_disp_name_idx
+        )
+    }
+
+    layers_df
+  })
+
+  mod_render_dt_Server(
+    id = "app_layers",
+    dt = layers_df,
+    editable = FALSE
+  )
+
+  # Data Sync ---------------------------------------------------------------
+
+  # sync forms with database / template
+  sync_waiter <- waiter::Waiter$new(
+    html = sync_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # select template db to sync forms to
+  template <- mod_get_layers_Server(id = "template_db")
+
+  # forms to sync to template db
+  forms <- mod_get_layers_Server(id = "forms_db")
+
+  # returns 4 element list
+  # element 1 is file name and path to temporary geopackage
+  # element 2 is date-time string for creation of temporary geopackage
+  # element 3 is a data frame in the same format as returned by shiny::fileUpload
+  # element 4 is a log file of the syncing process
+  sync_gpkg_path <- reactive({
+    req(
+      template(),
+      forms()
+    )
+
+    sync_waiter$show()
+    sync_gpkg_path <- sync_forms(
+      template = template(),
+      forms = forms()
+    )
+    sync_waiter$hide()
+
+    sync_gpkg_path
+  })
+
+  # download raw synced data as a zip file
+  output$download_sync_forms <- downloadHandler(
+    filename = function() {
+      req(sync_gpkg_path()[[1]])
+
+      paste("synced_forms_", sync_gpkg_path()[[2]], ".zip", sep = "")
+    },
+    content = function(file) {
+      req(sync_gpkg_path()[[1]])
+
+      zip(
+        zipfile = file,
+        files = c(sync_gpkg_path()[[1]], sync_gpkg_path()[[4]]),
+        flags = "-r9Xj"
+      )
+    },
+    contentType = "application/zip"
+  )
+
+  # sync forms modal
+  observeEvent(input$sync_forms, {
+    showModal(
+      modalDialog(
+        tags$h4("Template or central database"),
+        mod_get_layers_UI(
+          id = "template_db",
+          label = "Select template .gpkg",
+          multiple = FALSE,
+          accept = c(".gpkg")
+        ),
+        tags$h4("Completed forms"),
+        mod_get_layers_UI(
+          id = "forms_db",
+          label = "Select forms .gpkg",
+          multiple = TRUE,
+          accept = c(".gpkg")
+        ),
+        hr(),
+        checkboxInput(
+          "add_synced_forms",
+          label = "add synced forms to active layer",
+          value = TRUE
+        ),
+        downloadButton(
+          "download_sync_forms",
+          "Download"
+        ),
+        hr(),
+        modalButton("Go to app"),
+        easyClose = TRUE,
+        footer = NULL
+      )
+    )
+  })
+
+  # add synced files to app
+  sync_file <- reactive({
+    req(
+      sync_gpkg_path()[[1]],
+      input$add_synced_forms
+    )
+
+    sync_file <- sync_gpkg_path()[[3]]
+    sync_file
+  })
+
+  # update app_data data_file object of layers a user can select as active layer with synced data
+  observe({
+    req(sync_file())
+
+    sync_file <- isolate(sync_file())
+    isolate({
+      df <- dplyr::bind_rows(
+        app_data$data_file,
+        sync_file
+      )
+      # unique number id next to each layer to distinguish uploads of layers with same name
+      rows <- nrow(df)
+      row_idx <- 1:rows
+      df$layer_disp_name_idx <-
+        paste0(df$layer_disp_name, "_", row_idx, sep = "")
+      app_data$data_file <- df
+    })
+  })
+
+  # Data Upload -------------------------------------------------------------
 
   # user uploaded files
   # return table of files and file paths of data loaded to the server
@@ -45,6 +217,9 @@ app_server <- function(input, output, session) {
     req(upload_file())
 
     upload_file <- isolate(upload_file())
+
+    upload_file$source <- "Local file"
+
     isolate({
       df <- dplyr::bind_rows(
         app_data$data_file,
@@ -59,20 +234,19 @@ app_server <- function(input, output, session) {
     })
   })
 
-# QFieldCloud data --------------------------------------------------------
+  # QFieldCloud data --------------------------------------------------------
 
   # get QFieldCloud token
   observeEvent(input$qfieldcloud_login, {
-
     username <- input$qfieldcloud_username
     password <- input$qfieldcloud_password
     endpoint <- input$qfieldcloud_url
 
-    token <-  qfieldcloud_login(
+    token <- qfieldcloud_login(
       username,
       password,
       endpoint
-      )
+    )
 
     if (token$status == "success") {
       app_data$qfieldcloud_token <- token$token
@@ -80,7 +254,7 @@ app_server <- function(input, output, session) {
       login_message <- paste0("logged in as ", username)
 
       output$qfieldcloud_login_status <- renderUI({
-          tags$p(login_message)
+        tags$p(login_message)
       })
     } else {
       output$qfieldcloud_login_status <- renderUI({
@@ -88,7 +262,6 @@ app_server <- function(input, output, session) {
       })
       app_data$qfieldcloud_token <- NULL
     }
-
   })
 
   # get list of QFieldCloud projects
@@ -101,7 +274,6 @@ app_server <- function(input, output, session) {
     )
 
     app_data$qfieldcloud_projects <- qfieldcloud_projects
-
   })
 
   # update select input with list of QFieldCloud projects
@@ -120,7 +292,6 @@ app_server <- function(input, output, session) {
         choices = projects
       )
     }
-
   })
 
   # update select input with list of QFieldCloud project GeoPackages
@@ -148,14 +319,11 @@ app_server <- function(input, output, session) {
       "qfieldcloud_gpkg",
       choices = files$name
     )
-
   })
 
   # clean up select inputs on logout
   observe({
-
     if (is.null(app_data$qfieldcloud_token)) {
-
       updateSelectInput(
         session,
         "qfieldcloud_projects",
@@ -168,7 +336,6 @@ app_server <- function(input, output, session) {
         choices = ""
       )
     }
-
   })
 
   # add user selected QFieldCloud file to list of layers
@@ -189,7 +356,7 @@ app_server <- function(input, output, session) {
 
     download_waiter <- waiter::Waiter$new(
       html = download_screen,
-      color = "rgba(44,62,80,.6)"
+      color = "rgba(89,49,150,.6)"
     )
 
     download_waiter$show()
@@ -218,6 +385,10 @@ app_server <- function(input, output, session) {
           dplyr::bind_rows()
       )
 
+      if (!is.null(f_lyrs)) {
+        f_lyrs$source <- "QFieldCloud"
+      }
+
       isolate({
         df <- dplyr::bind_rows(
           app_data$data_file,
@@ -233,7 +404,177 @@ app_server <- function(input, output, session) {
     }
   })
 
-# Active layer ------------------------------------------------------------
+  # Google Cloud Data -------------------------------------------------------
+
+  # display login with Google button if token is not valid
+  output$login_warning <- renderUI({
+    if (is.null(isolate(token()))) {
+      tags$p("WARNING: login with Google will reset the app and current data will be lost")
+    } else {
+      return()
+    }
+  })
+
+  output$login_button <- renderUI({
+    if (is.null(isolate(token()))) {
+      tags$a("Login with Google",
+        href = url,
+        class = "btn btn-outline-danger m-2"
+      )
+    } else {
+      return()
+    }
+  })
+
+  ## Get token that can be used to make authenticated requests to Google Cloud Storage
+  token <- reactive({
+
+    ## gets all the parameters in the URL. The auth code should be one of them.
+    pars <- shiny::parseQueryString(session$clientData$url_search)
+
+    if (length(pars$code) > 0) {
+      ## extract the authorization code
+      # Manually create a token
+      token <- try(
+        httr::oauth2.0_token(
+          app = app,
+          endpoint = api,
+          credentials = httr::oauth2.0_access_token(api, app, pars$code),
+          cache = TRUE
+        )
+      )
+      if ("try-error" %in% class(token)) {
+        token <- NULL
+      }
+    } else {
+      token <- NULL
+    }
+
+    token
+  })
+
+  # get list of GCS Buckets
+  observeEvent(input$list_google_files, {
+    req(token())
+    req(input$gcs_project_id)
+
+    buckets <- list_gcs_buckets(
+      token(),
+      input$gcs_project_id
+    )
+
+    if ("no items returned" %in% buckets | is.null(buckets)) {
+      shiny::showNotification(
+        "no buckets available in Google Cloud Storage",
+        type = "error",
+        duration = 5
+      )
+    } else {
+      app_data$buckets <- buckets
+    }
+  })
+
+  # update select input with list of objects in Google Cloud Storage bucket
+  observe({
+    app_data$buckets
+
+    if (length(app_data$buckets) > 0 & !"no items returned" %in% app_data$buckets) {
+      updateSelectInput(
+        session,
+        "gcs_bucket_name",
+        choices = app_data$buckets
+      )
+    }
+  })
+
+  observe({
+    req(input$gcs_bucket_name)
+
+    items <- list_gcs_bucket_objects(
+      token(),
+      input$gcs_bucket_name
+    )
+
+    if ("no items returned" %in% items | is.null(items)) {
+      shiny::showNotification(
+        "no items returned from Google Cloud Storage query",
+        type = "error",
+        duration = 5
+      )
+      app_data$items <- NULL
+    } else {
+      app_data$items <- items
+    }
+  })
+
+  # update select input with list of objects in Google Cloud Storage bucket
+  observe({
+    app_data$items
+
+    if (length(app_data$items) > 0 & !"no items returned" %in% app_data$items) {
+      updateSelectInput(
+        session,
+        "gcs_bucket_objects",
+        choices = app_data$items
+      )
+    } else {
+      updateSelectInput(
+        session,
+        "gcs_bucket_objects",
+        choices = ""
+      )
+    }
+  })
+
+  # add user selected Google Cloud Storage object to list of layers
+  # write GeoPackage retrieved from Google Cloud Storage to app_data$data_file and unpack layers in GeoPackage
+  observeEvent(input$get_objects, {
+    req(input$gcs_bucket_objects)
+
+    selected_gcs_object <- input$gcs_bucket_objects
+
+    gcs_gpkg <- NULL
+    gcs_gpkg <- try(
+      get_gcs_object(
+        token(),
+        input$gcs_bucket_name,
+        selected_gcs_object
+      )
+    )
+
+    f_lyrs <- NULL
+
+    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
+      f_lyrs <- tryCatch(
+        error = function(cnd) NULL,
+        purrr::map2(
+          gcs_gpkg$f_path,
+          gcs_gpkg$f_name,
+          list_layers
+        ) %>%
+          dplyr::bind_rows()
+      )
+
+      if (!is.null(f_lyrs)) {
+        f_lyrs$source <- "Google Cloud Storage"
+      }
+
+      isolate({
+        df <- dplyr::bind_rows(
+          app_data$data_file,
+          f_lyrs
+        )
+        # unique number id next to each layer to catch uploads of tables with same name
+        rows <- nrow(df)
+        row_idx <- 1:rows
+        df$layer_disp_name_idx <-
+          paste0(df$layer_disp_name, "_", row_idx, sep = "")
+        app_data$data_file <- df
+      })
+    }
+  })
+
+  # Active layer ------------------------------------------------------------
 
   # select one table as active layer from files loaded to the server
   observe({
@@ -414,7 +755,7 @@ app_server <- function(input, output, session) {
 
   join_waiter <- waiter::Waiter$new(
     html = join_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # join left table to right table
@@ -522,7 +863,7 @@ app_server <- function(input, output, session) {
 
   spatial_join_waiter <- waiter::Waiter$new(
     html = join_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # join left table to right table
@@ -857,7 +1198,6 @@ app_server <- function(input, output, session) {
               append = FALSE
             )
             app_data$flush_add_column <- app_data$flush_add_column + 1
-
           }
         )
         removeModal()
@@ -913,7 +1253,7 @@ app_server <- function(input, output, session) {
     }
   )
 
-# Web Map -----------------------------------------------------------------
+  # Web Map -----------------------------------------------------------------
 
   # Map options
   # update select input for mapping layer
@@ -932,7 +1272,6 @@ app_server <- function(input, output, session) {
 
   # map_active_df - use this layer for rendering on web map
   map_active_df <- reactive({
-
     req(input$map_active_layer)
 
     df <- isolate(app_data$data_file)
@@ -1027,7 +1366,6 @@ app_server <- function(input, output, session) {
 
   # add spatial data to map
   observeEvent(input$create_map, {
-
     req(map_active_df())
 
     # map_drawn is a variable to keep track of the state of the map.
@@ -1110,6 +1448,50 @@ app_server <- function(input, output, session) {
       if ("sf" %in% class(map_active_df()) &
         is.atomic(map_active_df()[[map_var()]]) &
         nrow(map_active_df()) > 0) {
+        add_layers_leaflet_no_zoom(
+          map_object = "web_map",
+          map_active_df = map_active_df(),
+          map_var = map_var(),
+          map_colour = input$map_colour,
+          opacity = input$opacity,
+          map_line_width = input$map_line_width,
+          map_line_colour = input$map_line_colour,
+          waiter = map_waiter
+        )
+      }
+    }
+  })
+
+  # update line colour
+  observeEvent(input$map_line_colour, {
+    req(map_active_df())
+
+    if (app_data$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
+        add_layers_leaflet_no_zoom(
+          map_object = "web_map",
+          map_active_df = map_active_df(),
+          map_var = map_var(),
+          map_colour = input$map_colour,
+          opacity = input$opacity,
+          map_line_width = input$map_line_width,
+          map_line_colour = input$map_line_colour,
+          waiter = map_waiter
+        )
+      }
+    }
+  })
+
+  # update line colour
+  observeEvent(input$map_line_width, {
+    req(map_active_df())
+
+    if (app_data$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
         add_layers_leaflet_no_zoom(
           map_object = "web_map",
           map_active_df = map_active_df(),
@@ -1243,8 +1625,8 @@ app_server <- function(input, output, session) {
     req(app_data$map_drawn == 1)
 
     if ("sf" %in% class(map_active_df()) &
-        is.atomic(map_active_df()[[map_var()]]) &
-        nrow(map_active_df()) > 0) {
+      is.atomic(map_active_df()[[map_var()]]) &
+      nrow(map_active_df()) > 0) {
 
       # Catch GeoPackages with non-spatial tables that GeoPandas has added empty
       # GeometryCollection column to.
@@ -1267,7 +1649,7 @@ app_server <- function(input, output, session) {
         as.vector()
 
       if (class(map_df[[map_var()]]) != "numeric" &
-          class(map_df[[map_var()]]) != "integer") {
+        class(map_df[[map_var()]]) != "integer") {
         pal <- leaflet::colorFactor(input$map_colour, map_df[[map_var()]])
       } else {
         pal <- leaflet::colorNumeric(input$map_colour, map_df[[map_var()]])
@@ -1444,7 +1826,6 @@ app_server <- function(input, output, session) {
       chart_active_df <- isolate(chart_active_df())
 
       if (chart_type == "histogram") {
-
         binwidth <- isolate(input$binwidth)
         hist_x_var <- isolate(hist_x_axis_vars())
         chart <- make_histogram(
@@ -1456,28 +1837,25 @@ app_server <- function(input, output, session) {
           axis_font_size,
           lab_font_size
         )
-
       }
 
       if (chart_type == "scatter") {
-
-          scatter_x_var <- isolate(scatter_x_axis_vars())
-          scatter_y_var <- isolate(scatter_y_axis_vars())
-          point <- isolate(input$scatter_point_size)
-          chart <- make_scatter(
-            chart_active_df,
-            scatter_x_var,
-            scatter_y_var,
-            point,
-            x_lab,
-            y_lab,
-            axis_font_size,
-            lab_font_size
-          )
+        scatter_x_var <- isolate(scatter_x_axis_vars())
+        scatter_y_var <- isolate(scatter_y_axis_vars())
+        point <- isolate(input$scatter_point_size)
+        chart <- make_scatter(
+          chart_active_df,
+          scatter_x_var,
+          scatter_y_var,
+          point,
+          x_lab,
+          y_lab,
+          axis_font_size,
+          lab_font_size
+        )
       }
 
       if (chart_type == "bar plot") {
-
         bar_x_var <- isolate(col_summarised_df()[, 1])
 
         if (bar_plot_type == "count_records") {
@@ -1507,7 +1885,5 @@ app_server <- function(input, output, session) {
     bg = "transparent"
   )
 
-# END ---------------------------------------------------------------------
-
-
+  # END ---------------------------------------------------------------------
 }

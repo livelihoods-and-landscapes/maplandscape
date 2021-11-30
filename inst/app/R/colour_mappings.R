@@ -1,8 +1,8 @@
 colour_mappings <- c(
+  "red - blue" = "RdBu",
   "spectral" = "Spectral",
   "brown - green" = "BrBG",
   "purple - orange" = "PuOr",
-  "red - blue" = "RdBu",
   "red - yellow - blue" = "RdYlBu",
   "red - yellow - green" = "RdYlGn",
   "blues" = "Blues",

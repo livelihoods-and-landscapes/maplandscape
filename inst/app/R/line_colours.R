@@ -1,4 +1,4 @@
 line_colours <- c(
-  "grey" = "gray",
+  "blue" = "blue",
   "black" = "black"
 )
