@@ -61,7 +61,9 @@ navbarPage(
 
   tabPanel(
     "Data",
-    fluidPage(fluidRow(
+    fluidPage(
+      class="scrollPage",
+      fluidRow(
       column(
         4,
         h4("Cloud data"),

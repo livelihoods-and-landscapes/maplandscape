@@ -1,4 +1,3 @@
-
 #' QFieldCloud login
 #'
 #' @param username QFieldCloud email
@@ -9,6 +8,7 @@
 #' @export
 #'
 #' @examples
+
 qfieldcloud_login <- function(username, password, endpoint) {
 
   credentials <- list(

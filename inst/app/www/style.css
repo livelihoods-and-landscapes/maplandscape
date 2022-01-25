@@ -1,6 +1,6 @@
-body {
+/* body {
   overflow: hidden;
-}
+} */
 
 #loading-screen {
   position: absolute;
@@ -15,6 +15,10 @@ body {
   color: #17141f;
 }
 
+/* class for scrollable fluidPage*/
+.scrollPage {
+  overflow-y: scroll;
+}
 
 /* sidebar and main panel layouts -
 need to set height to absolute units (i.e. not %) to use scroll
