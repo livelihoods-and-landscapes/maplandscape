@@ -51,7 +51,7 @@ qfieldcloud_login <- function(username, password, endpoint) {
 #' @return data.frame with two columns storing project names and project ids
 #' @export
 #'
-#' @examples
+
 get_qfieldcloud_projects <- function(token, endpoint) {
 
   # todo handle query params to get community projects
@@ -86,7 +86,7 @@ get_qfieldcloud_projects <- function(token, endpoint) {
 #' @return data.frame with two columns storing file names and project ids
 #' @export
 #'
-#' @examples
+
 list_qfieldcloud_gpkg <- function(token, endpoint, project_id) {
   files_url <- paste0("https://", endpoint, "/api/v1/files/", project_id, "/")
 
@@ -109,6 +109,17 @@ list_qfieldcloud_gpkg <- function(token, endpoint, project_id) {
 
   files_out
 }
+
+#' Get QFieldCloud selected GeoPackage in project
+#'
+#' @param token session token
+#' @param endpoint QFieldCloud app url (omit https:// and trailing /)
+#' @param project_id project id corresponding to project to download file from
+#' @param filename name of GeoPacakge to download
+#'
+#' @return list with path to downloaded GeoPackage and filename
+#' @export
+#'
 
 get_qfieldcloud_gpkg <- function(token, endpoint, project_id, filename) {
   filename_url <- paste0("https://", endpoint, "/api/v1/files/", project_id, "/", filename, "/")
