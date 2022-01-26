@@ -7,10 +7,8 @@
 #' @return session token
 #' @export
 #'
-#' @examples
 
 qfieldcloud_login <- function(username, password, endpoint) {
-
   credentials <- list(
     email = username,
     password = password
@@ -30,12 +28,10 @@ qfieldcloud_login <- function(username, password, endpoint) {
   status_code <- token$status_code
 
   if (status_code < 399) {
-
     login_status <- list(
       status = "success",
       token = httr::content(token, as = "parsed")$token
     )
-
   } else {
     login_status <- list(
       status = "fail",
@@ -92,7 +88,6 @@ get_qfieldcloud_projects <- function(token, endpoint) {
 #'
 #' @examples
 list_qfieldcloud_gpkg <- function(token, endpoint, project_id) {
-
   files_url <- paste0("https://", endpoint, "/api/v1/files/", project_id, "/")
 
   files <- httr::GET(
@@ -113,11 +108,9 @@ list_qfieldcloud_gpkg <- function(token, endpoint, project_id) {
   files_out <- data.frame(name = files_list, id = project_id)
 
   files_out
-
 }
 
 get_qfieldcloud_gpkg <- function(token, endpoint, project_id, filename) {
-
   filename_url <- paste0("https://", endpoint, "/api/v1/files/", project_id, "/", filename, "/")
 
   # need to use followlocation = FALSE to get redirect url
@@ -156,5 +149,4 @@ get_qfieldcloud_gpkg <- function(token, endpoint, project_id, filename) {
   )
 
   qfield_gpkg
-
 }

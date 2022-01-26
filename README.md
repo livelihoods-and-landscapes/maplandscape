@@ -44,6 +44,14 @@ library(maplandscape)
 shiny::shinyAppDir(".")
 ```
 
+To build the package:
+
+```
+devtools::check()
+# update NAMESPACE file for exports
+devtools::document() 
+```
+
 The will launch a pre-built Shiny application to explore data in GeoPackages from the `inst/app` sub-directory of the package. 
 
 ### shinyapps.io
