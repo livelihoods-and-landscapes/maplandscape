@@ -8,7 +8,7 @@ map_screen <- shiny::tagList(
 
 join_screen <- shiny::tagList(
   waiter::spin_flower(),
-  shiny::h4("Joining tables...this could take a while!")
+  shiny::h4("Joining layers...this could take a while!")
 )
 
 project_screen <- shiny::tagList(

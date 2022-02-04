@@ -32,12 +32,12 @@ RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
 
 # copy necessary files
 RUN mkdir /root/app
-COPY /../app/server.R /root/app/
-COPY /../app/ui.R /root/app/
-COPY /../app/config.yml /root/app/
-COPY /../app/global.R /root/app/
-COPY /../app/www/* /root/app/www/
-COPY /../app/R/* /root/app/R/
+COPY /app/server.R /root/app/
+COPY /app/ui.R /root/app/
+COPY /app/config.yml /root/app/
+COPY /app/global.R /root/app/
+COPY /app/www/* /root/app/www/
+COPY /app/R/* /root/app/R/
 
 COPY Rprofile.site /usr/lib/R/etc/
 
