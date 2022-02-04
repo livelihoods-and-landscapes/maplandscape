@@ -1,10 +1,10 @@
-# Base image https://hub.docker.com/u/rocker/
-FROM rocker/shiny:latest
+FROM openanalytics/r-base
 
-# system libraries of general use
+## system libraries of general use
 RUN apt-get update && apt-get install -y  \
 gdal-bin \
 git-core \
+libcairo2-dev \
 libcurl4-openssl-dev \
 libgdal-dev \
 libgeos-dev \
@@ -13,11 +13,9 @@ libgit2-dev \
 libicu-dev \
 libpng-dev \
 libproj-dev \
-libsqlite3-dev \
-sqlite3 \
 libssl-dev \
 libudunits2-dev \
-libxml2-dev \
+libxml2-dev make pandoc pandoc-citeproc \
 && rm -rf /var/lib/apt/lists/*
 
 ## update system libraries
@@ -25,27 +23,24 @@ RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean
 
-# copy necessary files
-COPY --chown=shiny:shiny app.R /srv/shiny-server/app/
-
-# copy customised shiny-server config to run on Google Cloud Run
-COPY shiny-customized.config /etc/shiny-server/shiny-server.conf
-
-# install required R packages
+## install required R packages
 RUN R -e 'install.packages(c( \
   "devtools", "shiny"), \
   repos="http://cran.rstudio.com/")'
 
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
 
-# add shiny to the staff group to write app_cache and sass to site-library dir
-RUN usermod -a -G staff shiny
+# copy necessary files
+RUN mkdir /root/app
+COPY /../app/server.R /root/app/
+COPY /../app/ui.R /root/app/
+COPY /../app/config.yml /root/app/
+COPY /../app/global.R /root/app/
+COPY /../app/www/* /root/app/www/
+COPY /../app/R/* /root/app/R/
 
-# expose port
+COPY Rprofile.site /usr/lib/R/etc/
+
 EXPOSE 3838
 
-# set user
-USER shiny
-
-# run app
-CMD ["/usr/bin/shiny-server"]
+CMD ["R", "-e", "shiny::runApp('/root/app', port = 3838, host = '0.0.0.0')"]

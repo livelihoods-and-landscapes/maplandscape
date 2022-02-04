@@ -112,6 +112,7 @@ app_server <- function(input, output, session) {
     )
 
     sync_waiter$show()
+
     sync_gpkg_path <- sync_forms(
       template = template(),
       forms = forms()
@@ -236,6 +237,18 @@ app_server <- function(input, output, session) {
 
   # QFieldCloud data --------------------------------------------------------
 
+  # waiter for downloading projects
+  project_waiter <- waiter::Waiter$new(
+    html = project_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # waiter for downloading files
+  download_waiter <- waiter::Waiter$new(
+    html = download_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
   # get QFieldCloud token
   observeEvent(input$qfieldcloud_login, {
     username <- input$qfieldcloud_username
@@ -268,12 +281,16 @@ app_server <- function(input, output, session) {
   observeEvent(input$list_qfieldcloud_projects, {
     req(app_data$qfieldcloud_token)
 
+    project_waiter$show()
+
     qfieldcloud_projects <- get_qfieldcloud_projects(
       app_data$qfieldcloud_token,
       input$qfieldcloud_url
     )
 
     app_data$qfieldcloud_projects <- qfieldcloud_projects
+
+    project_waiter$hide()
   })
 
   # update select input with list of QFieldCloud projects
@@ -298,7 +315,10 @@ app_server <- function(input, output, session) {
   observe({
     req(input$qfieldcloud_projects)
     req(app_data$qfieldcloud_token)
+
     input$qfieldcloud_projects
+
+    download_waiter$show()
 
     projects <- app_data$qfieldcloud_projects %>%
       dplyr::filter(name == input$qfieldcloud_projects)
@@ -319,6 +339,8 @@ app_server <- function(input, output, session) {
       "qfieldcloud_gpkg",
       choices = files$name
     )
+
+    download_waiter$hide()
   })
 
   # clean up select inputs on logout
@@ -1361,7 +1383,7 @@ app_server <- function(input, output, session) {
 
   map_waiter <- waiter::Waiter$new(
     html = map_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # add spatial data to map
@@ -1417,6 +1439,7 @@ app_server <- function(input, output, session) {
       value = FALSE
     )
   })
+
 
   # update opacity
   observeEvent(input$opacity, {
@@ -1680,7 +1703,7 @@ app_server <- function(input, output, session) {
 
   resize_waiter <- waiter::Waiter$new(
     html = resize_screen,
-    color = "rgba(44,62,80,.6)"
+    color = "rgba(89,49,150,.6)"
   )
 
   # update select input for chart layer

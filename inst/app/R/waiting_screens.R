@@ -8,7 +8,12 @@ map_screen <- shiny::tagList(
 
 join_screen <- shiny::tagList(
   waiter::spin_flower(),
-  shiny::h4("Joining tables...")
+  shiny::h4("Joining tables...this could take a while!")
+)
+
+project_screen <- shiny::tagList(
+  waiter::spin_flower(),
+  shiny::h4("Getting projects...")
 )
 
 download_screen <- shiny::tagList(
