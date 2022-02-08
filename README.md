@@ -1,9 +1,8 @@
 # maplandscape
 
-
 ## Overview
 
-A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages. In particular, it focuses on providing browser-based tools for analysing data stored in QFieldCloud. 
+A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages. In particular, it focuses on providing browser-based tools for analysing data stored in GeoPackages in QFieldCloud. 
 
 A pre-built [Shiny](https://shiny.rstudio.com) application is provided with this package which uses these functions and provides tools for:
 
@@ -15,15 +14,9 @@ A pre-built [Shiny](https://shiny.rstudio.com) application is provided with this
 * Generating new layers and add new columns to existing layers. 
 * Authenticated access to GeoPackages stored in QFieldCloud and Google Cloud Storage.
 
-This package was developed as part of the [Livelihoods and Landscapes](https://livelihoods-and-landscapes.com) project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and Shiny application was to provide analysts with tools to analyse and visualise geospatial data collected 'in the field' using the [QField](https://qfield.org) mobile GIS application. 
+This package was developed as part of the [Livelihoods and Landscapes](https://livelihoods-and-landscapes.com) project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and Shiny application was to provide analysts with tools to analyse and visualise geospatial data collected in-the-field using the [QField](https://qfield.org) mobile GIS application. 
 
-## Use
-
-The vignettes provide a range of tutorials for exploring and analysing data in GeoPackages using the maplandscape app. These include tutorials demonstrating how to perform a range of table analysis operations (add columns, filter rows, join tables), spatial analysis operations (spatial join - combine spatial layers), style your own web maps, and create a range of charts to visualise data in your GeoPackages. 
-
-The figure below provides an overview of the UI for the maplandscape app provided with this package. Each of the main tabs in the app have a similar layout with a scrollable sidebar containing options for loading GeoPackages into the app, selecting a layer in a GeoPackage, querying and analysing GeoPackage data, and styling charts and web maps. The data in GeoPackage layers is rendered in the main panel of the page in either table, web map, or chart formats.  
-
-<img src="man/figures/ui-overview.jpg" width="100%" style="display: block; margin: auto;"/>
+## Setup
 
 ### Local R Package
 
@@ -43,12 +36,20 @@ library(maplandscape)
 shiny::shinyAppDir(".")
 ```
 
-To build the package:
+To build the package use tools provided by the [devtools](https://github.com/r-lib/devtools) package:
 
 ```
+# get package dependencies
+renv::restore()
+
+# check package
 devtools::check()
+
 # update NAMESPACE file for exports
 devtools::document() 
+
+# build docs
+pkgdown::build_site()
 ```
 
 The will launch a pre-built Shiny application to explore data in GeoPackages from the `inst/app` sub-directory of the package. 
@@ -81,7 +82,7 @@ There is a sub-directory named `docker-shiny-server`. This contains a `Dockerfil
 ```
 cd /inst/docker-shiny-server
 
-docker build -t maplandscape ShinyServer.Dockerfile
+docker build -t maplandscape -f ShinyServer.Dockerfile .
 ```
 
 The image is based on the `rocker/shiny:latest` image which includes [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044) to host the maplandscape Shiny application. Shiny Server serves apps out of the `srv/shiny-server/` directory; building the docker image will install all the R packages required to run maplandscape, install the maplandscape package from github, and copy an `app.R` script into `srv/shiny-server/app` which contains the commands to launch maplandscape. 
@@ -100,7 +101,7 @@ Please see the vignette Deploy: Google Cloud for a tutorial demonstrating how to
 
 #### Docker 
 
-To deploy as a containerised Shiny application without Shiny Server (e.g. if deploying using Shiny Proxy) use the `Dockerfile` in the `/inst/` directory. This `Dockerfile` is based of a generic `maplandscape-base` image which is pre-built on top of Ubuntu 20.04 LTS and the rocker r-ver 4.1.2 image. It contains the system libraries and main R package dependencies used to build `maplandscape`. 
+To deploy as a containerised Shiny application without Shiny Server (e.g. if deploying using Shiny Proxy) use the `Dockerfile` in the `/inst/` directory. This `Dockerfile` is based of a generic `maplandscape-base` image which is pre-built on top of Ubuntu 20.04 LTS and the rocker r-ver 4.1.2 image. It contains the system libraries and main R package dependencies used to build maplandscape. 
 
 ```
 docker build -t maplandscape .

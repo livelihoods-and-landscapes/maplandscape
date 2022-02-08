@@ -1,4 +1,4 @@
-FROM jmad1v07/maplandscape-base
+FROM jmad1v07/maplandscape-base-4.1.2
 
 ## install required R packages
 RUN R -e 'install.packages(c("devtools"), \

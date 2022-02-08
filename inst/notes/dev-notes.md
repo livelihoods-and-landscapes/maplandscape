@@ -4,8 +4,11 @@
 
 ## Build
 
+Check package:
+
 ```
-devtools::check_all()
+# check package
+devtools::check()
 ```
 
 Document package and update NAMESPACE:
