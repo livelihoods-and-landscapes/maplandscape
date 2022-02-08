@@ -1,6 +1,29 @@
 # Maplandscape development notes and gotchas
 
-## branches
+## Branches
+
+## Build
+
+```
+devtools::check_all()
+```
+
+Document package and update NAMESPACE:
+
+```
+devtools::document()
+```
+
+Check package loads:
+
+```
+devtools::load_all()
+```
+
+### Pkgdown and building docs
+
+If `pkgdown::build_site()` throws a `Failed to connect to cloud.r-project.org port 443: Operation timed out` error. Try running `pkgdown::build_site(new_process=FALSE)`. 
+
 
 ## renv
 
