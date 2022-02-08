@@ -3,17 +3,11 @@
 .RData
 .Ruserdata
 
-notes/
-
 .DS_Store
 
 inst/doc
 
-dev/
-
 inst/app/rsconnect/
-
-drawio/
 
 *.gpkg-shm
 

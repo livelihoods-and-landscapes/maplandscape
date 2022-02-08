@@ -1,3 +1,2 @@
-# template:
-#   params:
-#     bootswatch: minty
+template:
+  bootstrap: 5

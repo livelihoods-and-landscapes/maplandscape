@@ -3,18 +3,17 @@
 
 ## Overview
 
-A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages.
+A package that provides functions for building [Shiny](https://shiny.rstudio.com) dashboard applications to explore and visualise spatial layers in GeoPackages. In particular, it focuses on providing browser-based tools for analysing data stored in QFieldCloud. 
 
 A pre-built [Shiny](https://shiny.rstudio.com) application is provided with this package which uses these functions and provides tools for:
 
 * Syncing data stored in multiple GeoPackages.
 * Exploring GeoPackage layers in interactive tables, web maps, and charts.
-* Options for customising and styling charts and web maps. 
+* Customising and styling charts and web maps. 
 * Combining layers using spatial and non-spatial joins.
 * Generating summary tables through group-by and summarise operations. 
 * Generating new layers and add new columns to existing layers. 
-* Authenticated access to GeoPackages stored in Google Cloud Storage.
-* Admin mode for data cleaning and editing geometries and attribute values.
+* Authenticated access to GeoPackages stored in QFieldCloud and Google Cloud Storage.
 
 This package was developed as part of the [Livelihoods and Landscapes](https://livelihoods-and-landscapes.com) project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and Shiny application was to provide analysts with tools to analyse and visualise geospatial data collected 'in the field' using the [QField](https://qfield.org) mobile GIS application. 
 
@@ -75,12 +74,14 @@ git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
 cd maplandscape
 ```
 
-There is a sub-directory named `docker`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
+#### Docker and Shiny Server
+
+There is a sub-directory named `docker-shiny-server`. This contains a `Dockerfile` that lists instructions that are used to build a docker image.
 
 ```
-cd /inst/docker
+cd /inst/docker-shiny-server
 
-docker build -t maplandscape .
+docker build -t maplandscape ShinyServer.Dockerfile
 ```
 
 The image is based on the `rocker/shiny:latest` image which includes [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044) to host the maplandscape Shiny application. Shiny Server serves apps out of the `srv/shiny-server/` directory; building the docker image will install all the R packages required to run maplandscape, install the maplandscape package from github, and copy an `app.R` script into `srv/shiny-server/app` which contains the commands to launch maplandscape. 
@@ -96,3 +97,17 @@ docker run -p 3838:3838 maplandscape
 You can find more information about [Shiny Server](https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044) [here](https://shiny.rstudio.com/articles/shiny-server.html), at its [GitHub repo](https://github.com/rstudio/shiny-server), and following this [tutorial](https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/). 
 
 Please see the vignette Deploy: Google Cloud for a tutorial demonstrating how to deploy a containerised Shiny application on Google Cloud Run. 
+
+#### Docker 
+
+To deploy as a containerised Shiny application without Shiny Server (e.g. if deploying using Shiny Proxy) use the `Dockerfile` in the `/inst/` directory. This `Dockerfile` is based of a generic `maplandscape-base` image which is pre-built on top of Ubuntu 20.04 LTS and the rocker r-ver 4.1.2 image. It contains the system libraries and main R package dependencies used to build `maplandscape`. 
+
+```
+docker build -t maplandscape .
+```
+And to run:
+
+```
+docker run -p 3838:3838 maplandscape
+```
+

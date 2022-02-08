@@ -1,16 +1,6 @@
-pandoc: 2.11.4
-pkgdown: 1.6.1
+pandoc: 2.14.0.3
+pkgdown: 2.0.2
 pkgdown_sha: ~
-articles:
-  add_columns: add_columns.html
-  admin_mode: admin_mode.html
-  charts: charts.html
-  deploy_google_cloud: deploy_google_cloud.html
-  exploring-cropping-systems: exploring-cropping-systems.html
-  filter_rows: filter_rows.html
-  group_by_summarise: group_by_summarise.html
-  oauth: oauth.html
-  spatial_join: spatial_join.html
-  web_mapping: web_mapping.html
-last_built: 2021-10-24T10:56Z
+articles: {}
+last_built: 2022-02-08T04:26Z
 

@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Add layer to a Leaflet web map - no zoom — add_layers_leaflet_no_zoom • maplandscape</title>
+<title>QFieldCloud login — qfieldcloud_login • maplandscape</title>
 
 
 <!-- jquery -->
@@ -39,10 +39,8 @@
 
 
 
-<meta property="og:title" content="Add layer to a Leaflet web map - no zoom — add_layers_leaflet_no_zoom" />
-<meta property="og:description" content="add_layers_leaflet adds a spatial layer (of class sf) to a leaflet web
-map. sf data frames with POINT, LINESTRING, MULTILINESTRING, POLYGON, MULITPOLYGON
-geometries can be added to the web map." />
+<meta property="og:title" content="QFieldCloud login — qfieldcloud_login" />
+<meta property="og:description" content="QFieldCloud login" />
 
 
 
@@ -110,73 +108,37 @@ geometries can be added to the web map." />
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Add layer to a Leaflet web map - no zoom</h1>
-    <small class="dont-index">Source: <a href='https://github.com/livelihoods-and-landscapes/maplandscape/blob/master/R/fct_add_layers_leaflet_no_zoom.R'><code>R/fct_add_layers_leaflet_no_zoom.R</code></a></small>
-    <div class="hidden name"><code>add_layers_leaflet_no_zoom.Rd</code></div>
+    <h1>QFieldCloud login</h1>
+    <small class="dont-index">Source: <a href='https://github.com/livelihoods-and-landscapes/maplandscape/blob/master/R/fct_qfieldcloud.R'><code>R/fct_qfieldcloud.R</code></a></small>
+    <div class="hidden name"><code>qfieldcloud_login.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p><code>add_layers_leaflet</code> adds a spatial layer (of class <a href='https://r-spatial.github.io/sf/index.html'>sf</a>) to a <a href='https://rdrr.io/pkg/leaflet/man/leaflet.html'>leaflet</a> web
-map. <a href='https://r-spatial.github.io/sf/index.html'>sf</a> data frames with <code>POINT</code>, <code>LINESTRING</code>, <code>MULTILINESTRING</code>, <code>POLYGON</code>, <code>MULITPOLYGON</code>
-geometries can be added to the web map.</p>
+    <p>QFieldCloud login</p>
     </div>
 
-    <pre class="usage"><span class='fu'>add_layers_leaflet_no_zoom</span><span class='op'>(</span>
-  <span class='va'>map_object</span>,
-  <span class='va'>map_active_df</span>,
-  <span class='va'>map_var</span>,
-  <span class='va'>map_colour</span>,
-  <span class='va'>opacity</span>,
-  <span class='va'>map_line_width</span>,
-  <span class='va'>map_line_colour</span>,
-  <span class='va'>waiter</span>
-<span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>qfieldcloud_login</span><span class='op'>(</span><span class='va'>username</span>, <span class='va'>password</span>, <span class='va'>endpoint</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
-      <th>map_object</th>
-      <td><p>single-element character vector of the ID of the <a href='https://rdrr.io/pkg/leaflet/man/leaflet.html'>leaflet</a> map object.</p></td>
+      <th>username</th>
+      <td><p>QFieldCloud email</p></td>
     </tr>
     <tr>
-      <th>map_active_df</th>
-      <td><p>the spatial data frame (of class <a href='https://r-spatial.github.io/sf/index.html'>sf</a>) of features to draw on the <a href='https://rdrr.io/pkg/leaflet/man/leaflet.html'>leaflet</a> map.</p></td>
+      <th>password</th>
+      <td><p>QFieldCloud password</p></td>
     </tr>
     <tr>
-      <th>map_var</th>
-      <td><p>the column in <code>map_active_df</code> of data values to map fill / marker colours to when drawing the features.</p></td>
-    </tr>
-    <tr>
-      <th>map_colour</th>
-      <td><p>fill colour palette - <a href='https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf'>RColorBrewer</a> palettes such as <code>"YlOrRd"</code>.</p></td>
-    </tr>
-    <tr>
-      <th>opacity</th>
-      <td><p>feature opacity - numeric value between 0 and 1.</p></td>
-    </tr>
-    <tr>
-      <th>map_line_width</th>
-      <td><p>stroke width for line and polygon features.</p></td>
-    </tr>
-    <tr>
-      <th>map_line_colour</th>
-      <td><p>stroke colour for line and polygon features.</p></td>
-    </tr>
-    <tr>
-      <th>waiter</th>
-      <td><p><a href='https://waiter.john-coene.com/#/'>waiter</a> object to display while the map is rendering.</p></td>
+      <th>endpoint</th>
+      <td><p>QFieldCloud app url (omit https:// and trailing /)</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><a href='https://rdrr.io/pkg/leaflet/man/leaflet.html'>leaflet</a> proxy object.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
-
-    <p>Calling this function does not change the zoom or extent of the Leaflet map
-to fit the contents drawn on the map. Used for keeping the zoom extent the
-same but updating colour, opacity, and other styling options.</p>
+    <p>session token</p>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
