@@ -1,3 +1,5 @@
+#' @export
+
 make_colour_ramp <- function(map_active_df, map_var, map_colour) {
 
   # make map active layer epsg 4326

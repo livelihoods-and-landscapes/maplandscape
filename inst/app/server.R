@@ -361,8 +361,6 @@ app_server <- function(input, output, session) {
     req(input$qfieldcloud_projects)
     req(app_data$qfieldcloud_token)
 
-    browser()
-
     input$qfieldcloud_projects
 
     download_waiter$show()
