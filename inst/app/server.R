@@ -326,7 +326,7 @@ app_server <- function(input, output, session) {
 
     qfieldcloud_projects <- try(get_qfieldcloud_projects(
       app_data$qfieldcloud_token,
-      input$qfieldcloud_url
+      isolate(input$qfieldcloud_url)
     ))
 
     if ("try-error" %in% qfieldcloud_projects) {
@@ -361,6 +361,8 @@ app_server <- function(input, output, session) {
     req(input$qfieldcloud_projects)
     req(app_data$qfieldcloud_token)
 
+    browser()
+
     input$qfieldcloud_projects
 
     download_waiter$show()
@@ -372,7 +374,7 @@ app_server <- function(input, output, session) {
 
     files <- try(list_qfieldcloud_gpkg(
       app_data$qfieldcloud_token,
-      input$qfieldcloud_url,
+      isolate(input$qfieldcloud_url),
       project_id
     ))
 
@@ -439,7 +441,7 @@ app_server <- function(input, output, session) {
     qfieldcloud_gpkg <- try(
       get_qfieldcloud_gpkg(
         app_data$qfieldcloud_token,
-        input$qfieldcloud_url,
+        isolate(input$qfieldcloud_url),
         project_id,
         filename
       )
