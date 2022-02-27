@@ -18,6 +18,51 @@ app_server <- function(input, output, session) {
     updateNavbarPage(session, "navbar", selected = "Data")
   })
 
+  observeEvent(input$`grouping_var-multiple_input` , {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Summary")
+  })
+
+  observeEvent(input$active_layer, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  observeEvent(input$table_filter, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  observeEvent(input$filter, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  observeEvent(input$table_mutate, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  observeEvent(input$add_column, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  observeEvent(input$table_join_button, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  observeEvent(input$spatial_join_button, {
+    updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
+  })
+
+  # waiting screens ---------------------------------------------------------
+
+  # waiter for downloading projects
+  project_waiter <- waiter::Waiter$new(
+    html = project_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # waiter for downloading files
+  download_waiter <- waiter::Waiter$new(
+    html = download_screen,
+    color = "rgba(89,49,150,.6)"
+  )
 
   # app data ----------------------------------------------------------------
 
@@ -237,29 +282,25 @@ app_server <- function(input, output, session) {
 
   # QFieldCloud data --------------------------------------------------------
 
-  # waiter for downloading projects
-  project_waiter <- waiter::Waiter$new(
-    html = project_screen,
-    color = "rgba(89,49,150,.6)"
-  )
-
-  # waiter for downloading files
-  download_waiter <- waiter::Waiter$new(
-    html = download_screen,
-    color = "rgba(89,49,150,.6)"
-  )
-
   # get QFieldCloud token
   observeEvent(input$qfieldcloud_login, {
     username <- input$qfieldcloud_username
     password <- input$qfieldcloud_password
     endpoint <- input$qfieldcloud_url
 
-    token <- qfieldcloud_login(
+    token <- try(qfieldcloud_login(
       username,
       password,
       endpoint
-    )
+    ))
+
+    if ("try-error" %in% class(token)) {
+      output$qfieldcloud_login_status <- renderUI({
+        tags$p("login error - check user email and password")
+      })
+      app_data$qfieldcloud_token <- NULL
+      return()
+    }
 
     if (token$status == "success") {
       app_data$qfieldcloud_token <- token$token
@@ -283,11 +324,15 @@ app_server <- function(input, output, session) {
 
     project_waiter$show()
 
-    qfieldcloud_projects <- get_qfieldcloud_projects(
+    qfieldcloud_projects <- try(get_qfieldcloud_projects(
       app_data$qfieldcloud_token,
       input$qfieldcloud_url
-    )
+    ))
 
+    if ("try-error" %in% qfieldcloud_projects) {
+      project_waiter$hide()
+      return()
+    }
     app_data$qfieldcloud_projects <- qfieldcloud_projects
 
     project_waiter$hide()
@@ -325,11 +370,24 @@ app_server <- function(input, output, session) {
 
     project_id <- projects[, 2]
 
-    files <- list_qfieldcloud_gpkg(
+    files <- try(list_qfieldcloud_gpkg(
       app_data$qfieldcloud_token,
       input$qfieldcloud_url,
       project_id
-    )
+    ))
+
+    if ("try-error" %in% class(files)) {
+      shiny::showNotification("Failed to download project files - empty project?", type = "error")
+
+      updateSelectInput(
+        session,
+        "qfieldcloud_gpkg",
+        choices = ""
+      )
+
+      download_waiter$hide()
+      return()
+    }
 
     app_data$qfieldcloud_files <- files
 
@@ -376,11 +434,6 @@ app_server <- function(input, output, session) {
 
     qfieldcloud_gpkg <- NULL
 
-    download_waiter <- waiter::Waiter$new(
-      html = download_screen,
-      color = "rgba(89,49,150,.6)"
-    )
-
     download_waiter$show()
 
     qfieldcloud_gpkg <- try(
@@ -391,6 +444,12 @@ app_server <- function(input, output, session) {
         filename
       )
     )
+
+    if ("try-error" %in% class(qfieldcloud_gpkg) & is.null(qfieldcloud_gpkg) & any(stringr::str_detect(qfieldcloud_gpkg, "cannot load GeoPackage from QFieldCloud"))) {
+
+      download_waiter$hide()
+      return()
+    }
 
     download_waiter$hide()
 
@@ -426,175 +485,175 @@ app_server <- function(input, output, session) {
     }
   })
 
-  # Google Cloud Data -------------------------------------------------------
-
-  # display login with Google button if token is not valid
-  output$login_warning <- renderUI({
-    if (is.null(isolate(token()))) {
-      tags$p("WARNING: login with Google will reset the app and current data will be lost")
-    } else {
-      return()
-    }
-  })
-
-  output$login_button <- renderUI({
-    if (is.null(isolate(token()))) {
-      tags$a("Login with Google",
-        href = url,
-        class = "btn btn-outline-danger m-2"
-      )
-    } else {
-      return()
-    }
-  })
-
-  ## Get token that can be used to make authenticated requests to Google Cloud Storage
-  token <- reactive({
-
-    ## gets all the parameters in the URL. The auth code should be one of them.
-    pars <- shiny::parseQueryString(session$clientData$url_search)
-
-    if (length(pars$code) > 0) {
-      ## extract the authorization code
-      # Manually create a token
-      token <- try(
-        httr::oauth2.0_token(
-          app = app,
-          endpoint = api,
-          credentials = httr::oauth2.0_access_token(api, app, pars$code),
-          cache = TRUE
-        )
-      )
-      if ("try-error" %in% class(token)) {
-        token <- NULL
-      }
-    } else {
-      token <- NULL
-    }
-
-    token
-  })
-
-  # get list of GCS Buckets
-  observeEvent(input$list_google_files, {
-    req(token())
-    req(input$gcs_project_id)
-
-    buckets <- list_gcs_buckets(
-      token(),
-      input$gcs_project_id
-    )
-
-    if ("no items returned" %in% buckets | is.null(buckets)) {
-      shiny::showNotification(
-        "no buckets available in Google Cloud Storage",
-        type = "error",
-        duration = 5
-      )
-    } else {
-      app_data$buckets <- buckets
-    }
-  })
-
-  # update select input with list of objects in Google Cloud Storage bucket
-  observe({
-    app_data$buckets
-
-    if (length(app_data$buckets) > 0 & !"no items returned" %in% app_data$buckets) {
-      updateSelectInput(
-        session,
-        "gcs_bucket_name",
-        choices = app_data$buckets
-      )
-    }
-  })
-
-  observe({
-    req(input$gcs_bucket_name)
-
-    items <- list_gcs_bucket_objects(
-      token(),
-      input$gcs_bucket_name
-    )
-
-    if ("no items returned" %in% items | is.null(items)) {
-      shiny::showNotification(
-        "no items returned from Google Cloud Storage query",
-        type = "error",
-        duration = 5
-      )
-      app_data$items <- NULL
-    } else {
-      app_data$items <- items
-    }
-  })
-
-  # update select input with list of objects in Google Cloud Storage bucket
-  observe({
-    app_data$items
-
-    if (length(app_data$items) > 0 & !"no items returned" %in% app_data$items) {
-      updateSelectInput(
-        session,
-        "gcs_bucket_objects",
-        choices = app_data$items
-      )
-    } else {
-      updateSelectInput(
-        session,
-        "gcs_bucket_objects",
-        choices = ""
-      )
-    }
-  })
-
-  # add user selected Google Cloud Storage object to list of layers
-  # write GeoPackage retrieved from Google Cloud Storage to app_data$data_file and unpack layers in GeoPackage
-  observeEvent(input$get_objects, {
-    req(input$gcs_bucket_objects)
-
-    selected_gcs_object <- input$gcs_bucket_objects
-
-    gcs_gpkg <- NULL
-    gcs_gpkg <- try(
-      get_gcs_object(
-        token(),
-        input$gcs_bucket_name,
-        selected_gcs_object
-      )
-    )
-
-    f_lyrs <- NULL
-
-    if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
-      f_lyrs <- tryCatch(
-        error = function(cnd) NULL,
-        purrr::map2(
-          gcs_gpkg$f_path,
-          gcs_gpkg$f_name,
-          list_layers
-        ) %>%
-          dplyr::bind_rows()
-      )
-
-      if (!is.null(f_lyrs)) {
-        f_lyrs$source <- "Google Cloud Storage"
-      }
-
-      isolate({
-        df <- dplyr::bind_rows(
-          app_data$data_file,
-          f_lyrs
-        )
-        # unique number id next to each layer to catch uploads of tables with same name
-        rows <- nrow(df)
-        row_idx <- 1:rows
-        df$layer_disp_name_idx <-
-          paste0(df$layer_disp_name, "_", row_idx, sep = "")
-        app_data$data_file <- df
-      })
-    }
-  })
+  # # Google Cloud Data -------------------------------------------------------
+  #
+  # # display login with Google button if token is not valid
+  # output$login_warning <- renderUI({
+  #   if (is.null(isolate(token()))) {
+  #     tags$p("WARNING: login with Google will reset the app and current data will be lost")
+  #   } else {
+  #     return()
+  #   }
+  # })
+  #
+  # output$login_button <- renderUI({
+  #   if (is.null(isolate(token()))) {
+  #     tags$a("Login with Google",
+  #       href = url,
+  #       class = "btn btn-outline-danger m-2"
+  #     )
+  #   } else {
+  #     return()
+  #   }
+  # })
+  #
+  # ## Get token that can be used to make authenticated requests to Google Cloud Storage
+  # token <- reactive({
+  #
+  #   ## gets all the parameters in the URL. The auth code should be one of them.
+  #   pars <- shiny::parseQueryString(session$clientData$url_search)
+  #
+  #   if (length(pars$code) > 0) {
+  #     ## extract the authorization code
+  #     # Manually create a token
+  #     token <- try(
+  #       httr::oauth2.0_token(
+  #         app = app,
+  #         endpoint = api,
+  #         credentials = httr::oauth2.0_access_token(api, app, pars$code),
+  #         cache = TRUE
+  #       )
+  #     )
+  #     if ("try-error" %in% class(token)) {
+  #       token <- NULL
+  #     }
+  #   } else {
+  #     token <- NULL
+  #   }
+  #
+  #   token
+  # })
+  #
+  # # get list of GCS Buckets
+  # observeEvent(input$list_google_files, {
+  #   req(token())
+  #   req(input$gcs_project_id)
+  #
+  #   buckets <- list_gcs_buckets(
+  #     token(),
+  #     input$gcs_project_id
+  #   )
+  #
+  #   if ("no items returned" %in% buckets | is.null(buckets)) {
+  #     shiny::showNotification(
+  #       "no buckets available in Google Cloud Storage",
+  #       type = "error",
+  #       duration = 5
+  #     )
+  #   } else {
+  #     app_data$buckets <- buckets
+  #   }
+  # })
+  #
+  # # update select input with list of objects in Google Cloud Storage bucket
+  # observe({
+  #   app_data$buckets
+  #
+  #   if (length(app_data$buckets) > 0 & !"no items returned" %in% app_data$buckets) {
+  #     updateSelectInput(
+  #       session,
+  #       "gcs_bucket_name",
+  #       choices = app_data$buckets
+  #     )
+  #   }
+  # })
+  #
+  # observe({
+  #   req(input$gcs_bucket_name)
+  #
+  #   items <- list_gcs_bucket_objects(
+  #     token(),
+  #     input$gcs_bucket_name
+  #   )
+  #
+  #   if ("no items returned" %in% items | is.null(items)) {
+  #     shiny::showNotification(
+  #       "no items returned from Google Cloud Storage query",
+  #       type = "error",
+  #       duration = 5
+  #     )
+  #     app_data$items <- NULL
+  #   } else {
+  #     app_data$items <- items
+  #   }
+  # })
+  #
+  # # update select input with list of objects in Google Cloud Storage bucket
+  # observe({
+  #   app_data$items
+  #
+  #   if (length(app_data$items) > 0 & !"no items returned" %in% app_data$items) {
+  #     updateSelectInput(
+  #       session,
+  #       "gcs_bucket_objects",
+  #       choices = app_data$items
+  #     )
+  #   } else {
+  #     updateSelectInput(
+  #       session,
+  #       "gcs_bucket_objects",
+  #       choices = ""
+  #     )
+  #   }
+  # })
+  #
+  # # add user selected Google Cloud Storage object to list of layers
+  # # write GeoPackage retrieved from Google Cloud Storage to app_data$data_file and unpack layers in GeoPackage
+  # observeEvent(input$get_objects, {
+  #   req(input$gcs_bucket_objects)
+  #
+  #   selected_gcs_object <- input$gcs_bucket_objects
+  #
+  #   gcs_gpkg <- NULL
+  #   gcs_gpkg <- try(
+  #     get_gcs_object(
+  #       token(),
+  #       input$gcs_bucket_name,
+  #       selected_gcs_object
+  #     )
+  #   )
+  #
+  #   f_lyrs <- NULL
+  #
+  #   if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
+  #     f_lyrs <- tryCatch(
+  #       error = function(cnd) NULL,
+  #       purrr::map2(
+  #         gcs_gpkg$f_path,
+  #         gcs_gpkg$f_name,
+  #         list_layers
+  #       ) %>%
+  #         dplyr::bind_rows()
+  #     )
+  #
+  #     if (!is.null(f_lyrs)) {
+  #       f_lyrs$source <- "Google Cloud Storage"
+  #     }
+  #
+  #     isolate({
+  #       df <- dplyr::bind_rows(
+  #         app_data$data_file,
+  #         f_lyrs
+  #       )
+  #       # unique number id next to each layer to catch uploads of tables with same name
+  #       rows <- nrow(df)
+  #       row_idx <- 1:rows
+  #       df$layer_disp_name_idx <-
+  #         paste0(df$layer_disp_name, "_", row_idx, sep = "")
+  #       app_data$data_file <- df
+  #     })
+  #   }
+  # })
 
   # Active layer ------------------------------------------------------------
 
@@ -782,9 +841,10 @@ app_server <- function(input, output, session) {
 
   # join left table to right table
   observeEvent(input$table_join_button, {
-    req(left_df(), right_df(), input$key_join_type)
+    req(left_df(), right_df(), input$key_join_type, req(f_key(), req(p_key())))
 
     join_waiter$show()
+
     if (input$key_join_type == "col_inner" |
       input$key_join_type == "col_left") {
       joined_table <-
@@ -1359,14 +1419,14 @@ app_server <- function(input, output, session) {
   output$web_map <- leaflet::renderLeaflet({
     base_map <- leaflet::leaflet() %>%
       leaflet::addTiles(group = "OSM (default)") %>%
-      leaflet::addProviderTiles(
-        leaflet::providers$Esri.WorldImagery,
-        options = leaflet::providerTileOptions(maxZoom = 17),
-        group = "ESRI Satellite"
+      leaflet::addTiles(
+        urlTemplate = "https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{-y}.jpg?connectId=c2cbd3f2-003a-46ec-9e46-26a3996d6484",
+        group = "Maxar Premium",
+        options = leaflet::tileOptions()
       ) %>%
       leaflet::setView(0, 0, 3) %>%
       leaflet::addLayersControl(
-        baseGroups = c("OSM (default)", "ESRI Satellite"),
+        baseGroups = c("OSM (default)", "Maxar Premium"),
         options = leaflet::layersControlOptions(collapsed = FALSE),
         position = c("bottomright")
       ) %>%
@@ -1380,6 +1440,12 @@ app_server <- function(input, output, session) {
 
     base_map
   })
+
+  # leaflet::addProviderTiles(
+  #   leaflet::providers$Esri.WorldImagery,
+  #   options = leaflet::providerTileOptions(maxZoom = 17),
+  #   group = "ESRI Satellite"
+  # ) %>%
 
   map_waiter <- waiter::Waiter$new(
     html = map_screen,
@@ -1483,7 +1549,16 @@ app_server <- function(input, output, session) {
         )
       }
     }
+
+    colour_ramp <- make_colour_ramp(map_active_df(), map_var(), input$map_colour)
+
+    output$colour_ramp <- renderPlot({
+      colour_ramp
+    })
+
   })
+
+
 
   # update line colour
   observeEvent(input$map_line_colour, {

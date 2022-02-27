@@ -13,6 +13,8 @@ navbarPage(
     "Home",
     shinyjs::useShinyjs(),
     includeCSS(file.path("www", "style.css")),
+    shinyFeedback::useShinyFeedback(),
+    waiter::use_waiter(),
     fluidPage(
       # Loading screen
       div(
@@ -66,132 +68,123 @@ navbarPage(
       fluidRow(
       column(
         4,
-        h4("Cloud data"),
+        # QFieldCloud login
+        h4("QFieldCloud data"),
+
+        # QFieldCloud app URL
+        textInput("qfieldcloud_url",
+          "QFieldCloud app URL:",
+          value = "",
+          placeholder = "tip: omit https:// and trailing /"
+        ),
+
+        # QFieldCloud login
+        textInput("qfieldcloud_username",
+          "QFieldCloud email:",
+          value = "",
+          placeholder = ""
+        ),
+
+        # QFieldCloud password
+        passwordInput("qfieldcloud_password",
+          "QFieldCloud password:",
+          value = "",
+          placeholder = ""
+        ),
+
+        # Try logging into QFieldCloud
+        actionButton(
+          "qfieldcloud_login",
+          "Login to QFieldCloud",
+          class = "btn-primary m-2"
+        ),
+
+        # QFieldCloud login status
+        uiOutput("qfieldcloud_login_status"),
+        p("Get your QFieldCloud projects:"),
+
+        # Get list of QFieldCloud projects
+        actionButton(
+          "list_qfieldcloud_projects",
+          "Get QFieldCloud projects",
+          class = "btn-primary m-2"
+        ),
+
+        # Select QField Cloud project
         selectInput(
-          "cloud",
-          "Select cloud:",
-          c("Google Cloud", "QFieldCloud")
-        ),
-        conditionalPanel(
-          condition = "input.cloud == 'QFieldCloud'",
-
-          # QFieldCloud login
-          h4("QFieldCloud data"),
-
-          # QFieldCloud app URL
-          textInput("qfieldcloud_url",
-            "QFieldCloud app URL:",
-            value = "",
-            placeholder = "tip: omit https:// and trailing /"
-          ),
-
-          # QFieldCloud login
-          textInput("qfieldcloud_username",
-            "QFieldCloud email:",
-            value = "",
-            placeholder = ""
-          ),
-
-          # QFieldCloud password
-          passwordInput("qfieldcloud_password",
-            "QFieldCloud password:",
-            value = "",
-            placeholder = ""
-          ),
-
-          # Try logging into QFieldCloud
-          actionButton(
-            "qfieldcloud_login",
-            "Login to QFieldCloud",
-            class = "btn-primary m-2"
-          ),
-
-          # QFieldCloud login status
-          uiOutput("qfieldcloud_login_status"),
-          p("Get your QFieldCloud projects:"),
-
-          # Get list of QFieldCloud projects
-          actionButton(
-            "list_qfieldcloud_projects",
-            "Get QFieldCloud projects",
-            class = "btn-primary m-2"
-          ),
-
-          # Select QField Cloud project
-          selectInput(
-            "qfieldcloud_projects",
-            "Select QFieldCloud project:",
-            choices = NULL,
-            selected = NULL,
-            multiple = FALSE
-          ),
-
-          # Select file from QFieldCloud
-          selectInput(
-            "qfieldcloud_gpkg",
-            "Select QFieldCloud dataset:",
-            choices = NULL,
-            selected = NULL,
-            multiple = FALSE
-          ),
-
-          # Download GeoPackage from QFieldCloud
-          actionButton(
-            "get_qfieldcloud_gpkg",
-            "Download QFieldCloud file",
-            class = "btn-primary m-2"
-          )
+          "qfieldcloud_projects",
+          "Select QFieldCloud project:",
+          choices = NULL,
+          selected = NULL,
+          multiple = FALSE
         ),
 
-        # Google Cloud data
-        conditionalPanel(
-          condition = "input.cloud == 'Google Cloud'",
-          h4("Google Cloud Storage data"),
+        # Select file from QFieldCloud
+        selectInput(
+          "qfieldcloud_gpkg",
+          "Select QFieldCloud dataset:",
+          choices = NULL,
+          selected = NULL,
+          multiple = FALSE
+        ),
 
-          # Google Cloud login button - show when there is not a valid token
-          uiOutput("login_warning"),
-          uiOutput("login_button"),
-
-          # Google Cloud Storage project
-          textInput("gcs_project_id",
-            "Google Cloud Storage project ID:",
-            value = "",
-            placeholder = ""
-          ),
-          p("Get your Google Cloud Storage buckets:"),
-          # get list of GeoPackages in Google Cloud Storage bucket
-          actionButton(
-            "list_google_files",
-            "Get GCS buckets",
-            class = "btn-primary m-2"
-          ),
-
-          # name of Google Cloud Storage bucket to get GeoPackages from
-          selectInput(
-            "gcs_bucket_name",
-            "GCS bucket name:",
-            choices = NULL,
-            selected = NULL,
-            multiple = FALSE
-          ),
-
-          # Select object (GeoPackage in Google Cloud Storage)
-          selectInput(
-            "gcs_bucket_objects",
-            "Select object from GCS:",
-            choices = NULL,
-            selected = NULL,
-            multiple = FALSE
-          ),
-
-          # get GeoPackage in Google Cloud Storage bucket
-          actionButton(
-            "get_objects",
-            "Download GCS file",
-            class = "btn-primary m-2"
-          ),
+        # Download GeoPackage from QFieldCloud
+        actionButton(
+          "get_qfieldcloud_gpkg",
+          "Download QFieldCloud file",
+          class = "btn-primary m-2"
         )
       ),
+
+      #   # Google Cloud data
+      #   conditionalPanel(
+      #     condition = "input.cloud == 'Google Cloud'",
+      #     h4("Google Cloud Storage data"),
+      #
+      #     # Google Cloud login button - show when there is not a valid token
+      #     uiOutput("login_warning"),
+      #     uiOutput("login_button"),
+      #
+      #     # Google Cloud Storage project
+      #     textInput("gcs_project_id",
+      #       "Google Cloud Storage project ID:",
+      #       value = "",
+      #       placeholder = ""
+      #     ),
+      #     p("Get your Google Cloud Storage buckets:"),
+      #     # get list of GeoPackages in Google Cloud Storage bucket
+      #     actionButton(
+      #       "list_google_files",
+      #       "Get GCS buckets",
+      #       class = "btn-primary m-2"
+      #     ),
+      #
+      #     # name of Google Cloud Storage bucket to get GeoPackages from
+      #     selectInput(
+      #       "gcs_bucket_name",
+      #       "GCS bucket name:",
+      #       choices = NULL,
+      #       selected = NULL,
+      #       multiple = FALSE
+      #     ),
+      #
+      #     # Select object (GeoPackage in Google Cloud Storage)
+      #     selectInput(
+      #       "gcs_bucket_objects",
+      #       "Select object from GCS:",
+      #       choices = NULL,
+      #       selected = NULL,
+      #       multiple = FALSE
+      #     ),
+      #
+      #     # get GeoPackage in Google Cloud Storage bucket
+      #     actionButton(
+      #       "get_objects",
+      #       "Download GCS file",
+      #       class = "btn-primary m-2"
+      #     ),
+      #   )
+      # ),
       column(
         8,
         fluidRow(
@@ -236,8 +229,7 @@ navbarPage(
 
   tabPanel(
     "Table",
-    shinyFeedback::useShinyFeedback(),
-    waiter::use_waiter(),
+
     sidebarLayout(
       sidebarPanel(
         class = "sidePanelStyle",
@@ -250,7 +242,30 @@ navbarPage(
           choices = NULL
         ),
         hr(),
-
+        h4("Filter rows"),
+        selectInput(
+          "table_filter",
+          label = "Select layer to filter:",
+          choices = NULL
+        ),
+        actionButton(
+          "filter",
+          "Filter rows options",
+          class = "btn-primary m-2"
+        ),
+        hr(),
+        h4("Add new column"),
+        selectInput(
+          "table_mutate",
+          label = "Select layer to add new column:",
+          choices = NULL
+        ),
+        actionButton(
+          "add_column",
+          "Add column options",
+          class = "btn-primary m-2"
+        ),
+        hr(),
         # Summary tables
         h4("Summary tables"),
         mod_multiple_input_UI(
@@ -334,36 +349,14 @@ navbarPage(
           "Apply spatial join",
           class = "btn-primary m-2"
         ),
-        hr(),
-        h4("Filter rows"),
-        selectInput(
-          "table_filter",
-          label = "Select layer to filter:",
-          choices = NULL
-        ),
-        actionButton(
-          "filter",
-          "Filter rows options",
-          class = "btn-primary m-2"
-        ),
-        hr(),
-        h4("Add new column"),
-        selectInput(
-          "table_mutate",
-          label = "Select layer to add new column:",
-          choices = NULL
-        ),
-        actionButton(
-          "add_column",
-          "Add column options",
-          class = "btn-primary m-2"
-        ),
+
       ),
 
       # show data tables
       mainPanel(
         class = "mainPanelStyle",
         tabsetPanel(
+          id = "data_tables",
           type = "tabs",
           tabPanel(
             "Data: Raw",
@@ -404,20 +397,28 @@ navbarPage(
           choices = NULL
         ),
         hr(),
+        mod_single_input_UI(
+          id = "map_var",
+          label = "Select column:"
+        ),
         actionButton(
           "create_map",
           "Draw map",
           class = "btn-primary m-2"
         ),
         hr(),
-        mod_single_input_UI(
-          id = "map_var",
-          label = "Select column:"
-        ),
         selectInput(
           "map_colour",
           "Fill colour palette:",
           choices = colour_mappings
+        ),
+        div(
+          class = "mx-auto m-2",
+          plotOutput(
+            "colour_ramp",
+            width = "100%",
+            height = "30px"
+          )
         ),
         sliderInput(
           "opacity",
