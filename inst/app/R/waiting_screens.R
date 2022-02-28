@@ -18,7 +18,7 @@ project_screen <- shiny::tagList(
 
 download_screen <- shiny::tagList(
   waiter::spin_flower(),
-  shiny::h4("Downloading file...")
+  shiny::h4("Downloading...")
 )
 
 sync_screen <- shiny::tagList(

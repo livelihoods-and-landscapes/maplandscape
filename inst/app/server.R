@@ -50,7 +50,7 @@ app_server <- function(input, output, session) {
     updateTabsetPanel(inputId = "data_tables",  selected = "Data: Raw")
   })
 
-  # waiting screens ---------------------------------------------------------
+  # Waiting screens ---------------------------------------------------------
 
   # waiter for downloading projects
   project_waiter <- waiter::Waiter$new(
@@ -64,7 +64,19 @@ app_server <- function(input, output, session) {
     color = "rgba(89,49,150,.6)"
   )
 
-  # app data ----------------------------------------------------------------
+  # sync forms with database / template
+  sync_waiter <- waiter::Waiter$new(
+    html = sync_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # waiting screen for drawing maps
+  map_waiter <- waiter::Waiter$new(
+    html = map_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # App data ----------------------------------------------------------------
 
   # object storing data to pass between reactive objects during app's execution
   app_data <-
@@ -78,12 +90,23 @@ app_server <- function(input, output, session) {
       qfieldcloud_files = NULL, # dataframe of qfieldcloud project files and project ids
       buckets = NULL, # list of buckets in users GCS project
       items = NULL, # items in GCS bucket
+      layers_df = NULL, # dataframe of layers in the app
+      qfieldcloud_token = NULL, # QFieldCloud token
+      qfieldcloud_url = NULL # qfieldcloud url - set on successful login
     )
 
+
+  # Data tab ----------------------------------------------------------------
+
   # render layers as data table in UI
+  # display of what layers the user has loaded into the app
   layers_df <- reactive({
 
     layers_df <- app_data$data_file
+
+    if (is.null(layers_df)) {
+      return()
+    }
 
     if (nrow(layers_df) <= 0){
       return()
@@ -132,12 +155,6 @@ app_server <- function(input, output, session) {
   )
 
   # Data Sync ---------------------------------------------------------------
-
-  # sync forms with database / template
-  sync_waiter <- waiter::Waiter$new(
-    html = sync_screen,
-    color = "rgba(89,49,150,.6)"
-  )
 
   # select template db to sync forms to
   template <- mod_get_layers_Server(id = "template_db")
@@ -282,39 +299,35 @@ app_server <- function(input, output, session) {
 
   # QFieldCloud data --------------------------------------------------------
 
+  # token is TRUE if the user is logged in successfully
   # get QFieldCloud token
-  observeEvent(input$qfieldcloud_login, {
+  observeEvent(input$login, {
     username <- input$qfieldcloud_username
     password <- input$qfieldcloud_password
     endpoint <- input$qfieldcloud_url
 
-    token <- try(qfieldcloud_login(
+    token <- qfieldcloudR::qfieldcloud_login(
       username,
       password,
       endpoint
-    ))
-
-    if ("try-error" %in% class(token)) {
-      output$qfieldcloud_login_status <- renderUI({
-        tags$p("login error - check user email and password")
-      })
-      app_data$qfieldcloud_token <- NULL
-      return()
-    }
+    )
 
     if (token$status == "success") {
       app_data$qfieldcloud_token <- token$token
 
       login_message <- paste0("logged in as ", username)
+      app_data$qfieldcloud_url <- input$qfieldcloud_url
 
-      output$qfieldcloud_login_status <- renderUI({
+      output$login_status <- renderUI({
         tags$p(login_message)
       })
     } else {
-      output$qfieldcloud_login_status <- renderUI({
-        tags$p("login error - check user email and password")
-      })
       app_data$qfieldcloud_token <- NULL
+      login_message <-
+        paste0("login failed - check username and password.")
+      output$login_status <- renderUI({
+        tags$p(login_message)
+      })
     }
   })
 
@@ -324,30 +337,35 @@ app_server <- function(input, output, session) {
 
     project_waiter$show()
 
-    qfieldcloud_projects <- try(get_qfieldcloud_projects(
-      app_data$qfieldcloud_token,
-      isolate(input$qfieldcloud_url)
-    ))
+    tryCatch(
+      error = function(cnd) {
+        showNotification("Could not load projects.", type = "error")
+      },
+      {
+        qfieldcloud_projects <- qfieldcloudR::get_qfieldcloud_projects(
+          app_data$qfieldcloud_token,
+          app_data$qfieldcloud_url
+        )
 
-    if ("try-error" %in% qfieldcloud_projects) {
-      project_waiter$hide()
-      return()
-    }
-    app_data$qfieldcloud_projects <- qfieldcloud_projects
+        app_data$qfieldcloud_projects <- qfieldcloud_projects
+      }
+    )
 
     project_waiter$hide()
+
   })
 
   # update select input with list of QFieldCloud projects
   observe({
     req(app_data$qfieldcloud_projects)
     req(app_data$qfieldcloud_token)
+
     app_data$qfieldcloud_projects
 
     projects <- app_data$qfieldcloud_projects
     projects <- projects$name
 
-    if (!is.null(app_data$qfieldcloud_projects)) {
+    if (!is.null(app_data$qfieldcloud_projects) & nrow((app_data$qfieldcloud_projects)) > 0) {
       updateSelectInput(
         session,
         "qfieldcloud_projects",
@@ -365,37 +383,40 @@ app_server <- function(input, output, session) {
 
     download_waiter$show()
 
-    projects <- app_data$qfieldcloud_projects %>%
-      dplyr::filter(name == input$qfieldcloud_projects)
+    tryCatch(
+      error = function(cnd) {
+        shiny::showNotification("Failed to download project files - empty project?", type = "error")
+      },
+      {
+        projects <- app_data$qfieldcloud_projects %>%
+          dplyr::filter(name == input$qfieldcloud_projects)
 
-    project_id <- projects[, 2]
+        project_id <- projects[, 2]
 
-    files <- try(list_qfieldcloud_gpkg(
-      app_data$qfieldcloud_token,
-      isolate(input$qfieldcloud_url),
-      project_id
-    ))
+        files <- qfieldcloudR::get_qfieldcloud_files(
+          app_data$qfieldcloud_token,
+          app_data$qfieldcloud_url,
+          project_id
+        )
 
-    if ("try-error" %in% class(files)) {
-      shiny::showNotification("Failed to download project files - empty project?", type = "error")
+        app_data$qfieldcloud_files <- files
 
-      updateSelectInput(
-        session,
-        "qfieldcloud_gpkg",
-        choices = ""
-      )
+        if (is.null(files) | nrow(files) <= 0) {
+          updateSelectInput(
+            session,
+            "qfieldcloud_gpkg",
+            choices = "",
+            selected = ""
+          )
+        } else {
+          updateSelectInput(
+            session,
+            "qfieldcloud_gpkg",
+            choices = files$name
+          )
+        }
 
-      download_waiter$hide()
-      return()
-    }
-
-    app_data$qfieldcloud_files <- files
-
-
-    updateSelectInput(
-      session,
-      "qfieldcloud_gpkg",
-      choices = files$name
+      }
     )
 
     download_waiter$hide()
@@ -407,13 +428,15 @@ app_server <- function(input, output, session) {
       updateSelectInput(
         session,
         "qfieldcloud_projects",
-        choices = ""
+        choices = "",
+        selected = ""
       )
 
       updateSelectInput(
         session,
         "qfieldcloud_gpkg",
-        choices = ""
+        choices = "",
+        selected = ""
       )
     }
   })
@@ -427,233 +450,55 @@ app_server <- function(input, output, session) {
 
     filename <- input$qfieldcloud_gpkg
 
-    projects <- app_data$qfieldcloud_projects %>%
-      dplyr::filter(name == input$qfieldcloud_projects)
-
-    project_id <- projects[, 2]
-
-    qfieldcloud_gpkg <- NULL
-
     download_waiter$show()
 
-    qfieldcloud_gpkg <- try(
-      get_qfieldcloud_gpkg(
-        app_data$qfieldcloud_token,
-        isolate(input$qfieldcloud_url),
-        project_id,
-        filename
-      )
-    )
+    tryCatch(
+      error = function(cnd) {
+        shiny::showNotification("Failed to download project file.", type = "error")
+      },
+      {
 
-    if ("try-error" %in% class(qfieldcloud_gpkg) & is.null(qfieldcloud_gpkg) & any(stringr::str_detect(qfieldcloud_gpkg, "cannot load GeoPackage from QFieldCloud"))) {
+        projects <- app_data$qfieldcloud_projects %>%
+          dplyr::filter(name == input$qfieldcloud_projects)
 
-      download_waiter$hide()
-      return()
-    }
+        project_id <- projects[, 2]
 
-    download_waiter$hide()
+        qfieldcloud_gpkg <-  qfieldcloudR::get_qfieldcloud_file(
+          app_data$qfieldcloud_token,
+          app_data$qfieldcloud_url,
+          project_id,
+          filename
+        )
 
-    f_lyrs <- NULL
-
-    if (!"try-error" %in% class(qfieldcloud_gpkg) & !is.null(qfieldcloud_gpkg) & !any(stringr::str_detect(qfieldcloud_gpkg, "cannot load GeoPackage from QFieldCloud"))) {
-      f_lyrs <- tryCatch(
-        error = function(cnd) NULL,
-        purrr::map2(
-          qfieldcloud_gpkg$f_path,
-          qfieldcloud_gpkg$f_name,
+        f_lyrs <- purrr::map2(
+          qfieldcloud_gpkg$tmp_file,
+          qfieldcloud_gpkg$filename,
           list_layers
         ) %>%
           dplyr::bind_rows()
-      )
 
-      if (!is.null(f_lyrs)) {
-        f_lyrs$source <- "QFieldCloud"
-      }
+        if (!is.null(f_lyrs)) {
+          f_lyrs$source <- "QFieldCloud"
+        }
 
-      isolate({
         df <- dplyr::bind_rows(
           app_data$data_file,
           f_lyrs
         )
+
         # unique number id next to each layer to catch uploads of tables with same name
         rows <- nrow(df)
         row_idx <- 1:rows
         df$layer_disp_name_idx <-
           paste0(df$layer_disp_name, "_", row_idx, sep = "")
         app_data$data_file <- df
-      })
-    }
-  })
 
-  # # Google Cloud Data -------------------------------------------------------
-  #
-  # # display login with Google button if token is not valid
-  # output$login_warning <- renderUI({
-  #   if (is.null(isolate(token()))) {
-  #     tags$p("WARNING: login with Google will reset the app and current data will be lost")
-  #   } else {
-  #     return()
-  #   }
-  # })
-  #
-  # output$login_button <- renderUI({
-  #   if (is.null(isolate(token()))) {
-  #     tags$a("Login with Google",
-  #       href = url,
-  #       class = "btn btn-outline-danger m-2"
-  #     )
-  #   } else {
-  #     return()
-  #   }
-  # })
-  #
-  # ## Get token that can be used to make authenticated requests to Google Cloud Storage
-  # token <- reactive({
-  #
-  #   ## gets all the parameters in the URL. The auth code should be one of them.
-  #   pars <- shiny::parseQueryString(session$clientData$url_search)
-  #
-  #   if (length(pars$code) > 0) {
-  #     ## extract the authorization code
-  #     # Manually create a token
-  #     token <- try(
-  #       httr::oauth2.0_token(
-  #         app = app,
-  #         endpoint = api,
-  #         credentials = httr::oauth2.0_access_token(api, app, pars$code),
-  #         cache = TRUE
-  #       )
-  #     )
-  #     if ("try-error" %in% class(token)) {
-  #       token <- NULL
-  #     }
-  #   } else {
-  #     token <- NULL
-  #   }
-  #
-  #   token
-  # })
-  #
-  # # get list of GCS Buckets
-  # observeEvent(input$list_google_files, {
-  #   req(token())
-  #   req(input$gcs_project_id)
-  #
-  #   buckets <- list_gcs_buckets(
-  #     token(),
-  #     input$gcs_project_id
-  #   )
-  #
-  #   if ("no items returned" %in% buckets | is.null(buckets)) {
-  #     shiny::showNotification(
-  #       "no buckets available in Google Cloud Storage",
-  #       type = "error",
-  #       duration = 5
-  #     )
-  #   } else {
-  #     app_data$buckets <- buckets
-  #   }
-  # })
-  #
-  # # update select input with list of objects in Google Cloud Storage bucket
-  # observe({
-  #   app_data$buckets
-  #
-  #   if (length(app_data$buckets) > 0 & !"no items returned" %in% app_data$buckets) {
-  #     updateSelectInput(
-  #       session,
-  #       "gcs_bucket_name",
-  #       choices = app_data$buckets
-  #     )
-  #   }
-  # })
-  #
-  # observe({
-  #   req(input$gcs_bucket_name)
-  #
-  #   items <- list_gcs_bucket_objects(
-  #     token(),
-  #     input$gcs_bucket_name
-  #   )
-  #
-  #   if ("no items returned" %in% items | is.null(items)) {
-  #     shiny::showNotification(
-  #       "no items returned from Google Cloud Storage query",
-  #       type = "error",
-  #       duration = 5
-  #     )
-  #     app_data$items <- NULL
-  #   } else {
-  #     app_data$items <- items
-  #   }
-  # })
-  #
-  # # update select input with list of objects in Google Cloud Storage bucket
-  # observe({
-  #   app_data$items
-  #
-  #   if (length(app_data$items) > 0 & !"no items returned" %in% app_data$items) {
-  #     updateSelectInput(
-  #       session,
-  #       "gcs_bucket_objects",
-  #       choices = app_data$items
-  #     )
-  #   } else {
-  #     updateSelectInput(
-  #       session,
-  #       "gcs_bucket_objects",
-  #       choices = ""
-  #     )
-  #   }
-  # })
-  #
-  # # add user selected Google Cloud Storage object to list of layers
-  # # write GeoPackage retrieved from Google Cloud Storage to app_data$data_file and unpack layers in GeoPackage
-  # observeEvent(input$get_objects, {
-  #   req(input$gcs_bucket_objects)
-  #
-  #   selected_gcs_object <- input$gcs_bucket_objects
-  #
-  #   gcs_gpkg <- NULL
-  #   gcs_gpkg <- try(
-  #     get_gcs_object(
-  #       token(),
-  #       input$gcs_bucket_name,
-  #       selected_gcs_object
-  #     )
-  #   )
-  #
-  #   f_lyrs <- NULL
-  #
-  #   if (!"try-error" %in% class(gcs_gpkg) & !is.null(gcs_gpkg) & !any(stringr::str_detect(gcs_gpkg, "cannot load GeoPackage from Google Cloud Storage"))) {
-  #     f_lyrs <- tryCatch(
-  #       error = function(cnd) NULL,
-  #       purrr::map2(
-  #         gcs_gpkg$f_path,
-  #         gcs_gpkg$f_name,
-  #         list_layers
-  #       ) %>%
-  #         dplyr::bind_rows()
-  #     )
-  #
-  #     if (!is.null(f_lyrs)) {
-  #       f_lyrs$source <- "Google Cloud Storage"
-  #     }
-  #
-  #     isolate({
-  #       df <- dplyr::bind_rows(
-  #         app_data$data_file,
-  #         f_lyrs
-  #       )
-  #       # unique number id next to each layer to catch uploads of tables with same name
-  #       rows <- nrow(df)
-  #       row_idx <- 1:rows
-  #       df$layer_disp_name_idx <-
-  #         paste0(df$layer_disp_name, "_", row_idx, sep = "")
-  #       app_data$data_file <- df
-  #     })
-  #   }
-  # })
+      }
+    )
+
+    download_waiter$hide()
+
+  })
 
   # Active layer ------------------------------------------------------------
 
@@ -1400,6 +1245,8 @@ app_server <- function(input, output, session) {
     # don't update options if selected layer has no records
     req(nrow(map_active_df) > 0, "sf" %in% class(map_active_df))
 
+    app_data$map_drawn <- 0
+
     map_active_df
   })
 
@@ -1419,14 +1266,14 @@ app_server <- function(input, output, session) {
   output$web_map <- leaflet::renderLeaflet({
     base_map <- leaflet::leaflet() %>%
       leaflet::addTiles(group = "OSM (default)") %>%
-      leaflet::addTiles(
-        urlTemplate = "https://services.digitalglobe.com/earthservice/tmsaccess/tms/1.0.0/DigitalGlobe:ImageryTileService@EPSG:3857@jpg/{z}/{x}/{-y}.jpg?connectId=c2cbd3f2-003a-46ec-9e46-26a3996d6484",
-        group = "Maxar Premium",
-        options = leaflet::tileOptions()
+      leaflet::addProviderTiles(
+        leaflet::providers$Esri.WorldImagery,
+        options = leaflet::providerTileOptions(maxZoom = 17),
+        group = "ESRI Satellite"
       ) %>%
       leaflet::setView(0, 0, 3) %>%
       leaflet::addLayersControl(
-        baseGroups = c("OSM (default)", "Maxar Premium"),
+        baseGroups = c("OSM (default)", "ESRI Satellite"),
         options = leaflet::layersControlOptions(collapsed = FALSE),
         position = c("bottomright")
       ) %>%
@@ -1440,17 +1287,6 @@ app_server <- function(input, output, session) {
 
     base_map
   })
-
-  # leaflet::addProviderTiles(
-  #   leaflet::providers$Esri.WorldImagery,
-  #   options = leaflet::providerTileOptions(maxZoom = 17),
-  #   group = "ESRI Satellite"
-  # ) %>%
-
-  map_waiter <- waiter::Waiter$new(
-    html = map_screen,
-    color = "rgba(89,49,150,.6)"
-  )
 
   # add spatial data to map
   observeEvent(input$create_map, {
@@ -1506,7 +1342,6 @@ app_server <- function(input, output, session) {
     )
   })
 
-
   # update opacity
   observeEvent(input$opacity, {
     req(map_active_df())
@@ -1550,7 +1385,10 @@ app_server <- function(input, output, session) {
       }
     }
 
-    colour_ramp <- make_colour_ramp(map_active_df(), map_var(), input$map_colour)
+  })
+
+  observeEvent(input$map_colour, {
+    colour_ramp <- make_colour_ramp(input$map_colour)
 
     output$colour_ramp <- renderPlot({
       colour_ramp
@@ -1582,7 +1420,7 @@ app_server <- function(input, output, session) {
     }
   })
 
-  # update line colour
+  # update line width
   observeEvent(input$map_line_width, {
     req(map_active_df())
 

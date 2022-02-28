@@ -94,20 +94,21 @@ navbarPage(
 
         # Try logging into QFieldCloud
         actionButton(
-          "qfieldcloud_login",
+          "login",
           "Login to QFieldCloud",
-          class = "btn-primary m-2"
+          class = "btn-md btn-primary m-2"
         ),
 
         # QFieldCloud login status
-        uiOutput("qfieldcloud_login_status"),
+        uiOutput("login_status"),
+
         p("Get your QFieldCloud projects:"),
 
         # Get list of QFieldCloud projects
         actionButton(
           "list_qfieldcloud_projects",
           "Get QFieldCloud projects",
-          class = "btn-primary m-2"
+          class = "btn-md btn-primary m-2"
         ),
 
         # Select QField Cloud project
@@ -132,59 +133,9 @@ navbarPage(
         actionButton(
           "get_qfieldcloud_gpkg",
           "Download QFieldCloud file",
-          class = "btn-primary m-2"
+          class = "btn-md btn-primary m-2"
         )
       ),
-
-      #   # Google Cloud data
-      #   conditionalPanel(
-      #     condition = "input.cloud == 'Google Cloud'",
-      #     h4("Google Cloud Storage data"),
-      #
-      #     # Google Cloud login button - show when there is not a valid token
-      #     uiOutput("login_warning"),
-      #     uiOutput("login_button"),
-      #
-      #     # Google Cloud Storage project
-      #     textInput("gcs_project_id",
-      #       "Google Cloud Storage project ID:",
-      #       value = "",
-      #       placeholder = ""
-      #     ),
-      #     p("Get your Google Cloud Storage buckets:"),
-      #     # get list of GeoPackages in Google Cloud Storage bucket
-      #     actionButton(
-      #       "list_google_files",
-      #       "Get GCS buckets",
-      #       class = "btn-primary m-2"
-      #     ),
-      #
-      #     # name of Google Cloud Storage bucket to get GeoPackages from
-      #     selectInput(
-      #       "gcs_bucket_name",
-      #       "GCS bucket name:",
-      #       choices = NULL,
-      #       selected = NULL,
-      #       multiple = FALSE
-      #     ),
-      #
-      #     # Select object (GeoPackage in Google Cloud Storage)
-      #     selectInput(
-      #       "gcs_bucket_objects",
-      #       "Select object from GCS:",
-      #       choices = NULL,
-      #       selected = NULL,
-      #       multiple = FALSE
-      #     ),
-      #
-      #     # get GeoPackage in Google Cloud Storage bucket
-      #     actionButton(
-      #       "get_objects",
-      #       "Download GCS file",
-      #       class = "btn-primary m-2"
-      #     ),
-      #   )
-      # ),
       column(
         8,
         fluidRow(
@@ -211,15 +162,18 @@ navbarPage(
             actionButton(
               "sync_forms",
               "Sync",
-              class = "btn-primary m-2"
+              class = "btn btn-primary m-2"
             ),
           )
         ),
         fluidRow(
-          class = "dt-scroll",
-          h4("Layers"),
-          hr(),
-          mod_render_dt_UI(id = "app_layers")
+          column(
+            12,
+            class = "dt-scroll",
+            h4("Layers"),
+            hr(),
+            mod_render_dt_UI(id = "app_layers")
+          )
         )
       )
     )),
@@ -251,7 +205,7 @@ navbarPage(
         actionButton(
           "filter",
           "Filter rows options",
-          class = "btn-primary m-2"
+          class = "btn btn-primary m-2"
         ),
         hr(),
         h4("Add new column"),
@@ -263,7 +217,7 @@ navbarPage(
         actionButton(
           "add_column",
           "Add column options",
-          class = "btn-primary m-2"
+          class = "btn btn-primary m-2"
         ),
         hr(),
         # Summary tables
@@ -315,7 +269,7 @@ navbarPage(
         actionButton(
           "table_join_button",
           "Apply join",
-          class = "btn-primary m-2"
+          class = "btn btn-primary m-2"
         ),
         hr(),
         h4("Combine spatial layers"),
@@ -347,7 +301,7 @@ navbarPage(
         actionButton(
           "spatial_join_button",
           "Apply spatial join",
-          class = "btn-primary m-2"
+          class = "btn btn-primary m-2"
         ),
 
       ),
@@ -363,7 +317,7 @@ navbarPage(
             downloadButton(
               "download_data_raw",
               "Download Data",
-              class = "btn-primary m-2"
+              class = "btn btn-primary m-2"
             ),
             hr(),
             mod_render_dt_UI(id = "data_raw")
@@ -373,7 +327,7 @@ navbarPage(
             downloadButton(
               "download_data_summarised",
               "Download Summarised Data",
-              class = "btn-primary m-2"
+              class = "btn btn-primary m-2"
             ),
             hr(),
             mod_render_dt_UI(id = "data_summary")
@@ -404,7 +358,7 @@ navbarPage(
         actionButton(
           "create_map",
           "Draw map",
-          class = "btn-primary m-2"
+          class = "btn btn-primary m-2"
         ),
         hr(),
         selectInput(
@@ -480,7 +434,7 @@ navbarPage(
         actionButton(
           "create_chart",
           "Draw chart",
-          class = "btn-primary m-2"
+          class = "btn btn-primary m-2"
         ),
         sliderInput(
           "chart_height",

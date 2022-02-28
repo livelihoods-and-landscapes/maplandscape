@@ -901,6 +901,22 @@
         "rlang"
       ]
     },
+    "qfieldcloudR": {
+      "Package": "qfieldcloudR",
+      "Version": "0.1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "qfieldcloudR",
+      "RemoteUsername": "livelihoods-and-landscapes",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "5317ddf61c3ab649c8a4e4278552d1fb50dfb051",
+      "Hash": "5351aab1253e31347017c22c07e397b2",
+      "Requirements": [
+        "httr",
+        "xfun"
+      ]
+    },
     "ragg": {
       "Package": "ragg",
       "Version": "1.2.1",

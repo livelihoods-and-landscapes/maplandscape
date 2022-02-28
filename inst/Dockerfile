@@ -4,6 +4,7 @@ FROM jmad1v07/maplandscape-base-4.1.2
 RUN R -e 'install.packages(c("devtools"), \
   repos="http://cran.rstudio.com/")'
 
+RUN R -e 'devtools::install_github("livelihoods-and-landscapes/qfieldcloudR")'
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
 
 # copy necessary files
