@@ -28,6 +28,8 @@
 add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_colour, opacity, map_line_width, map_line_colour, waiter) {
   supported_geometries <- c("POINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON")
 
+  print("drawing map")
+
   waiter$show()
 
   tryCatch(
