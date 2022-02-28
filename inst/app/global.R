@@ -1,3 +1,4 @@
+library(qfieldcloudR)
 library(maplandscape)
 library(magrittr)
 library(shiny)
