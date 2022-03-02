@@ -324,16 +324,18 @@ app_server <- function(input, output, session) {
     } else {
       app_data$qfieldcloud_token <- NULL
       login_message <-
-        paste0("login failed - check username and password.")
+        paste0("login failed - check user email and password.")
       output$login_status <- renderUI({
-        tags$p(login_message)
+        tags$p(login_message, style="color:red;")
       })
     }
   })
 
   # get list of QFieldCloud projects
-  observeEvent(input$list_qfieldcloud_projects, {
+  observe({
     req(app_data$qfieldcloud_token)
+
+    app_data$qfieldcloud_token
 
     project_waiter$show()
 
@@ -377,7 +379,6 @@ app_server <- function(input, output, session) {
   # update select input with list of QFieldCloud project GeoPackages
   observe({
     req(input$qfieldcloud_projects)
-    req(app_data$qfieldcloud_token)
 
     input$qfieldcloud_projects
 
@@ -1255,6 +1256,17 @@ app_server <- function(input, output, session) {
       id = "map_var",
       s_df = map_active_df
     )
+
+  observe({
+    req(map_var())
+
+    shinyFeedback::feedbackWarning(
+      "map_var-single_input",
+      (map_var() == "geometry" | map_var() == "geom"),
+      "Cannot map geometry column to colour palette."
+    )
+
+  })
 
   label_vars <-
     mod_multiple_input_Server(

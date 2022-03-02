@@ -68,6 +68,7 @@ navbarPage(
       fluidRow(
       column(
         4,
+
         # QFieldCloud login
         h4("QFieldCloud data"),
 
@@ -96,20 +97,12 @@ navbarPage(
         actionButton(
           "login",
           "Login to QFieldCloud",
-          class = "btn-md btn-primary m-2"
+          class = "btn mb-4"
         ),
+
 
         # QFieldCloud login status
         uiOutput("login_status"),
-
-        p("Get your QFieldCloud projects:"),
-
-        # Get list of QFieldCloud projects
-        actionButton(
-          "list_qfieldcloud_projects",
-          "Get QFieldCloud projects",
-          class = "btn-md btn-primary m-2"
-        ),
 
         # Select QField Cloud project
         selectInput(
@@ -133,8 +126,9 @@ navbarPage(
         actionButton(
           "get_qfieldcloud_gpkg",
           "Download QFieldCloud file",
-          class = "btn-md btn-primary m-2"
-        )
+          class = "btn mb-4"
+        ),
+
       ),
       column(
         8,
@@ -162,7 +156,7 @@ navbarPage(
             actionButton(
               "sync_forms",
               "Sync",
-              class = "btn btn-primary m-2"
+              class = "btn m-2"
             ),
           )
         ),
@@ -202,10 +196,13 @@ navbarPage(
           label = "Select layer to filter:",
           choices = NULL
         ),
-        actionButton(
-          "filter",
-          "Filter rows options",
-          class = "btn btn-primary m-2"
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "filter",
+            "Filter rows options",
+            class = "btn btn-block m-2"
+          ),
         ),
         hr(),
         h4("Add new column"),
@@ -214,10 +211,13 @@ navbarPage(
           label = "Select layer to add new column:",
           choices = NULL
         ),
-        actionButton(
-          "add_column",
-          "Add column options",
-          class = "btn btn-primary m-2"
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "add_column",
+            "Add column options",
+            class = "btn btn-block m-2"
+          ),
         ),
         hr(),
         # Summary tables
@@ -266,10 +266,13 @@ navbarPage(
           value = "",
           placeholder = "enter layer name for output"
         ),
-        actionButton(
-          "table_join_button",
-          "Apply join",
-          class = "btn btn-primary m-2"
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "table_join_button",
+            "Apply join",
+            class = "btn btn-block m-2"
+          ),
         ),
         hr(),
         h4("Combine spatial layers"),
@@ -298,12 +301,14 @@ navbarPage(
           value = "",
           placeholder = "enter layer name for output"
         ),
-        actionButton(
-          "spatial_join_button",
-          "Apply spatial join",
-          class = "btn btn-primary m-2"
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "spatial_join_button",
+            "Apply spatial join",
+            class = "btn btn-block m-2"
+          ),
         ),
-
       ),
 
       # show data tables
@@ -317,7 +322,7 @@ navbarPage(
             downloadButton(
               "download_data_raw",
               "Download Data",
-              class = "btn btn-primary m-2"
+              class = "btn m-2"
             ),
             hr(),
             mod_render_dt_UI(id = "data_raw")
@@ -327,7 +332,7 @@ navbarPage(
             downloadButton(
               "download_data_summarised",
               "Download Summarised Data",
-              class = "btn btn-primary m-2"
+              class = "btn m-2"
             ),
             hr(),
             mod_render_dt_UI(id = "data_summary")
@@ -355,10 +360,13 @@ navbarPage(
           id = "map_var",
           label = "Select column:"
         ),
-        actionButton(
-          "create_map",
-          "Draw map",
-          class = "btn btn-primary m-2"
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "create_map",
+            "Draw map",
+            class = "btn btn-block m-2"
+          ),
         ),
         hr(),
         selectInput(
@@ -431,10 +439,13 @@ navbarPage(
           choices = NULL
         ),
         hr(),
-        actionButton(
-          "create_chart",
-          "Draw chart",
-          class = "btn btn-primary m-2"
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "create_chart",
+            "Draw chart",
+            class = "btn btn-block m-2"
+          ),
         ),
         sliderInput(
           "chart_height",
