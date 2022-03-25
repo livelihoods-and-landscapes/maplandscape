@@ -1,10 +1,11 @@
 
-options(shiny.maxRequestSize = 10000 * 1024^2)
+# max size of local files that can be uploaded
+options(shiny.maxRequestSize = 100000 * 1024^2)
 
 app_server <- function(input, output, session) {
 
-  # hold the loading screen for 1 second
-  Sys.sleep(3)
+  # hold the loading screen for 2 seconds
+  Sys.sleep(2)
 
   # hide loading screen
   shinyjs::hide(
@@ -73,6 +74,23 @@ app_server <- function(input, output, session) {
   # waiting screen for drawing maps
   map_waiter <- waiter::Waiter$new(
     html = map_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # waiting screen for logging in
+  login_waiter <- waiter::Waiter$new(
+    html = login_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  # waiting screen for joining tables
+  join_waiter <- waiter::Waiter$new(
+    html = join_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
+  spatial_join_waiter <- waiter::Waiter$new(
+    html = join_screen,
     color = "rgba(89,49,150,.6)"
   )
 
@@ -306,6 +324,8 @@ app_server <- function(input, output, session) {
     password <- input$qfieldcloud_password
     endpoint <- input$qfieldcloud_url
 
+    login_waiter$show()
+
     token <- qfieldcloudR::qfieldcloud_login(
       username,
       password,
@@ -329,6 +349,8 @@ app_server <- function(input, output, session) {
         tags$p(login_message, style="color:red;")
       })
     }
+
+    login_waiter$hide()
   })
 
   # get list of QFieldCloud projects
@@ -510,6 +532,7 @@ app_server <- function(input, output, session) {
     nm_jdf <- names(joined_df)
     choices <- unique(df$layer_disp_name_idx)
     choices <- c(choices, nm_jdf)
+
     updateSelectInput(
       session,
       "active_layer",
@@ -517,7 +540,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # active layer - layer to display in Data Table
+  # active layer - layer to display in data table
   active_df <- reactive({
     req(input$active_layer)
 
@@ -600,7 +623,7 @@ app_server <- function(input, output, session) {
   # Joining Tables ----------------------------------------------------------
   # combine layers using spatial and non-spatial joins
 
-  # Non-spatial (key-based) joins
+  # non-spatial (key-based) joins
   # select "left" table in join operation
   observe({
     df <- app_data$data_file
@@ -680,10 +703,7 @@ app_server <- function(input, output, session) {
       m_df = right_df
     )
 
-  join_waiter <- waiter::Waiter$new(
-    html = join_screen,
-    color = "rgba(89,49,150,.6)"
-  )
+
 
   # join left table to right table
   observeEvent(input$table_join_button, {
@@ -789,36 +809,78 @@ app_server <- function(input, output, session) {
     right_df
   })
 
-  spatial_join_waiter <- waiter::Waiter$new(
-    html = join_screen,
-    color = "rgba(89,49,150,.6)"
-  )
-
   # join left table to right table
   observeEvent(input$spatial_join_button, {
     req(
       spatial_left_df(),
       spatial_right_df(),
       "sf" %in% class(spatial_left_df()),
-      "sf" %in% class(spatial_right_df()),
-      input$spatial_join_type
+      "sf" %in% class(spatial_right_df())
     )
 
+    browser()
+
     spatial_join_waiter$show()
-    if ("sf" %in% class(spatial_left_df()) &
-      "sf" %in% class(spatial_right_df()) &
-      input$spatial_join_type == "spatial_inner" |
-      input$spatial_join_type == "spatial_left") {
-      joined_table <-
-        spatial_join_tables(
-          spatial_left_df(),
-          spatial_right_df(),
-          input$spatial_join_type
+
+    tryCatch(
+      error = function(cnd) {
+        shiny::showNotification("Error performing spatial join. Eheck both tables are spatial with geometry columns.", type = "error")
+      },
+      {
+        left_df <- spatial_left_df() %>%
+          dplyr::rename_with(tolower)
+
+        right_df <- spatial_right_df() %>%
+          dplyr::rename_with(tolower)
+
+        # make geometry column name geometry
+        sf::st_geometry(left_df) <- "geometry"
+        sf::st_geometry(right_df) <- "geometry"
+
+        # catch common names across left and right tables and append '_y' to duplicate colnames
+        left_names <- names(left_df)
+        right_names <- names(right_df)
+
+        new_names <- c()
+
+        for (i in right_names) {
+          if (i %in% left_names) {
+            if (i == "geometry") {
+              new_names <- c(new_names, i)
+            } else {
+              tmp <- paste0(i, "_y")
+              new_names <- c(new_names, tmp)
+            }
+          } else{
+            new_names <- c(new_names, i)
+          }
+        }
+
+        names(right_df) <- new_names
+
+        make_spatial_db_table(
+          con,
+          left_df,
+          "left_df",
+          right_df,
+          "right_df"
         )
-    }
+
+        joined_table <- db_spatial_join_tables(
+          left_names,
+          new_names,
+          "left_df",
+          "right_df"
+        )
+
+        app_data$joined_df[[input$spjoin_tbl_name]] <- joined_table
+
+      }
+
+    )
+
     spatial_join_waiter$hide()
 
-    app_data$joined_df[[input$spjoin_tbl_name]] <- joined_table
   })
 
   # Filter Rows based on a condition -------------------------------------------------------------

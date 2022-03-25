@@ -286,15 +286,6 @@ navbarPage(
           label = "Select right layer in join:",
           choices = NULL
         ),
-        radioButtons(
-          "spatial_join_type",
-          "Join type:",
-          c(
-            "spatial - inner" = "spatial_inner",
-            "spatial - left" = "spatial_left"
-          ),
-          selected = NULL
-        ),
         textInput(
           "spjoin_tbl_name",
           "Layer name:",
