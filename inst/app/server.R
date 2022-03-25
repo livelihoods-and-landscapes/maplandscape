@@ -297,22 +297,31 @@ app_server <- function(input, output, session) {
   observe({
     req(upload_file())
 
-    upload_file <- isolate(upload_file())
+    tryCatch(
+      error = function(cnd) {
+        showNotification("Error uploading file. Check it is a valid GeoPackage.", type = "error")
+        return()
+      },
+      {
+        upload_file <- isolate(upload_file())
 
-    upload_file$source <- "Local file"
+        upload_file$source <- "Local file"
 
-    isolate({
-      df <- dplyr::bind_rows(
-        app_data$data_file,
-        upload_file
-      )
-      # unique number id next to each layer to catch uploads of tables with same name
-      rows <- nrow(df)
-      row_idx <- 1:rows
-      df$layer_disp_name_idx <-
-        paste0(df$layer_disp_name, "_", row_idx, sep = "")
-      app_data$data_file <- df
-    })
+        isolate({
+          df <- dplyr::bind_rows(
+            app_data$data_file,
+            upload_file
+          )
+          # unique number id next to each layer to catch uploads of tables with same name
+          rows <- nrow(df)
+          row_idx <- 1:rows
+          df$layer_disp_name_idx <-
+            paste0(df$layer_disp_name, "_", row_idx, sep = "")
+          app_data$data_file <- df
+        })
+
+      }
+    )
   })
 
   # QFieldCloud data --------------------------------------------------------
@@ -551,9 +560,14 @@ app_server <- function(input, output, session) {
     jdf <- isolate(names(app_data$joined_df))
 
     if (any(jdf == input$active_layer)) {
-      active_df <- app_data$joined_df[[input$active_layer]]
+      active_df <- try(app_data$joined_df[[input$active_layer]])
     } else {
-      active_df <- read_tables(df, input$active_layer)
+      active_df <- try(read_tables(df, input$active_layer))
+    }
+
+    if ("try-error" %in% class(active_df)) {
+      showNotification("Could not load active layer.", type = "error")
+      return()
     }
 
     active_df
@@ -603,12 +617,18 @@ app_server <- function(input, output, session) {
   summarised_df <- reactive({
     req(active_df())
 
-    summarised_df <-
-      group_by_summarise(
-        active_df(),
-        grouping_vars(),
-        summarising_vars()
+    summarised_df <-try(
+        group_by_summarise(
+          active_df(),
+          grouping_vars(),
+          summarising_vars()
+        )
       )
+
+    if ("try-error" %in% class(summarised_df)) {
+      showNotification("Failed to perform group-by and summarise.", type = "error")
+      return()
+    }
 
     summarised_df
   })
@@ -647,12 +667,14 @@ app_server <- function(input, output, session) {
     jdf <- isolate(names(app_data$joined_df))
 
     if (any(jdf == input$table_left)) {
-      left_df <- isolate(app_data$joined_df[[input$table_left]])
+      left_df <- try(isolate(app_data$joined_df[[input$table_left]]))
     } else {
-      left_df <- read_tables(
-        df,
-        input$table_left
-      )
+      left_df <- try(read_tables(df, input$table_left))
+    }
+
+    if ("try-error" %in% left_df) {
+      showNotification("error loading left layer for join.", type = "error")
+      return()
     }
 
     left_df
@@ -678,12 +700,14 @@ app_server <- function(input, output, session) {
     jdf <- isolate(names(app_data$joined_df))
 
     if (any(jdf == input$table_right)) {
-      right_df <- isolate(app_data$joined_df[[input$table_right]])
+      right_df <- try(isolate(app_data$joined_df[[input$table_right]]))
     } else {
-      right_df <- read_tables(
-        df,
-        input$table_right
-      )
+      right_df <- try(read_tables(df, input$table_right))
+    }
+
+    if ("try-error" %in% right_df) {
+      showNotification("error loading right layer for join.", type = "error")
+      return()
     }
 
     right_df
@@ -703,28 +727,33 @@ app_server <- function(input, output, session) {
       m_df = right_df
     )
 
-
-
   # join left table to right table
   observeEvent(input$table_join_button, {
     req(left_df(), right_df(), input$key_join_type, req(f_key(), req(p_key())))
 
     join_waiter$show()
 
-    if (input$key_join_type == "col_inner" |
-      input$key_join_type == "col_left") {
-      joined_table <-
-        join_tables(
-          left_df(),
-          right_df(),
-          input$key_join_type,
-          p_key(),
-          f_key()
-        )
-    }
+    tryCatch(
+      error = function(cnd) {
+        showNotification("Error joining layers.", type = "error")
+        return()
+      },
+      {
+        joined_table <-
+          join_tables(
+            left_df(),
+            right_df(),
+            input$key_join_type,
+            p_key(),
+            f_key()
+          )
+
+        app_data$joined_df[[input$join_tbl_name]] <- joined_table
+      }
+    )
+
     join_waiter$hide()
 
-    app_data$joined_df[[input$join_tbl_name]] <- joined_table
   })
 
   # Spatial joins
@@ -754,10 +783,12 @@ app_server <- function(input, output, session) {
     if (any(jdf == input$spatial_table_left)) {
       left_df <- isolate(app_data$joined_df[[input$spatial_table_left]])
     } else {
-      left_df <- read_tables(
-        df,
-        input$spatial_table_left
-      )
+      left_df <- try(read_tables(df, input$spatial_table_left))
+    }
+
+    if ("try-error" %in% left_df) {
+      showNotification("Error loading left layer.", type = "error")
+      return()
     }
 
     shinyFeedback::feedbackWarning(
@@ -794,10 +825,12 @@ app_server <- function(input, output, session) {
       right_df <-
         isolate(app_data$joined_df[[input$spatial_table_right]])
     } else {
-      right_df <- read_tables(
-        df,
-        input$spatial_table_right
-      )
+      right_df <- try(read_tables(df,input$spatial_table_right))
+    }
+
+    if ("try-error" %in% right_df) {
+      showNotification("Error loading right layer.", type = "error")
+      return()
     }
 
     shinyFeedback::feedbackWarning(
@@ -818,13 +851,11 @@ app_server <- function(input, output, session) {
       "sf" %in% class(spatial_right_df())
     )
 
-    browser()
-
     spatial_join_waiter$show()
 
     tryCatch(
       error = function(cnd) {
-        shiny::showNotification("Error performing spatial join. Eheck both tables are spatial with geometry columns.", type = "error")
+        shiny::showNotification("Error performing spatial join. Check both tables are spatial with geometry columns.", type = "error")
       },
       {
         left_df <- spatial_left_df() %>%
@@ -931,7 +962,6 @@ app_server <- function(input, output, session) {
     )
   })
 
-
   # select tables for row filtering
   observe({
     df <- app_data$data_file
@@ -956,10 +986,12 @@ app_server <- function(input, output, session) {
     if (any(jdf == input$table_filter)) {
       filter_df <- isolate(app_data$joined_df[[input$table_filter]])
     } else {
-      filter_df <- read_tables(
-        df,
-        input$table_filter
-      )
+      filter_df <- try(read_tables(df, input$table_filter))
+    }
+
+    if ("try-error" %in% filter_df) {
+      showNotification("Failed to load layer for filtering rows.", type = "error")
+      return()
     }
 
     filter_df
@@ -976,7 +1008,7 @@ app_server <- function(input, output, session) {
     # catch cases when the user does not provide a layer name for the output
     if (nchar(input$filter_tbl_name) < 1) {
       shiny::showNotification(
-        "error filtering rows - no output layer name",
+        "Error filtering rows - no output layer name",
         type = "error",
         duration = 5
       )
@@ -987,7 +1019,7 @@ app_server <- function(input, output, session) {
 
     if (length(input$filter_tbl_name) < 1) {
       shiny::showNotification(
-        "error filtering rows - no output layer name",
+        "Error filtering rows - no output layer name",
         type = "error",
         duration = 5
       )
@@ -998,7 +1030,7 @@ app_server <- function(input, output, session) {
 
     if (is.null(input$filter_tbl_name)) {
       shiny::showNotification(
-        "error filtering rows - no output layer name",
+        "Error filtering rows - no output layer name",
         type = "error",
         duration = 5
       )
@@ -1009,7 +1041,7 @@ app_server <- function(input, output, session) {
 
     if (is.character(filter_out) & ("filter error" %in% filter_out)) {
       shiny::showNotification(
-        "error filtering rows",
+        "Error filtering rows",
         type = "error",
         duration = 5
       )
@@ -1023,14 +1055,14 @@ app_server <- function(input, output, session) {
     if ("data.frame" %in% class(filter_out)) {
       app_data$joined_df[[input$filter_tbl_name]] <- filter_out
       shiny::showNotification(
-        "filter complete - new table in active layers",
+        "Filter complete - new table in active layers",
         type = "message",
         duration = 5
       )
       removeModal()
     } else {
       shiny::showNotification(
-        "error filtering rows - check condition and column names",
+        "Error filtering rows - check condition and column names",
         type = "error",
         duration = 5
       )
@@ -1098,10 +1130,12 @@ app_server <- function(input, output, session) {
     if (any(jdf == input$table_mutate)) {
       mutate_df <- isolate(app_data$joined_df[[input$table_mutate]])
     } else {
-      mutate_df <- read_tables(
-        df,
-        input$table_mutate
-      )
+      mutate_df <- try(read_tables(df, input$table_mutate))
+    }
+
+    if ("try-error" %in% class(mutate_df)) {
+      showNotification("Failed to read layer to add column to.", type = "error")
+      return()
     }
 
     mutate_df
@@ -1122,7 +1156,7 @@ app_server <- function(input, output, session) {
     # catch cases when the user does not provide a column name
     if (nchar(input$col_name) < 1) {
       shiny::showNotification(
-        "error adding column - no column name",
+        "Error adding column - no column name",
         type = "error",
         duration = 5
       )
@@ -1133,7 +1167,7 @@ app_server <- function(input, output, session) {
 
     if (length(input$col_name) < 1) {
       shiny::showNotification(
-        "error adding column - no column name",
+        "Error adding column - no column name",
         type = "error",
         duration = 5
       )
@@ -1144,7 +1178,7 @@ app_server <- function(input, output, session) {
 
     if (is.null(input$col_name)) {
       shiny::showNotification(
-        "error adding column - no column name",
+        "Error adding column - no column name",
         type = "error",
         duration = 5
       )
@@ -1155,7 +1189,7 @@ app_server <- function(input, output, session) {
 
     if (is.character(mutate_out) & ("mutate error" %in% mutate_out)) {
       shiny::showNotification(
-        "error adding column - check condition",
+        "Error adding column - check condition",
         type = "error",
         duration = 5
       )

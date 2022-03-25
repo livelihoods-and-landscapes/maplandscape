@@ -75,6 +75,23 @@
       "Hash": "e031418365a7f7a766181ab5a41a5716",
       "Requirements": []
     },
+    "RPostgres": {
+      "Package": "RPostgres",
+      "Version": "1.4.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "bb757978bf74ef58557242b83e559a96",
+      "Requirements": [
+        "DBI",
+        "Rcpp",
+        "bit64",
+        "blob",
+        "hms",
+        "lubridate",
+        "plogr",
+        "withr"
+      ]
+    },
     "Rcpp": {
       "Package": "Rcpp",
       "Version": "1.0.8",
@@ -117,6 +134,17 @@
       "Hash": "9fe98599ca456d6552421db0d6772d8f",
       "Requirements": [
         "bit"
+      ]
+    },
+    "blob": {
+      "Package": "blob",
+      "Version": "1.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dc5f7a6598bb025d20d66bb758f12879",
+      "Requirements": [
+        "rlang",
+        "vctrs"
       ]
     },
     "brio": {
@@ -612,10 +640,10 @@
     },
     "leaflet": {
       "Package": "leaflet",
-      "Version": "2.0.4.1",
+      "Version": "2.1.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e3d73becdeb92754d27172d278cbf61d",
+      "Hash": "6dfe956c509b92d7edee4f0f4bf42e64",
       "Requirements": [
         "RColorBrewer",
         "base64enc",
@@ -811,6 +839,14 @@
         "rstudioapi",
         "withr"
       ]
+    },
+    "plogr": {
+      "Package": "plogr",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "09eb987710984fc2905c7129c7d85e65",
+      "Requirements": []
     },
     "png": {
       "Package": "png",

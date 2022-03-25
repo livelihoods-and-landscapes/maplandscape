@@ -24,32 +24,25 @@
 #'
 #' @export
 
-# To-do - warning message to handle errors
-
 group_by_summarise <- function(in_df, group_var, summ_var) {
+
   funs_list_numeric <- list(
     mean = ~ mean(.x, na.rm = TRUE),
     sum = ~ sum(.x, na.rm = TRUE)
   )
 
   if (is.null(summ_var)) {
-    s_df <- tryCatch(
-      error = function(cnd) NULL,
-      in_df %>%
+     s_df <- in_df %>%
         as.data.frame() %>%
         select(!!!group_var) %>%
         group_by(across(any_of(group_var))) %>%
         tally()
-    )
   } else {
-    s_df <- tryCatch(
-      error = function(cnd) NULL,
-      in_df %>%
+      s_df <- in_df %>%
         as.data.frame() %>%
         select(!!!group_var, !!!summ_var) %>%
         group_by(across(any_of(group_var))) %>%
         summarise(across(where(is.numeric), funs_list_numeric), n = n(), .groups = "keep")
-    )
   }
   s_df
 }
