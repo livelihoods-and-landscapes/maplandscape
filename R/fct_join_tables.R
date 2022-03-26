@@ -17,8 +17,7 @@
 #' @param j_type a string specifying the type of join to perform. \code{"col_inner"} specifies an inner join and \code{"col_left"} specifies a left join.
 #'
 #' @return \code{j_df} A layer joined on primary and foreign keys. Will be of
-#'   class \href{https://r-spatial.github.io/sf/index.html}{sf}(i.e. spatial features) if f_left is spatial and of class
-#'   \href{https://r-spatial.github.io/sf/index.html}{sf}. Otherwise returns a data frame.
+#'   class \href{https://r-spatial.github.io/sf/index.html}{sf}(i.e. spatial features) if f_left is spatial. Otherwise returns a data frame.
 #'
 #' @import rlang
 #' @export
@@ -49,12 +48,8 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
       f_right[[fkk]] <- as.character(f_right[[fkk]])
     }
 
-    j_df <- tryCatch(
-      error = function(cnd) NULL,
-      dplyr::inner_join(f_left, f_right, by = by, na_matches = "never")
-    )
+    j_df <- dplyr::inner_join(f_left, f_right, by = by, na_matches = "never")
 
-    j_df
   } else if (j_type == "col_left") {
     if (length(fk) == length(pk)) {
       by <- c()
@@ -80,11 +75,9 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
       f_right[[fkk]] <- as.character(f_right[[fkk]])
     }
 
-    j_df <- tryCatch(
-      error = function(cnd) NULL,
-      dplyr::left_join(f_left, f_right, by = by, na_matches = "never")
-    )
+    j_df <- dplyr::left_join(f_left, f_right, by = by, na_matches = "never")
 
-    j_df
   }
+
+  j_df
 }

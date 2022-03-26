@@ -286,15 +286,6 @@ navbarPage(
           label = "Select right layer in join:",
           choices = NULL
         ),
-        radioButtons(
-          "spatial_join_type",
-          "Join type:",
-          c(
-            "spatial - inner" = "spatial_inner",
-            "spatial - left" = "spatial_left"
-          ),
-          selected = NULL
-        ),
         textInput(
           "spjoin_tbl_name",
           "Layer name:",
@@ -365,6 +356,16 @@ navbarPage(
           actionButton(
             "create_map",
             "Draw map",
+            class = "btn btn-block m-2"
+          ),
+        ),
+        hr(),
+        p("Recenter map data if it crosses the antimeridian."),
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "recenter_map",
+            "Recenter map",
             class = "btn btn-block m-2"
           ),
         ),

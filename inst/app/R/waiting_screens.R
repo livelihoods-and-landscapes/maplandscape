@@ -11,6 +11,11 @@ join_screen <- shiny::tagList(
   shiny::h4("Joining layers...this could take a while!")
 )
 
+login_screen <- shiny::tagList(
+  waiter::spin_flower(),
+  shiny::h4("Logging in...")
+)
+
 project_screen <- shiny::tagList(
   waiter::spin_flower(),
   shiny::h4("Getting projects...")

@@ -23,8 +23,7 @@ not need to have the same names but the order of the keys matters.}
 }
 \value{
 \code{j_df} A layer joined on primary and foreign keys. Will be of
-  class \href{https://r-spatial.github.io/sf/index.html}{sf}(i.e. spatial features) if f_left is spatial and of class
-  \href{https://r-spatial.github.io/sf/index.html}{sf}. Otherwise returns a data frame.
+  class \href{https://r-spatial.github.io/sf/index.html}{sf}(i.e. spatial features) if f_left is spatial. Otherwise returns a data frame.
 }
 \description{
 Perform an inner join or left join operation on two layers based on \emph{n}

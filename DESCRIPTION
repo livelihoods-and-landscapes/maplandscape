@@ -45,7 +45,9 @@ Imports:
     tidyselect,
     waiter,
     xfun,
-    grid
+    grid,
+    DBI,
+    RPostgres
 RoxygenNote: 7.1.2
 Suggests: 
     testthat (>= 3.0.0),
