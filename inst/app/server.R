@@ -672,7 +672,7 @@ app_server <- function(input, output, session) {
       left_df <- try(read_tables(df, input$table_left))
     }
 
-    if ("try-error" %in% left_df) {
+    if ("try-error" %in% class(left_df)) {
       showNotification("error loading left layer for join.", type = "error")
       return()
     }
@@ -705,7 +705,7 @@ app_server <- function(input, output, session) {
       right_df <- try(read_tables(df, input$table_right))
     }
 
-    if ("try-error" %in% right_df) {
+    if ("try-error" %in% class(right_df)) {
       showNotification("error loading right layer for join.", type = "error")
       return()
     }
@@ -786,7 +786,7 @@ app_server <- function(input, output, session) {
       left_df <- try(read_tables(df, input$spatial_table_left))
     }
 
-    if ("try-error" %in% left_df) {
+    if ("try-error" %in% class(left_df)) {
       showNotification("Error loading left layer.", type = "error")
       return()
     }
@@ -828,7 +828,7 @@ app_server <- function(input, output, session) {
       right_df <- try(read_tables(df,input$spatial_table_right))
     }
 
-    if ("try-error" %in% right_df) {
+    if ("try-error" %in% class(right_df)) {
       showNotification("Error loading right layer.", type = "error")
       return()
     }
@@ -989,7 +989,7 @@ app_server <- function(input, output, session) {
       filter_df <- try(read_tables(df, input$table_filter))
     }
 
-    if ("try-error" %in% filter_df) {
+    if ("try-error" %in% class(filter_df)) {
       showNotification("Failed to load layer for filtering rows.", type = "error")
       return()
     }
@@ -1305,14 +1305,24 @@ app_server <- function(input, output, session) {
       map_active_df <-
         isolate(app_data$joined_df[[input$map_active_layer]])
     } else {
-      map_active_df <- read_tables(
-        df,
-        input$map_active_layer
-      )
+      map_active_df <- try(read_tables(df, input$map_active_layer))
+    }
+
+    if ("try-error" %in% class(map_active_df)) {
+      showNotification("Failed to load layer to display on the map.", type = "error")
+      return()
     }
 
     if (nrow(map_active_df) > 0) {
       map_active_df$layer_id <- as.character(1:nrow(map_active_df))
+    }
+
+    # remove z vlaues for Leaflet
+    map_active_df <- try(sf::st_zm(map_active_df))
+
+    if ("try-error" %in% class(map_active_df)) {
+      showNotification("Failed to process layer for displaying on the map.", type = "error")
+      return()
     }
 
     # To-Do - change to use web GL for rendering large spatial data layers
@@ -1398,7 +1408,6 @@ app_server <- function(input, output, session) {
 
   # add spatial data to map
   observeEvent(input$create_map, {
-    req(map_active_df())
 
     # map_drawn is a variable to keep track of the state of the map.
     # 0 = this is the first time data has been drawn on the map for this user session.
@@ -1408,38 +1417,54 @@ app_server <- function(input, output, session) {
         is.atomic(map_active_df()[[map_var()]]) &
         nrow(map_active_df()) > 0) {
         app_data$map_drawn <- 1
-        add_layers_leaflet(
-          map_object = "web_map",
-          map_active_df = map_active_df(),
-          map_var = map_var(),
-          map_colour = input$map_colour,
-          opacity = input$opacity,
-          map_line_width = input$map_line_width,
-          map_line_colour = input$map_line_colour,
-          waiter = map_waiter
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leaflet(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+            if (any(is.na(sf::st_crs(map_active_df())))) {
+              app_data$map_drawn <- 0
+            }
+          }
         )
-        if (any(is.na(sf::st_crs(map_active_df())))) {
-          app_data$map_drawn <- 0
-        }
       }
     } else if (app_data$map_drawn == 1) {
       if ("sf" %in% class(map_active_df()) &
         is.atomic(map_active_df()[[map_var()]]) &
         nrow(map_active_df()) > 0) {
         app_data$map_drawn <- 1
-        add_layers_leaflet_no_zoom(
-          map_object = "web_map",
-          map_active_df = map_active_df(),
-          map_var = map_var(),
-          map_colour = input$map_colour,
-          opacity = input$opacity,
-          map_line_width = input$map_line_width,
-          map_line_colour = input$map_line_colour,
-          waiter = map_waiter
+        tryCatch(
+          error = function(cnd){
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leaflet_no_zoom(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+            if (any(is.na(sf::st_crs(map_active_df())))) {
+              app_data$map_drawn <- 0
+            }
+          }
         )
-        if (any(is.na(sf::st_crs(map_active_df())))) {
-          app_data$map_drawn <- 0
-        }
       }
     }
 
@@ -1450,6 +1475,41 @@ app_server <- function(input, output, session) {
     )
   })
 
+  # recenter map if crossing antimeridien
+  observeEvent(input$recenter_map, {
+    req(map_active_df())
+
+    if (app_data$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+
+            map_df <- map_active_df() %>%
+              sf::st_transform(4326) %>%
+              sf::st_shift_longitude()
+
+            add_layers_leaflet_no_zoom(
+              map_object = "web_map",
+              map_active_df = map_df,
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+          }
+        )
+      }
+    }
+  })
+
   # update opacity
   observeEvent(input$opacity, {
     req(map_active_df())
@@ -1458,15 +1518,23 @@ app_server <- function(input, output, session) {
       if ("sf" %in% class(map_active_df()) &
         is.atomic(map_active_df()[[map_var()]]) &
         nrow(map_active_df()) > 0) {
-        add_layers_leaflet_no_zoom(
-          map_object = "web_map",
-          map_active_df = map_active_df(),
-          map_var = map_var(),
-          map_colour = input$map_colour,
-          opacity = input$opacity,
-          map_line_width = input$map_line_width,
-          map_line_colour = input$map_line_colour,
-          waiter = map_waiter
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leaflet_no_zoom(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+          }
         )
       }
     }
@@ -1480,15 +1548,29 @@ app_server <- function(input, output, session) {
       if ("sf" %in% class(map_active_df()) &
         is.atomic(map_active_df()[[map_var()]]) &
         nrow(map_active_df()) > 0) {
-        add_layers_leaflet_no_zoom(
-          map_object = "web_map",
-          map_active_df = map_active_df(),
-          map_var = map_var(),
-          map_colour = input$map_colour,
-          opacity = input$opacity,
-          map_line_width = input$map_line_width,
-          map_line_colour = input$map_line_colour,
-          waiter = map_waiter
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leaflet_no_zoom(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+
+            updateCheckboxInput(
+              session,
+              "legend",
+              value = FALSE
+            )
+          }
         )
       }
     }
@@ -1504,8 +1586,6 @@ app_server <- function(input, output, session) {
 
   })
 
-
-
   # update line colour
   observeEvent(input$map_line_colour, {
     req(map_active_df())
@@ -1514,16 +1594,26 @@ app_server <- function(input, output, session) {
       if ("sf" %in% class(map_active_df()) &
           is.atomic(map_active_df()[[map_var()]]) &
           nrow(map_active_df()) > 0) {
-        add_layers_leaflet_no_zoom(
-          map_object = "web_map",
-          map_active_df = map_active_df(),
-          map_var = map_var(),
-          map_colour = input$map_colour,
-          opacity = input$opacity,
-          map_line_width = input$map_line_width,
-          map_line_colour = input$map_line_colour,
-          waiter = map_waiter
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leaflet_no_zoom(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+          }
+
         )
+
       }
     }
   })
@@ -1536,15 +1626,23 @@ app_server <- function(input, output, session) {
       if ("sf" %in% class(map_active_df()) &
           is.atomic(map_active_df()[[map_var()]]) &
           nrow(map_active_df()) > 0) {
-        add_layers_leaflet_no_zoom(
-          map_object = "web_map",
-          map_active_df = map_active_df(),
-          map_var = map_var(),
-          map_colour = input$map_colour,
-          opacity = input$opacity,
-          map_line_width = input$map_line_width,
-          map_line_colour = input$map_line_colour,
-          waiter = map_waiter
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leaflet_no_zoom(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              opacity = input$opacity,
+              map_line_width = input$map_line_width,
+              map_line_colour = input$map_line_colour,
+              waiter = map_waiter
+            )
+          }
         )
       }
     }
@@ -1611,58 +1709,6 @@ app_server <- function(input, output, session) {
       leaflet::clearShapes() %>%
       leaflet::clearMarkers()
   })
-
-  # # add legend on top of leaflet object
-  # observe({
-  #   req(map_active_df())
-  #   req(app_data$map_drawn == 1)
-  #
-  #   if ("sf" %in% class(map_active_df()) &
-  #     is.atomic(map_active_df()[[map_var()]]) &
-  #     nrow(map_active_df()) > 0) {
-  #
-  #     # Catch GeoPackages with non-spatial tables that GeoPandas has added empty
-  #     # GeometryCollection column to.
-  #     if (any(is.na(sf::st_crs(map_active_df())))) {
-  #       return()
-  #     }
-  #
-  #     # make map active layer epsg 4326
-  #     # make this an if statement
-  #     map_df <- try(
-  #       map_active_df() %>%
-  #         sf::st_transform(4326)
-  #     )
-  #
-  #     if ("try-error" %in% class(map_df)) {
-  #       return()
-  #     }
-  #
-  #     bbox <- sf::st_bbox(map_df) %>%
-  #       as.vector()
-  #
-  #     if (class(map_df[[map_var()]]) != "numeric" &
-  #       class(map_df[[map_var()]]) != "integer") {
-  #       pal <- leaflet::colorFactor(input$map_colour, map_df[[map_var()]])
-  #     } else {
-  #       pal <- leaflet::colorNumeric(input$map_colour, map_df[[map_var()]])
-  #     }
-  #
-  #     if (input$legend == TRUE) {
-  #       leaflet::leafletProxy("web_map") %>%
-  #         leaflet::clearControls() %>%
-  #         leaflet::addLegend(
-  #           pal = pal,
-  #           values = map_df[[map_var()]],
-  #           position = "topright",
-  #           title = input$map_legend_title
-  #         )
-  #     } else {
-  #       leaflet::leafletProxy("webMap") %>%
-  #         leaflet::clearControls()
-  #     }
-  #   }
-  # })
 
   observeEvent(input$legend, {
     req(map_active_df())

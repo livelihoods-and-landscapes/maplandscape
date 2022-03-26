@@ -360,6 +360,16 @@ navbarPage(
           ),
         ),
         hr(),
+        p("Recenter map data if it crosses the antimeridian."),
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "recenter_map",
+            "Recenter map",
+            class = "btn btn-block m-2"
+          ),
+        ),
+        hr(),
         selectInput(
           "map_colour",
           "Fill colour palette:",
