@@ -1,4 +1,4 @@
-db_spatial_join_tables <- function(left_names, right_names, left_table_name, right_table_name) {
+db_spatial_join_tables <- function(con, left_names, right_names, left_table_name, right_table_name) {
 
   left_select <- c()
   for (i in left_names) {

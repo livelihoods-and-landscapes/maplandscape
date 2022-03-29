@@ -2,8 +2,8 @@ default:
   oauth_key: ""
   oauth_secret: ""
   app_url: ""
-  postgis_host: ""
-  postgis_port: 6789
-  postgis_dbname: ""
-  postgis_username: ""
-  postgis_password: ""
+  postgis_host: "localhost" # if using docker swarm, set to service name
+  postgis_port: 6767
+  postgis_dbname: "operations_db"
+  postgis_username: "admin"
+  postgis_password: "test" # set to a secret

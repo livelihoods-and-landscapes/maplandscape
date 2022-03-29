@@ -898,6 +898,7 @@ app_server <- function(input, output, session) {
         )
 
         joined_table <- db_spatial_join_tables(
+          con,
           left_names,
           new_names,
           "left_df",
