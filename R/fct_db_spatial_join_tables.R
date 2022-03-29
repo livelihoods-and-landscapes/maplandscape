@@ -1,3 +1,5 @@
+#' @export
+
 db_spatial_join_tables <- function(con, left_names, right_names, left_table_name, right_table_name) {
 
   left_select <- c()

@@ -897,6 +897,8 @@ app_server <- function(input, output, session) {
           "right_df"
         )
 
+        print("tables loaded to postgis")
+
         joined_table <- db_spatial_join_tables(
           con,
           left_names,
