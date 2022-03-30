@@ -898,6 +898,7 @@ app_server <- function(input, output, session) {
         )
 
         print("tables loaded to postgis")
+        print(DBI::dbListTables(con))
 
         joined_table <- db_spatial_join_tables(
           con,
@@ -906,6 +907,8 @@ app_server <- function(input, output, session) {
           "left_df",
           "right_df"
         )
+
+        print(head(joined_table))
 
         app_data$joined_df[[input$spjoin_tbl_name]] <- joined_table
 
@@ -1411,6 +1414,7 @@ app_server <- function(input, output, session) {
 
   # add spatial data to map
   observeEvent(input$create_map, {
+    req(map_active_df())
 
     # map_drawn is a variable to keep track of the state of the map.
     # 0 = this is the first time data has been drawn on the map for this user session.
@@ -1653,6 +1657,8 @@ app_server <- function(input, output, session) {
 
   # add popup labels
   observe({
+    req(map_active_df())
+
     leaflet::leafletProxy("web_map") %>% leaflet::clearPopups()
 
     # capture click events
