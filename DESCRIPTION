@@ -48,6 +48,8 @@ Imports:
     grid,
     DBI,
     RPostgres
+Remotes:
+    rstudio/leaflet
 RoxygenNote: 7.1.2
 Suggests: 
     testthat (>= 3.0.0),

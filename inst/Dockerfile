@@ -6,6 +6,7 @@ RUN R -e 'install.packages(c("devtools"), \
 
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/qfieldcloudR")'
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
+RUN R -e 'devtools::install_github("rstudio/leaflet")' # use development version to display point markers
 
 # copy necessary files
 RUN mkdir /root/app
