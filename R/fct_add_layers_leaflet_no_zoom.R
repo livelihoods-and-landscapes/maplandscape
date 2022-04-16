@@ -12,9 +12,6 @@
 #' @param map_active_df the spatial data frame (of class \href{https://r-spatial.github.io/sf/index.html}{sf}) of features to draw on the \link[leaflet]{leaflet} map.
 #' @param map_var the column in \code{map_active_df} of data values to map fill / marker colours to when drawing the features.
 #' @param map_colour fill colour palette - \href{https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf}{RColorBrewer} palettes such as \code{"YlOrRd"}.
-#' @param opacity feature opacity - numeric value between 0 and 1.
-#' @param map_line_width stroke width for line and polygon features.
-#' @param map_line_colour stroke colour for line and polygon features.
 #' @param waiter \href{https://waiter.john-coene.com/#/}{waiter} object to display while the map is rendering.
 #'
 #' @return \link[leaflet]{leaflet} proxy object.
@@ -25,7 +22,7 @@
 #'
 
 
-add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_colour, opacity, map_line_width, map_line_colour, waiter) {
+add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_colour, waiter) {
   supported_geometries <- c("POINT", "MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON")
 
   if ("sf" %in% class(map_active_df) & is.atomic(map_active_df[[map_var]]) & nrow(map_active_df) > 0) {
@@ -53,7 +50,6 @@ add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_c
     geometry_type <- as.character(sf::st_geometry_type(map_df, by_geometry = FALSE))
 
     if (geometry_type %in% supported_geometries) {
-
       waiter$show()
 
       # make colour palette
@@ -65,40 +61,38 @@ add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_c
 
       # draw polygon layers
       if (geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON") {
+        if (geometry_type == "MULTIPOLYGON") {
+          # cast MULTIPOLYGON to POLYGON as leafgl does not support multi*
+          map_df <- sf::st_cast(map_df, "POLYGON")
+        }
+
         proxy_map <- leaflet::leafletProxy(map_object, data = map_df) %>%
+          leafgl::clearGlLayers() %>%
           leaflet::clearControls() %>%
           leaflet::clearMarkers() %>%
           leaflet::clearShapes() %>%
-          leaflet::addPolygons(
+          leafgl::addGlPolygons(
             data = map_df,
             layerId = map_df$layer_id,
-            weight = map_line_width,
-            opacity = 1.0,
-            color = map_line_colour,
-            fillColor = ~ pal(map_df[[map_var]]),
-            fillOpacity = opacity,
-            highlightOptions = leaflet::highlightOptions(
-              color = "white", weight = 2,
-              bringToFront = TRUE
-            ),
+            opacity = 1,
+            fillColor = ~ pal(map_df[[map_var]])
           )
       } else if (geometry_type == "LINESTRING" | geometry_type == "MULTILINESTRING") {
+        if (geometry_type == "MULTILINESTRING") {
+          # cast MULTILINESTRING to LINESTRING as leafgl does not support multi*
+          map_df <- sf::st_cast(map_df, "LINESTRING")
+        }
+
         proxy_map <- leaflet::leafletProxy(map_object, data = map_df) %>%
+          leafgl::clearGlLayers() %>%
           leaflet::clearControls() %>%
           leaflet::clearMarkers() %>%
           leaflet::clearShapes() %>%
-          leaflet::addPolylines(
+          leafgl::addGlPolylines(
             data = map_df,
             layerId = map_df$layer_id,
-            weight = map_line_width,
-            opacity = 1.0,
-            color = map_line_colour,
-            fillColor = ~ pal(map_df[[map_var]]),
-            fillOpacity = opacity,
-            highlightOptions = leaflet::highlightOptions(
-              color = "white", weight = 2,
-              bringToFront = TRUE
-            ),
+            opacity = 1,
+            color = ~ pal(map_df[[map_var]])
           )
       } else {
 
@@ -106,21 +100,21 @@ add_layers_leaflet_no_zoom <- function(map_object, map_active_df, map_var, map_c
         map_df <- sf::st_cast(map_df, "POINT")
 
         proxy_map <- leaflet::leafletProxy(map_object, data = map_df) %>%
+          leafgl::clearGlLayers() %>%
           leaflet::clearControls() %>%
           leaflet::clearMarkers() %>%
           leaflet::clearShapes() %>%
-          leaflet::addMarkers(
+          leafgl::addGlPoints(
             data = map_df,
             layerId = map_df$layer_id,
-            options = leaflet::markerOptions(clickable = TRUE)
+            fillColor = ~ pal(map_df[[map_var]]),
+            opacity = 1
           )
       }
 
       waiter$hide()
 
       proxy_map
-
     }
-
   }
 }

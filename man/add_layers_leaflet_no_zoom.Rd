@@ -9,9 +9,6 @@ add_layers_leaflet_no_zoom(
   map_active_df,
   map_var,
   map_colour,
-  opacity,
-  map_line_width,
-  map_line_colour,
   waiter
 )
 }
@@ -23,12 +20,6 @@ add_layers_leaflet_no_zoom(
 \item{map_var}{the column in \code{map_active_df} of data values to map fill / marker colours to when drawing the features.}
 
 \item{map_colour}{fill colour palette - \href{https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf}{RColorBrewer} palettes such as \code{"YlOrRd"}.}
-
-\item{opacity}{feature opacity - numeric value between 0 and 1.}
-
-\item{map_line_width}{stroke width for line and polygon features.}
-
-\item{map_line_colour}{stroke colour for line and polygon features.}
 
 \item{waiter}{\href{https://waiter.john-coene.com/#/}{waiter} object to display while the map is rendering.}
 }

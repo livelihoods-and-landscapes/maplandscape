@@ -1,7 +1,6 @@
 #' @export
 
 make_colour_ramp <- function(map_colour) {
-
   df <- data.frame(x = seq(0, 255), y = 1)
 
   colour_ramp <- ggplot2::ggplot(df, ggplot2::aes(x, y)) +
@@ -15,9 +14,10 @@ make_colour_ramp <- function(map_colour) {
       axis.ticks = ggplot2::element_blank(),
       panel.grid.major = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
-      panel.background = ggplot2::element_rect(fill = "transparent",colour = NA),
-      plot.background = ggplot2::element_rect(fill = "transparent",colour = NA),
-      legend.position = "none")
+      panel.background = ggplot2::element_rect(fill = "transparent", colour = NA),
+      plot.background = ggplot2::element_rect(fill = "transparent", colour = NA),
+      legend.position = "none"
+    )
 
   colour_ramp
 }

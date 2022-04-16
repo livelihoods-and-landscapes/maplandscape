@@ -3,14 +3,14 @@ library(maplandscape)
 library(magrittr)
 library(shiny)
 
-con <- DBI::dbConnect(
-  RPostgres::Postgres(),
-  dbname = config::get("postgis_dbname"),
-  user = config::get("postgis_username"),
-  password = config::get("postgis_password"),
-  host = config::get("postgis_host"),
-  port = config::get("postgis_port")
-)
+
+# get config variables for postgis
+dbname = config::get("postgis_dbname")
+user = config::get("postgis_username")
+password = config::get("postgis_password")
+host = config::get("postgis_host")
+port = config::get("postgis_port")
+
 
 # # Google OAuth2.0 app
 # if (interactive()) {

@@ -33,7 +33,7 @@ make_spatial_db_table <- function(con, left_table, left_table_name, right_table,
 
   DBI::dbExecute(
     con,
-    paste0("VACUUM ANALYZE ", left_table_name,";")
+    paste0("VACUUM ANALYZE ", left_table_name, ";")
   )
 
   DBI::dbExecute(
@@ -53,7 +53,6 @@ make_spatial_db_table <- function(con, left_table, left_table_name, right_table,
 
   DBI::dbExecute(
     con,
-    paste0("VACUUM ANALYZE ", right_table_name,";")
+    paste0("VACUUM ANALYZE ", right_table_name, ";")
   )
-
 }

@@ -1,7 +1,6 @@
 #' @export
 
 db_spatial_join_tables <- function(con, left_names, right_names, left_table_name, right_table_name) {
-
   left_select <- c()
   for (i in left_names) {
     left_select <- c(left_select, paste0("l.", i))
@@ -45,7 +44,7 @@ db_spatial_join_tables <- function(con, left_names, right_names, left_table_name
     sql
   )
 
-  tmp_sf <- sf::st_read(con, layer="tmp_spatial_join")
+  tmp_sf <- sf::st_read(con, layer = "tmp_spatial_join")
 
   # tidy up
   DBI::dbExecute(con, "DROP TABLE tmp_spatial_join;")
@@ -53,5 +52,4 @@ db_spatial_join_tables <- function(con, left_names, right_names, left_table_name
   DBI::dbExecute(con, paste0("DROP TABLE ", right_table_name, ";"))
 
   tmp_sf
-
 }

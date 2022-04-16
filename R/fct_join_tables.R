@@ -49,7 +49,6 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
     }
 
     j_df <- dplyr::inner_join(f_left, f_right, by = by, na_matches = "never")
-
   } else if (j_type == "col_left") {
     if (length(fk) == length(pk)) {
       by <- c()
@@ -76,7 +75,6 @@ join_tables <- function(f_left, f_right, j_type, pk, fk) {
     }
 
     j_df <- dplyr::left_join(f_left, f_right, by = by, na_matches = "never")
-
   }
 
   j_df

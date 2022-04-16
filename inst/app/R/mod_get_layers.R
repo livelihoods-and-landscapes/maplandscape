@@ -36,13 +36,20 @@ mod_get_layers_Server <- function(id) {
     field_layers <- reactive({
       req(input$get_layers$datapath)
 
-      n_file <- input$get_layers$datapath
-      n_name <- input$get_layers$name
+
 
       f_lyrs <- tryCatch(
-        error = function(cnd) NULL,
-        purrr::map2(n_file, n_name, list_layers) %>%
-          dplyr::bind_rows()
+        error = function(cnd) {
+          showNotification("Error uploading file. Check it is a valid GeoPackage.", type = "error")
+          "Error uploading file. Check it is a valid GeoPackage."
+        },
+        {
+          n_file <- input$get_layers$datapath
+          n_name <- input$get_layers$name
+
+          purrr::map2(n_file, n_name, list_layers) %>%
+            dplyr::bind_rows()
+        }
       )
     })
     return(field_layers)

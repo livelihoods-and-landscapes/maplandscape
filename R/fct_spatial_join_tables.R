@@ -34,12 +34,9 @@ spatial_join_tables <- function(f_left, f_right, j_type) {
   r_df <- r_df[sf::st_is_empty(r_df) == FALSE, ]
 
   if (j_type == "spatial_inner") {
-
-      j_df <- sf::st_join(l_df, r_df, join = sf::st_intersects, left = FALSE, largest = TRUE)
-
+    j_df <- sf::st_join(l_df, r_df, join = sf::st_intersects, left = FALSE, largest = TRUE)
   } else if (j_type == "spatial_left") {
-
-      j_df <- sf::st_join(l_df, r_df, join = sf::st_intersects, left = TRUE, largest = TRUE)
+    j_df <- sf::st_join(l_df, r_df, join = sf::st_intersects, left = TRUE, largest = TRUE)
   }
-    j_df
+  j_df
 }

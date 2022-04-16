@@ -383,41 +383,23 @@ navbarPage(
             height = "30px"
           )
         ),
-        sliderInput(
-          "opacity",
-          "Opacity:",
-          min = 0,
-          max = 1,
-          value = 0.8,
-          step = 0.1
-        ),
-        numericInput(
-          "map_line_width",
-          "Line width:",
-          0.1,
-          min = 0,
-          max = 1,
-          step = 0.1
-        ),
-        selectInput(
-          "map_line_colour",
-          "Line colour:",
-          choices = line_colours
-        ),
         helpText("Check box to display legend:"),
         checkboxInput(
           "legend",
           label = "Legend",
           value = FALSE
         ),
-        textInput(
-          "map_legend_title",
-          "Legend title:",
-          value = ""
-        ),
         mod_multiple_input_UI(
           id = "label_vars",
           label = "Popup labels:"
+        ),
+        div(
+          class = "d-flex justify-content-center",
+          actionButton(
+            "add_popups",
+            "Add popups to map",
+            class = "btn btn-block m-2"
+          ),
         )
       ),
       mainPanel(
