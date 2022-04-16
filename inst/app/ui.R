@@ -403,7 +403,7 @@ navbarPage(
         )
       ),
       mainPanel(
-        leaflet::leafletOutput("web_map")
+        leafgl::leafglOutput("web_map")
       )
     )
   ),

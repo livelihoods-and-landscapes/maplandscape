@@ -1459,7 +1459,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # recenter map if crossing antimeridien
+  # recenter map if crossing antimeridian
   observeEvent(input$recenter_map, {
     req(map_active_df())
     req("sf" %in% class(map_active_df()))
