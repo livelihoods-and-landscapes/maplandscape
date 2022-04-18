@@ -1347,6 +1347,24 @@ app_server <- function(input, output, session) {
       return()
     }
 
+    # get rid of empty geometries
+    map_active_df <- try(map_active_df %>%
+      dplyr::filter(!sf::st_is_empty(.)))
+
+    if ("try-error" %in% class(map_active_df)) {
+      showNotification("Failed to remove empty geometries.", type = "error")
+      return()
+    }
+
+    # get rid of invalid geometries
+    map_active_df <- try(map_active_df %>%
+        dplyr::filter(sf::st_is_valid(.)))
+
+    if ("try-error" %in% class(map_active_df)) {
+      showNotification("Failed to remove invalid geometries.", type = "error")
+      return()
+    }
+
     # don't update options if selected layer has no records
     req(nrow(map_active_df) > 0, "sf" %in% class(map_active_df))
 
