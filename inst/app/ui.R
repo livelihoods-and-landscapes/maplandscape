@@ -343,7 +343,7 @@ navbarPage(
         h4("Active layer"),
         selectInput(
           "map_active_layer",
-          "Select active layer",
+          "Select active layer:",
           choices = NULL
         ),
         hr(),
