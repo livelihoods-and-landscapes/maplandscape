@@ -666,7 +666,7 @@ app_server <- function(input, output, session) {
     }
 
     if ("try-error" %in% class(left_df)) {
-      showNotification("error loading left layer for join.", type = "error")
+      showNotification("Error loading left layer for join.", type = "error")
       return()
     }
 
@@ -699,7 +699,7 @@ app_server <- function(input, output, session) {
     }
 
     if ("try-error" %in% class(right_df)) {
-      showNotification("error loading right layer for join.", type = "error")
+      showNotification("Error loading right layer for join.", type = "error")
       return()
     }
 
@@ -850,6 +850,16 @@ app_server <- function(input, output, session) {
         shiny::showNotification("Error performing spatial join. Check both tables are spatial with geometry columns.", type = "error")
       },
       {
+        # connect to postgis
+        con <- DBI::dbConnect(
+          RPostgres::Postgres(),
+          dbname = dbname,
+          user = user,
+          password = password,
+          host = host,
+          port = port
+        )
+
         left_df <- spatial_left_df() %>%
           dplyr::rename_with(tolower)
 
@@ -903,6 +913,9 @@ app_server <- function(input, output, session) {
         print(head(joined_table))
 
         app_data$joined_df[[input$spjoin_tbl_name]] <- joined_table
+
+        # close DB connection
+        DBI::dbDisconnect(con)
       }
     )
 
@@ -1312,16 +1325,6 @@ app_server <- function(input, output, session) {
       map_active_df$layer_id <- as.character(1:nrow(map_active_df))
     }
 
-    # To-Do - change to use web GL for rendering large spatial data layers
-    if (nrow(map_active_df) > 10000) {
-      map_active_df <- map_active_df[1:10000, ]
-      shiny::showNotification(
-        "Only drawing first 10000 features!",
-        duration = 5,
-        type = c("warning")
-      )
-    }
-
     # show warning if map active layer has no records
     shinyFeedback::feedbackWarning(
       "map_active_layer",
@@ -1341,6 +1344,24 @@ app_server <- function(input, output, session) {
 
     if ("try-error" %in% class(map_active_df)) {
       showNotification("Failed to process layer for displaying on the map.", type = "error")
+      return()
+    }
+
+    # get rid of empty geometries
+    map_active_df <- try(map_active_df %>%
+      dplyr::filter(!sf::st_is_empty(.)))
+
+    if ("try-error" %in% class(map_active_df)) {
+      showNotification("Failed to remove empty geometries.", type = "error")
+      return()
+    }
+
+    # get rid of invalid geometries
+    map_active_df <- try(map_active_df %>%
+        dplyr::filter(sf::st_is_valid(.)))
+
+    if ("try-error" %in% class(map_active_df)) {
+      showNotification("Failed to remove invalid geometries.", type = "error")
       return()
     }
 
@@ -1420,9 +1441,6 @@ app_server <- function(input, output, session) {
             map_active_df = map_active_df(),
             map_var = map_var(),
             map_colour = input$map_colour,
-            opacity = input$opacity,
-            map_line_width = input$map_line_width,
-            map_line_colour = input$map_line_colour,
             waiter = map_waiter
           )
           if (any(is.na(sf::st_crs(map_active_df())))) {
@@ -1443,9 +1461,6 @@ app_server <- function(input, output, session) {
             map_active_df = map_active_df(),
             map_var = map_var(),
             map_colour = input$map_colour,
-            opacity = input$opacity,
-            map_line_width = input$map_line_width,
-            map_line_colour = input$map_line_colour,
             waiter = map_waiter
           )
           if (any(is.na(sf::st_crs(map_active_df())))) {
@@ -1462,7 +1477,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # recenter map if crossing antimeridien
+  # recenter map if crossing antimeridian
   observeEvent(input$recenter_map, {
     req(map_active_df())
     req("sf" %in% class(map_active_df()))
@@ -1483,45 +1498,11 @@ app_server <- function(input, output, session) {
               map_active_df = map_df,
               map_var = map_var(),
               map_colour = input$map_colour,
-              opacity = input$opacity,
-              map_line_width = input$map_line_width,
-              map_line_colour = input$map_line_colour,
               waiter = map_waiter
             )
           }
         )
       }
-  })
-
-  # update opacity
-  observeEvent(input$opacity, {
-    req(map_active_df())
-    req("sf" %in% class(map_active_df()))
-
-    if (app_data$map_drawn == 1) {
-      tryCatch(
-        error = function(cnd) {
-          showNotification("Failed to draw map. Check data is spatial.", type = "error")
-          return()
-        },
-        {
-          map_df <- map_active_df() %>%
-            sf::st_transform(4326) %>%
-            sf::st_shift_longitude()
-
-          add_layers_leaflet_no_zoom(
-            map_object = "web_map",
-            map_active_df = map_df,
-            map_var = map_var(),
-            map_colour = input$map_colour,
-            opacity = input$opacity,
-            map_line_width = input$map_line_width,
-            map_line_colour = input$map_line_colour,
-            waiter = map_waiter
-          )
-        }
-      )
-    }
   })
 
   # update colour
@@ -1543,9 +1524,6 @@ app_server <- function(input, output, session) {
               map_active_df = map_active_df(),
               map_var = map_var(),
               map_colour = input$map_colour,
-              opacity = input$opacity,
-              map_line_width = input$map_line_width,
-              map_line_colour = input$map_line_colour,
               waiter = map_waiter
             )
 
@@ -1568,117 +1546,87 @@ app_server <- function(input, output, session) {
     })
   })
 
-  # update line colour
-  observeEvent(input$map_line_colour, {
-    req(map_active_df())
-    req("sf" %in% class(map_active_df()))
-
-    if (app_data$map_drawn == 1) {
-      tryCatch(
-        error = function(cnd) {
-          showNotification("Failed to draw map. Check data is spatial.", type = "error")
-          return()
-        },
-        {
-          map_df <- map_active_df() %>%
-            sf::st_transform(4326) %>%
-            sf::st_shift_longitude()
-
-          add_layers_leaflet_no_zoom(
-            map_object = "web_map",
-            map_active_df = map_df,
-            map_var = map_var(),
-            map_colour = input$map_colour,
-            opacity = input$opacity,
-            map_line_width = input$map_line_width,
-            map_line_colour = input$map_line_colour,
-            waiter = map_waiter
-          )
-        }
-      )
-    }
-  })
-
-  # update line width
-  observeEvent(input$map_line_width, {
-    req(map_active_df())
-    req("sf" %in% class(map_active_df()))
-
-    if (app_data$map_drawn == 1) {
-      tryCatch(
-        error = function(cnd) {
-          showNotification("Failed to draw map. Check data is spatial.", type = "error")
-          return()
-        },
-        {
-          map_df <- map_active_df() %>%
-            sf::st_transform(4326) %>%
-            sf::st_shift_longitude()
-
-          add_layers_leaflet_no_zoom(
-            map_object = "web_map",
-            map_active_df = map_df,
-            map_var = map_var(),
-            map_colour = input$map_colour,
-            opacity = input$opacity,
-            map_line_width = input$map_line_width,
-            map_line_colour = input$map_line_colour,
-            waiter = map_waiter
-          )
-        }
-      )
-    }
-  })
-
   # add popup labels
-  observe({
+  observeEvent(input$add_popups, {
     req(map_active_df())
+    req(label_vars())
 
     leaflet::leafletProxy("web_map") %>% leaflet::clearPopups()
 
-    # capture click events
-    # event_shape captures a user click on a shape object
-    # event_marker captures a user click on a marker object
-    event_shape <- input$web_map_shape_click
-    event_marker <- input$web_map_marker_click
+    if (app_data$map_drawn == 1) {
+      if ("sf" %in% class(map_active_df()) &
+          is.atomic(map_active_df()[[map_var()]]) &
+          nrow(map_active_df()) > 0) {
+        tryCatch(
+          error = function(cnd) {
+            showNotification("Failed to draw map. Check data is spatial.", type = "error")
+            return()
+          },
+          {
+            add_layers_leafgl_popups(
+              map_object = "web_map",
+              map_active_df = map_active_df(),
+              map_var = map_var(),
+              map_colour = input$map_colour,
+              waiter = map_waiter,
+              popups = label_vars()
+            )
 
-    # if a user has not clicked on a marker or object leave event as null if a
-    # user has clicked on a shape or marker update event and pass it into
-    # fct_add_popups to create popup for clicked object
-    event <- NULL
-
-    if (!is.null(event_shape)) {
-      event <- event_shape
-    }
-
-    if (!is.null(event_marker)) {
-      event <- event_marker
-    }
-
-    if (is.null(event)) {
-      return()
-    }
-
-    isolate({
-      req(label_vars())
-
-      content <-
-        add_popups(
-          in_df = map_active_df,
-          layer_id = event$id,
-          label_vars = label_vars
+          }
         )
-      print(content)
-
-      leaflet::leafletProxy("web_map") %>%
-        leaflet::addPopups(
-          event$lng,
-          event$lat,
-          content,
-          layerId = event$id
-        )
-    })
+      }
+    }
   })
+
+
+  # observe({
+  #   req(map_active_df())
+  #
+  #   leaflet::leafletProxy("web_map") %>% leaflet::clearPopups()
+  #
+  #   # capture click events
+  #   # event_shape captures a user click on a shape object
+  #   # event_marker captures a user click on a marker object
+  #   event_shape <- input$web_map_gliffy_click
+  #   event_marker <- input$web_map_gliffy_click
+  #
+  #   # if a user has not clicked on a marker or object leave event as null if a
+  #   # user has clicked on a shape or marker update event and pass it into
+  #   # fct_add_popups to create popup for clicked object
+  #   event <- NULL
+  #
+  #   if (!is.null(event_shape)) {
+  #     event <- event_shape
+  #   }
+  #
+  #   if (!is.null(event_marker)) {
+  #     event <- event_marker
+  #   }
+  #
+  #   if (is.null(event)) {
+  #     return()
+  #   }
+  #
+  #   isolate({
+  #     req(label_vars())
+  #
+  #     content <-
+  #       add_popups(
+  #         in_df = map_active_df,
+  #         layer_id = event$id,
+  #         label_vars = label_vars
+  #       )
+  #     print(content)
+  #
+  #     leaflet::leafletProxy("web_map") %>%
+  #       leaflet::addPopups(
+  #         event$lng,
+  #         event$lat,
+  #         content,
+  #         layerId = event$id
+  #       )
+  #   })
+  # })
 
   # remove legend on selecting a new variable
   observeEvent(map_var(), {
@@ -1689,6 +1637,7 @@ app_server <- function(input, output, session) {
     )
 
     leaflet::leafletProxy("web_map") %>%
+      leafgl::clearGlLayers() %>%
       leaflet::clearControls() %>%
       leaflet::clearShapes() %>%
       leaflet::clearMarkers()

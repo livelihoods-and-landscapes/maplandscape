@@ -1,23 +1,29 @@
-#' Add a layer to a Leaflet web map
+#' Add layer to a Leaflet web map - no zoom and with popups enabled.
 #'
 #' \code{add_layers_leaflet} adds a spatial layer (of class \href{https://r-spatial.github.io/sf/index.html}{sf}) to a \link[leaflet]{leaflet} web
 #' map. \href{https://r-spatial.github.io/sf/index.html}{sf} data frames with \code{POINT}, \code{LINESTRING}, \code{MULTILINESTRING}, \code{POLYGON}, \code{MULITPOLYGON}
 #' geometries can be added to the web map.
 #'
+#' Calling this function does not change the zoom or extent of the Leaflet map
+#' to fit the contents drawn on the map. Used for keeping the zoom extent the
+#' same but updating colour, opacity, and other styling options. This function will allow popup labels to be rendered.
+#'
 #' @param map_object single-element character vector of the ID of the \link[leaflet]{leaflet} map object.
 #' @param map_active_df the spatial data frame (of class \href{https://r-spatial.github.io/sf/index.html}{sf}) of features to draw on the \link[leaflet]{leaflet} map.
-#' @param map_var the column in \code{map_active_df} of data values to map to fill / marker colours to when drawing the features.
+#' @param map_var the column in \code{map_active_df} of data values to map fill / marker colours to when drawing the features.
 #' @param map_colour fill colour palette - \href{https://cran.r-project.org/web/packages/RColorBrewer/RColorBrewer.pdf}{RColorBrewer} palettes such as \code{"YlOrRd"}.
+#' @param popups character vector of column names to use as popup labels.
 #' @param waiter \href{https://waiter.john-coene.com/#/}{waiter} object to display while the map is rendering.
 #'
 #' @return \link[leaflet]{leaflet} proxy object.
 #'
 #' @importFrom magrittr %>%
+#'
 #' @export
 #'
-#'
 
-add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, waiter) {
+
+add_layers_leafgl_popups <- function(map_object, map_active_df, map_var, map_colour, popups, waiter) {
   supported_geometries <- c("POINT", "MULTIPOINT", "LINESTRING", "MULTILINESTRING", "POLYGON", "MULTIPOLYGON")
 
   if ("sf" %in% class(map_active_df) & is.atomic(map_active_df[[map_var]]) & nrow(map_active_df) > 0) {
@@ -45,12 +51,7 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
     geometry_type <- as.character(sf::st_geometry_type(map_df, by_geometry = FALSE))
 
     if (geometry_type %in% supported_geometries) {
-
       waiter$show()
-
-      # get bounding box for the map
-      bbox <- sf::st_bbox(map_df) %>%
-        as.vector()
 
       # make colour palette
       if (class(map_df[[map_var]]) != "numeric" & class(map_df[[map_var]]) != "integer") {
@@ -61,7 +62,6 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
 
       # draw polygon layers
       if (geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON") {
-
         if (geometry_type == "MULTIPOLYGON") {
           # cast MULTIPOLYGON to POLYGON as leafgl does not support multi*
           map_df <- sf::st_cast(map_df, "POLYGON")
@@ -76,11 +76,10 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
             data = map_df,
             layerId = map_df$layer_id,
             opacity = 1,
-            fillColor = ~ pal(map_df[[map_var]])
-          ) %>%
-          leaflet::flyToBounds(bbox[1], bbox[2], bbox[3], bbox[4])
+            fillColor = ~ pal(map_df[[map_var]]),
+            popup = popups
+          )
       } else if (geometry_type == "LINESTRING" | geometry_type == "MULTILINESTRING") {
-
         if (geometry_type == "MULTILINESTRING") {
           # cast MULTILINESTRING to LINESTRING as leafgl does not support multi*
           map_df <- sf::st_cast(map_df, "LINESTRING")
@@ -95,9 +94,9 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
             data = map_df,
             layerId = map_df$layer_id,
             opacity = 1,
-            color = ~ pal(map_df[[map_var]])
-          ) %>%
-          leaflet::flyToBounds(bbox[1], bbox[2], bbox[3], bbox[4])
+            color = ~ pal(map_df[[map_var]]),
+            popup = popups
+          )
       } else {
 
         # cast MULTIPOINT to POINT as Leaflet does not support multipoint
@@ -111,18 +110,15 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
           leafgl::addGlPoints(
             data = map_df,
             layerId = map_df$layer_id,
-            fillColor = ~ pal(map_df[[map_var]])
-          ) %>%
-          leaflet::flyToBounds(bbox[1], bbox[2], bbox[3], bbox[4])
+            fillColor = ~ pal(map_df[[map_var]]),
+            opacity = 1,
+            popup = popups
+          )
       }
 
       waiter$hide()
 
       proxy_map
-
     }
-
   }
-
-
 }
