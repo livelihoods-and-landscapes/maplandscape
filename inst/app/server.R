@@ -109,7 +109,6 @@ app_server <- function(input, output, session) {
       buckets = NULL, # list of buckets in users GCS project
       items = NULL, # items in GCS bucket
       layers_df = NULL, # dataframe of layers in the app
-      qfieldcloud_token = NULL, # QFieldCloud token
       qfieldcloud_url = NULL # qfieldcloud url - set on successful login
     )
 
