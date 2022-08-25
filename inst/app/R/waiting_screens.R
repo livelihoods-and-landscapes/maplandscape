@@ -1,4 +1,3 @@
-
 # waiting screen spinners
 
 map_screen <- shiny::tagList(

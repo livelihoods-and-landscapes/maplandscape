@@ -94,9 +94,15 @@ app_server <- function(input, output, session) {
     color = "rgba(89,49,150,.6)"
   )
 
+  # waiter for resizing charts
+  resize_waiter <- waiter::Waiter$new(
+    html = resize_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
   # App data ----------------------------------------------------------------
 
-  # object storing data to pass between reactive objects during app's execution
+  # data to pass between reactive objects during app's execution
   app_data <-
     reactiveValues(
       data_file = data.frame(), # dataframe of listing layers and temporary locations of data a user has uploaded
@@ -106,8 +112,6 @@ app_server <- function(input, output, session) {
       qfieldcloud_token = NULL, # qfieldcloud token obtained from successful login
       qfieldcloud_projects = NULL, # dataframe of qfieldcloud projects and project ids
       qfieldcloud_files = NULL, # dataframe of qfieldcloud project files and project ids
-      buckets = NULL, # list of buckets in users GCS project
-      items = NULL, # items in GCS bucket
       layers_df = NULL, # dataframe of layers in the app
       qfieldcloud_url = NULL # qfieldcloud url - set on successful login
     )
@@ -116,7 +120,7 @@ app_server <- function(input, output, session) {
   # Data tab ----------------------------------------------------------------
 
   # render layers as data table in UI
-  # display of what layers the user has loaded into the app
+  # display of layers that the user has loaded into the app
   layers_df <- reactive({
     layers_df <- app_data$data_file
 
@@ -133,6 +137,7 @@ app_server <- function(input, output, session) {
 
     joined_df <- app_data$joined_df
 
+    # add layers created by the user in the app to list if qfieldcloud layers
     if (length(joined_df) > 0) {
       tmp_layer_names <- names(joined_df)
       tmp_layers <- data.frame(layers = tmp_layer_names)
@@ -200,7 +205,7 @@ app_server <- function(input, output, session) {
     sync_gpkg_path
   })
 
-  # download raw synced data as a zip file
+  # download synced data as a zip file
   output$download_sync_forms <- downloadHandler(
     filename = function() {
       req(sync_gpkg_path()[[1]])
@@ -223,7 +228,7 @@ app_server <- function(input, output, session) {
   observeEvent(input$sync_forms, {
     showModal(
       modalDialog(
-        tags$h4("Template or central database"),
+        tags$h4("Template database"),
         mod_get_layers_UI(
           id = "template_db",
           label = "Select template .gpkg",
@@ -266,7 +271,7 @@ app_server <- function(input, output, session) {
     sync_file
   })
 
-  # update app_data data_file object of layers a user can select as active layer with synced data
+  # update app_data with synced data
   observe({
     req(sync_file())
 
@@ -291,7 +296,7 @@ app_server <- function(input, output, session) {
   # return table of files and file paths of data loaded to the server
   upload_file <- mod_get_layers_Server(id = "user_data")
 
-  # update app_data data_file object of layers a user can select as active layer with user uploaded data
+  # update app_data with user uploaded data
   observe({
     req(upload_file())
 
@@ -526,7 +531,7 @@ app_server <- function(input, output, session) {
 
   # Active layer ------------------------------------------------------------
 
-  # select one table as active layer from files loaded to the server
+  # select active layer from files loaded to the server
   observe({
     df <- app_data$data_file
     joined_df <- app_data$joined_df
@@ -585,15 +590,21 @@ app_server <- function(input, output, session) {
 
   # filter out selected grouping variables in list of variables which can be summarised
   s_active_df <- reactive({
-    req(active_df(), grouping_vars())
+    req(
+      active_df(),
+      grouping_vars()
+    )
 
     tmp_df <- active_df() %>%
       dplyr::select_if(is.numeric)
+
     choices <- names(tmp_df)
+
     s_intersect <- intersect(
       choices,
       grouping_vars()
     )
+
     choices <- choices[!choices %in% s_intersect]
 
     choices
@@ -721,7 +732,13 @@ app_server <- function(input, output, session) {
 
   # join left table to right table
   observeEvent(input$table_join_button, {
-    req(left_df(), right_df(), input$key_join_type, req(f_key(), req(p_key())))
+    req(
+      left_df(),
+      right_df(),
+      input$key_join_type,
+      f_key(),
+      p_key()
+    )
 
     join_waiter$show()
 
@@ -1301,7 +1318,7 @@ app_server <- function(input, output, session) {
     )
   })
 
-  # map_active_df - use this layer for rendering on web map
+  # map_active_df - layer for rendering on web map
   map_active_df <- reactive({
     req(input$map_active_layer)
 
@@ -1328,7 +1345,7 @@ app_server <- function(input, output, session) {
     shinyFeedback::feedbackWarning(
       "map_active_layer",
       !(nrow(map_active_df) > 0),
-      "Not updating options - no records in selected table"
+      "Not updating options - no records in selected layer"
     )
 
     # show warning if map active layer is not spatial (class sf)
@@ -1357,7 +1374,7 @@ app_server <- function(input, output, session) {
 
     # get rid of invalid geometries
     map_active_df <- try(map_active_df %>%
-        dplyr::filter(sf::st_is_valid(.)))
+      dplyr::filter(sf::st_is_valid(.)))
 
     if ("try-error" %in% class(map_active_df)) {
       showNotification("Failed to remove invalid geometries.", type = "error")
@@ -1482,26 +1499,26 @@ app_server <- function(input, output, session) {
     req("sf" %in% class(map_active_df()))
 
     if (app_data$map_drawn == 1) {
-        tryCatch(
-          error = function(cnd) {
-            showNotification("Failed to draw map. Check data is spatial.", type = "error")
-            return()
-          },
-          {
-            map_df <- map_active_df() %>%
-              sf::st_transform(4326) %>%
-              sf::st_shift_longitude()
+      tryCatch(
+        error = function(cnd) {
+          showNotification("Failed to draw map. Check data is spatial.", type = "error")
+          return()
+        },
+        {
+          map_df <- map_active_df() %>%
+            sf::st_transform(4326) %>%
+            sf::st_shift_longitude()
 
-            add_layers_leaflet_no_zoom(
-              map_object = "web_map",
-              map_active_df = map_df,
-              map_var = map_var(),
-              map_colour = input$map_colour,
-              waiter = map_waiter
-            )
-          }
-        )
-      }
+          add_layers_leaflet_no_zoom(
+            map_object = "web_map",
+            map_active_df = map_df,
+            map_var = map_var(),
+            map_colour = input$map_colour,
+            waiter = map_waiter
+          )
+        }
+      )
+    }
   })
 
   # update colour
@@ -1554,8 +1571,8 @@ app_server <- function(input, output, session) {
 
     if (app_data$map_drawn == 1) {
       if ("sf" %in% class(map_active_df()) &
-          is.atomic(map_active_df()[[map_var()]]) &
-          nrow(map_active_df()) > 0) {
+        is.atomic(map_active_df()[[map_var()]]) &
+        nrow(map_active_df()) > 0) {
         tryCatch(
           error = function(cnd) {
             showNotification("Failed to draw map. Check data is spatial.", type = "error")
@@ -1570,62 +1587,11 @@ app_server <- function(input, output, session) {
               waiter = map_waiter,
               popups = label_vars()
             )
-
           }
         )
       }
     }
   })
-
-
-  # observe({
-  #   req(map_active_df())
-  #
-  #   leaflet::leafletProxy("web_map") %>% leaflet::clearPopups()
-  #
-  #   # capture click events
-  #   # event_shape captures a user click on a shape object
-  #   # event_marker captures a user click on a marker object
-  #   event_shape <- input$web_map_gliffy_click
-  #   event_marker <- input$web_map_gliffy_click
-  #
-  #   # if a user has not clicked on a marker or object leave event as null if a
-  #   # user has clicked on a shape or marker update event and pass it into
-  #   # fct_add_popups to create popup for clicked object
-  #   event <- NULL
-  #
-  #   if (!is.null(event_shape)) {
-  #     event <- event_shape
-  #   }
-  #
-  #   if (!is.null(event_marker)) {
-  #     event <- event_marker
-  #   }
-  #
-  #   if (is.null(event)) {
-  #     return()
-  #   }
-  #
-  #   isolate({
-  #     req(label_vars())
-  #
-  #     content <-
-  #       add_popups(
-  #         in_df = map_active_df,
-  #         layer_id = event$id,
-  #         label_vars = label_vars
-  #       )
-  #     print(content)
-  #
-  #     leaflet::leafletProxy("web_map") %>%
-  #       leaflet::addPopups(
-  #         event$lng,
-  #         event$lat,
-  #         content,
-  #         layerId = event$id
-  #       )
-  #   })
-  # })
 
   # remove legend on selecting a new variable
   observeEvent(map_var(), {
@@ -1700,11 +1666,6 @@ app_server <- function(input, output, session) {
 
   # Charts ------------------------------------------------------------------
 
-  resize_waiter <- waiter::Waiter$new(
-    html = resize_screen,
-    color = "rgba(89,49,150,.6)"
-  )
-
   # update select input for chart layer
   observe({
     df <- app_data$data_file
@@ -1730,10 +1691,15 @@ app_server <- function(input, output, session) {
       chart_active_df <-
         isolate(app_data$joined_df[[input$chart_active_layer]])
     } else {
-      chart_active_df <- read_tables(
+      chart_active_df <- try(read_tables(
         df,
         input$chart_active_layer
-      )
+      ))
+    }
+
+    if ("try-error" %in% class(chart_active_df)) {
+      showNotification("Failed to load layer to generate chart.", type = "error")
+      return()
     }
 
     chart_active_df
