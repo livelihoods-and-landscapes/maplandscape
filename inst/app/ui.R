@@ -30,7 +30,7 @@ navbarPage(
         )
       ),
       fluidRow(
-        style = "min-height: 25%; min-height: 25vh;"
+        style = "min-height: 5%; min-height: 15vh;"
       ),
       fluidRow(
         tags$h1(
@@ -49,10 +49,35 @@ navbarPage(
       fluidRow(
         div(
           class = "mx-auto",
+          # QFieldCloud app URL
+          textInput("qfieldcloud_url",
+                    "QFieldCloud app URL:",
+                    value = "",
+                    placeholder = "tip: omit https:// and trailing /"
+          ),
+
+          # QFieldCloud login
+          textInput("qfieldcloud_username",
+                    "QFieldCloud email:",
+                    value = "",
+                    placeholder = ""
+          ),
+
+          # QFieldCloud password
+          passwordInput("qfieldcloud_password",
+                        "QFieldCloud password:",
+                        value = "",
+                        placeholder = ""
+          ),
+
+          # Try logging into QFieldCloud
           actionButton(
-            "enter",
-            htmltools::HTML("enter &#8674;")
-          )
+            "login",
+            "Login to QFieldCloud",
+            class = "btn mb-4"
+          ),
+          # QFieldCloud login status
+          uiOutput("login_status"),
         ),
         class = "justify-content-center"
       )
@@ -71,38 +96,6 @@ navbarPage(
 
         # QFieldCloud login
         h4("QFieldCloud data"),
-
-        # QFieldCloud app URL
-        textInput("qfieldcloud_url",
-          "QFieldCloud app URL:",
-          value = "",
-          placeholder = "tip: omit https:// and trailing /"
-        ),
-
-        # QFieldCloud login
-        textInput("qfieldcloud_username",
-          "QFieldCloud email:",
-          value = "",
-          placeholder = ""
-        ),
-
-        # QFieldCloud password
-        passwordInput("qfieldcloud_password",
-          "QFieldCloud password:",
-          value = "",
-          placeholder = ""
-        ),
-
-        # Try logging into QFieldCloud
-        actionButton(
-          "login",
-          "Login to QFieldCloud",
-          class = "btn mb-4"
-        ),
-
-
-        # QFieldCloud login status
-        uiOutput("login_status"),
 
         # Select QField Cloud project
         selectInput(
@@ -337,75 +330,96 @@ navbarPage(
 
   tabPanel(
     "Map",
-    sidebarLayout(
-      sidebarPanel(
-        class = "sidePanelStyle",
-        h4("Active layer"),
-        selectInput(
-          "map_active_layer",
-          "Select active layer:",
-          choices = NULL
-        ),
-        hr(),
-        mod_single_input_UI(
-          id = "map_var",
-          label = "Select column:"
-        ),
-        div(
-          class = "d-flex justify-content-center",
-          actionButton(
-            "create_map",
-            "Draw map",
-            class = "btn btn-block m-2"
+    fluidPage(
+          absolutePanel(
+            id = "map-options",
+            class = "rounded border border-primary m-3 pt-3 pl-3 pr-3 overflow-scroll",
+            draggable = TRUE,
+            top = 75,
+            left = 50,
+            checkboxInput(
+              "map_options",
+              htmltools::HTML("Map options &#8595;"),
+              FALSE
+            ),
+            conditionalPanel(
+              id = "map-options-conditions",
+              class = "p-2",
+              condition = "input.map_options == 1",
+              h4("Active layer"),
+              selectInput(
+                "map_active_layer",
+                "Select active layer:",
+                choices = NULL
+              ),
+              hr(),
+              mod_single_input_UI(
+                id = "map_var",
+                label = "Select column:"
+              ),
+              div(
+                class = "d-flex justify-content-center",
+                actionButton(
+                  "create_map",
+                  "Draw map",
+                  class = "btn btn-block m-2"
+                ),
+              ),
+              hr(),
+              p("Recenter map data if it crosses the antimeridian."),
+              div(
+                class = "d-flex justify-content-center",
+                actionButton(
+                  "recenter_map",
+                  "Recenter map",
+                  class = "btn btn-block m-2"
+                ),
+              ),
+              hr(),
+              selectInput(
+                "map_colour",
+                "Fill colour palette:",
+                choices = colour_mappings
+              ),
+              div(
+                class = "mx-auto m-2",
+                plotOutput(
+                  "colour_ramp",
+                  width = "100%",
+                  height = "30px"
+                )
+              ),
+              helpText("Check box to display legend:"),
+              checkboxInput(
+                "legend",
+                label = "Legend",
+                value = FALSE
+              ),
+              mod_multiple_input_UI(
+                id = "label_vars",
+                label = "Popup labels:"
+              ),
+              div(
+                class = "d-flex justify-content-center",
+                actionButton(
+                  "add_popups",
+                  "Add popups to map",
+                  class = "btn btn-block m-2"
+                ),
+              )
+            )
           ),
-        ),
-        hr(),
-        p("Recenter map data if it crosses the antimeridian."),
-        div(
-          class = "d-flex justify-content-center",
-          actionButton(
-            "recenter_map",
-            "Recenter map",
-            class = "btn btn-block m-2"
-          ),
-        ),
-        hr(),
-        selectInput(
-          "map_colour",
-          "Fill colour palette:",
-          choices = colour_mappings
-        ),
-        div(
-          class = "mx-auto m-2",
-          plotOutput(
-            "colour_ramp",
-            width = "100%",
-            height = "30px"
-          )
-        ),
-        helpText("Check box to display legend:"),
-        checkboxInput(
-          "legend",
-          label = "Legend",
-          value = FALSE
-        ),
-        mod_multiple_input_UI(
-          id = "label_vars",
-          label = "Popup labels:"
-        ),
-        div(
-          class = "d-flex justify-content-center",
-          actionButton(
-            "add_popups",
-            "Add popups to map",
-            class = "btn btn-block m-2"
-          ),
-        )
-      ),
-      mainPanel(
         leafgl::leafglOutput("web_map")
-      )
-    )
+    ),
+    # sidebarLayout(
+    #   sidebarPanel(
+    #     class = "sidePanelStyle",
+
+    #   ),
+    #   mainPanel(
+    #     leafgl::leafglOutput("web_map")
+    #   )
+    # )
   ),
 
   # Charts Tab --------------------------------------------------------------

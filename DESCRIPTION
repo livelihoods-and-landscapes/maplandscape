@@ -47,10 +47,11 @@ Imports:
     xfun,
     grid,
     DBI,
-    RPostgres
+    RPostgres,
+    leaflet
 Remotes:
-    rstudio/leaflet,
-    livelihoods-and-landscapes/leafgl
+    livelihoods-and-landscapes/leafgl,
+    livelihoods-and-landscapes/qfieldcloudR
 RoxygenNote: 7.1.2
 Suggests: 
     testthat (>= 3.0.0),
