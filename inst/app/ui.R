@@ -51,23 +51,23 @@ navbarPage(
           class = "mx-auto",
           # QFieldCloud app URL
           textInput("qfieldcloud_url",
-                    "QFieldCloud app URL:",
-                    value = "",
-                    placeholder = "tip: omit https:// and trailing /"
+            "QFieldCloud app URL:",
+            value = "",
+            placeholder = "tip: omit https:// and trailing /"
           ),
 
           # QFieldCloud login
           textInput("qfieldcloud_username",
-                    "QFieldCloud email:",
-                    value = "",
-                    placeholder = ""
+            "QFieldCloud email:",
+            value = "",
+            placeholder = ""
           ),
 
           # QFieldCloud password
           passwordInput("qfieldcloud_password",
-                        "QFieldCloud password:",
-                        value = "",
-                        placeholder = ""
+            "QFieldCloud password:",
+            value = "",
+            placeholder = ""
           ),
 
           # Try logging into QFieldCloud
@@ -89,88 +89,87 @@ navbarPage(
   tabPanel(
     "Data",
     fluidPage(
-      class="scrollPage",
+      class = "scrollPage",
       fluidRow(
-      column(
-        4,
+        column(
+          4,
 
-        # QFieldCloud login
-        h4("QFieldCloud data"),
+          # QFieldCloud login
+          h4("QFieldCloud data"),
 
-        # Select QField Cloud project
-        selectInput(
-          "qfieldcloud_projects",
-          "Select QFieldCloud project:",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
+          # Select QField Cloud project
+          selectInput(
+            "qfieldcloud_projects",
+            "Select QFieldCloud project:",
+            choices = NULL,
+            selected = NULL,
+            multiple = FALSE
+          ),
+
+          # Select file from QFieldCloud
+          selectInput(
+            "qfieldcloud_gpkg",
+            "Select QFieldCloud dataset:",
+            choices = NULL,
+            selected = NULL,
+            multiple = FALSE
+          ),
+
+          # Download GeoPackage from QFieldCloud
+          actionButton(
+            "get_qfieldcloud_gpkg",
+            "Download QFieldCloud file",
+            class = "btn mb-4"
+          ),
         ),
+        column(
+          8,
+          fluidRow(
+            column(
+              6,
+              # upload local data
+              h4("Upload local data"),
 
-        # Select file from QFieldCloud
-        selectInput(
-          "qfieldcloud_gpkg",
-          "Select QFieldCloud dataset:",
-          choices = NULL,
-          selected = NULL,
-          multiple = FALSE
-        ),
+              # file upload widget - browse local file system
+              mod_get_layers_UI(
+                id = "user_data",
+                label = "Select GeoPackage from local storage:",
+                multiple = TRUE,
+                accept = c(".gpkg")
+              )
+            ),
+            column(
+              6,
+              # sync GeoPackages in app
+              h4("Sync GeoPackages"),
+              p("Sync a set of GeoPackages with a template file:"),
 
-        # Download GeoPackage from QFieldCloud
-        actionButton(
-          "get_qfieldcloud_gpkg",
-          "Download QFieldCloud file",
-          class = "btn mb-4"
-        ),
-
-      ),
-      column(
-        8,
-        fluidRow(
-          column(
-            6,
-            # upload local data
-            h4("Upload local data"),
-
-            # file upload widget - browse local file system
-            mod_get_layers_UI(
-              id = "user_data",
-              label = "Select GeoPackage from local storage:",
-              multiple = TRUE,
-              accept = c(".gpkg")
+              # bring up modal with options for syncing GeoPackages
+              actionButton(
+                "sync_forms",
+                "Sync",
+                class = "btn m-2"
+              ),
             )
           ),
-          column(
-            6,
-            # sync GeoPackages in app
-            h4("Sync GeoPackages"),
-            p("Sync a set of GeoPackages with a template file:"),
-
-            # bring up modal with options for syncing GeoPackages
-            actionButton(
-              "sync_forms",
-              "Sync",
-              class = "btn m-2"
-            ),
-          )
-        ),
-        fluidRow(
-          column(
-            12,
-            class = "dt-scroll",
-            h4("Layers"),
-            hr(),
-            mod_render_dt_UI(id = "app_layers")
+          fluidRow(
+            column(
+              12,
+              class = "dt-scroll",
+              h4("Layers"),
+              hr(),
+              mod_render_dt_UI(id = "app_layers")
+            )
           )
         )
       )
-    )),
+    ),
   ),
 
   # Table Tab ---------------------------------------------------------------
 
   tabPanel(
     "Table",
-
     sidebarLayout(
       sidebarPanel(
         class = "sidePanelStyle",
@@ -331,95 +330,86 @@ navbarPage(
   tabPanel(
     "Map",
     fluidPage(
-          absolutePanel(
-            id = "map-options",
-            class = "rounded border border-primary m-3 pt-3 pl-3 pr-3 overflow-scroll",
-            draggable = TRUE,
-            top = 75,
-            left = 50,
-            checkboxInput(
-              "map_options",
-              htmltools::HTML("Map options &#8595;"),
-              FALSE
+      absolutePanel(
+        id = "map-options",
+        class = "rounded border border-primary m-3 pt-3 pl-3 pr-3 overflow-scroll",
+        draggable = TRUE,
+        top = 75,
+        left = 50,
+        checkboxInput(
+          "map_options",
+          htmltools::HTML("Map options &#8595;"),
+          FALSE
+        ),
+        conditionalPanel(
+          id = "map-options-conditions",
+          class = "p-2",
+          condition = "input.map_options == 1",
+          h4("Active layer"),
+          selectInput(
+            "map_active_layer",
+            "Select active layer:",
+            choices = NULL
+          ),
+          hr(),
+          mod_single_input_UI(
+            id = "map_var",
+            label = "Select column:"
+          ),
+          div(
+            class = "d-flex justify-content-center",
+            actionButton(
+              "create_map",
+              "Draw map",
+              class = "btn btn-block m-2"
             ),
-            conditionalPanel(
-              id = "map-options-conditions",
-              class = "p-2",
-              condition = "input.map_options == 1",
-              h4("Active layer"),
-              selectInput(
-                "map_active_layer",
-                "Select active layer:",
-                choices = NULL
-              ),
-              hr(),
-              mod_single_input_UI(
-                id = "map_var",
-                label = "Select column:"
-              ),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "create_map",
-                  "Draw map",
-                  class = "btn btn-block m-2"
-                ),
-              ),
-              hr(),
-              p("Recenter map data if it crosses the antimeridian."),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "recenter_map",
-                  "Recenter map",
-                  class = "btn btn-block m-2"
-                ),
-              ),
-              hr(),
-              selectInput(
-                "map_colour",
-                "Fill colour palette:",
-                choices = colour_mappings
-              ),
-              div(
-                class = "mx-auto m-2",
-                plotOutput(
-                  "colour_ramp",
-                  width = "100%",
-                  height = "30px"
-                )
-              ),
-              helpText("Check box to display legend:"),
-              checkboxInput(
-                "legend",
-                label = "Legend",
-                value = FALSE
-              ),
-              mod_multiple_input_UI(
-                id = "label_vars",
-                label = "Popup labels:"
-              ),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "add_popups",
-                  "Add popups to map",
-                  class = "btn btn-block m-2"
-                ),
-              )
+          ),
+          hr(),
+          p("Recenter map data if it crosses the antimeridian."),
+          div(
+            class = "d-flex justify-content-center",
+            actionButton(
+              "recenter_map",
+              "Recenter map",
+              class = "btn btn-block m-2"
+            ),
+          ),
+          hr(),
+          selectInput(
+            "map_colour",
+            "Fill colour palette:",
+            choices = colour_mappings
+          ),
+          div(
+            class = "mx-auto m-2",
+            plotOutput(
+              "colour_ramp",
+              width = "100%",
+              height = "30px"
             )
           ),
-        leafgl::leafglOutput("web_map")
-    ),
-    # sidebarLayout(
-    #   sidebarPanel(
-    #     class = "sidePanelStyle",
-
-    #   ),
-    #   mainPanel(
-    #     leafgl::leafglOutput("web_map")
-    #   )
-    # )
+          helpText("Check box to display legend:"),
+          checkboxInput(
+            "legend",
+            label = "Legend",
+            value = FALSE
+          ),
+          mod_multiple_input_UI(
+            id = "label_vars",
+            label = "Popup labels:"
+          ),
+          div(
+            class = "d-flex justify-content-center",
+            actionButton(
+              "add_popups",
+              "Add popups to map",
+              class = "btn btn-block m-2"
+            ),
+          )
+        )
+      ),
+      leafgl::leafglOutput("web_map")
+    )
   ),
 
   # Charts Tab --------------------------------------------------------------
@@ -543,5 +533,117 @@ navbarPage(
         )
       )
     )
+  ),
+
+  # Report tab --------------------------------------------------------------
+  tabPanel(
+    "Report",
+    fixedPage(
+      id = "report",
+      tags$h1("Report Builder"),
+      tags$h6("Use the preview tools to check outputs before generating and downloading the report."),
+      actionButton(
+        "generate_report",
+        "generate report",
+        class = "btn m-2"
+      ),
+      downloadButton(
+        "download_report",
+        "download",
+        class = "btn m-2"
+      ),
+      tags$h5("Select data"),
+      fluidRow(
+        column(
+          4,
+          selectInput(
+            "report_active_layer",
+            "Select layer:",
+            choices = NULL
+          )
+        ),
+        column(
+          4,
+          selectInput(
+            "report_vars",
+            "Select column:",
+            choices = NULL,
+            multiple = TRUE
+          )
+        ),
+        column(
+          4
+        )
+      ),
+      tags$h5("Summary chart styling options"),
+      tags$h6("Option to create a bar plot showing the mean, sum, or count of column values within a group."),
+      checkboxInput(
+        "make_report_chart",
+        label = "Make summary chart?",
+        value = FALSE
+      ),
+      conditionalPanel(
+        condition = "input.make_report_chart == true",
+        fluidRow(
+          column(
+            4,
+            selectInput(
+              "report_group_vars",
+              "Grouping column:",
+              choices = NULL
+            )
+          ),
+          column(
+            4,
+            radioButtons(
+              "report_bar_plot_type",
+              "Chart type:",
+              c(
+                "count" = "count_records",
+                "sum" = "sum_values",
+                "mean" = "mean"
+              )
+            )
+          ),
+          column(
+            4,
+            actionButton(
+              "report_preview_chart",
+              "preview chart",
+              class = "btn m-2"
+            )
+          )
+        ),
+        fluidRow(
+          column(
+            4,
+            textInput(
+              "report_x_lab",
+              "X-axis title:",
+              value = ""
+            )
+          ),
+          column(
+            4,
+            textInput(
+              "report_y_lab",
+              "Y-axis title:",
+              value = ""
+            )
+          ),
+          column(
+            4,
+            numericInput(
+              "report_font",
+              "Text size:",
+              min = 10,
+              max = 36,
+              value = 14,
+              step = 1
+            )
+          )
+        )
+      ) # conditional panel end
+    ) # end div
   )
 )

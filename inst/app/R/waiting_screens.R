@@ -49,3 +49,8 @@ sync_edit_screen <- shiny::tagList(
   waiter::spin_flower(),
   shiny::h4("Syncing edits...")
 )
+
+report_screen <- shiny::tagList(
+  waiter::spin_flower(),
+  shiny::h4("Generating report...")
+)
