@@ -38,6 +38,17 @@ on the element*/
   padding: 0px;
 }
 
+#table-options {
+  background-color: #f8f9fa;
+  z-index: 900;
+}
+
+#table-options-conditions {
+  max-height: calc(100vh - 200px);
+  overflow-y: scroll;
+  overflow-x: scroll;
+}
+
 /* Shiny */
 .shiny-notification {
   z-index: 800;
