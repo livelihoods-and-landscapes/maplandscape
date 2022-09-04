@@ -100,6 +100,12 @@ app_server <- function(input, output, session) {
     color = "rgba(89,49,150,.6)"
   )
 
+  # waiter for resizing charts
+  report_waiter <- waiter::Waiter$new(
+    html = report_screen,
+    color = "rgba(89,49,150,.6)"
+  )
+
   # App data ----------------------------------------------------------------
 
   # data to pass between reactive objects during app's execution
@@ -1872,6 +1878,292 @@ app_server <- function(input, output, session) {
     },
     bg = "transparent"
   )
+
+  # Report ------------------------------------------------------------------
+
+  # update select input for report layer
+  observe({
+    df <- app_data$data_file
+    joined_df <- app_data$joined_df
+    nm_jdf <- names(joined_df)
+    choices <- unique(df$layer_disp_name_idx)
+    choices <- c(choices, nm_jdf)
+    updateSelectInput(
+      session,
+      "report_active_layer",
+      choices = choices
+    )
+  })
+
+  # active df - use this df for reports
+  report_active_df <- reactive({
+    req(input$report_active_layer)
+
+    df <- isolate(app_data$data_file)
+    jdf <- isolate(names(app_data$joined_df))
+
+    if (any(jdf == input$report_active_layer)) {
+      report_active_df <-
+        isolate(app_data$joined_df[[input$report_active_layer]])
+    } else {
+      report_active_df <- try(read_tables(
+        df,
+        input$report_active_layer
+      ))
+    }
+
+    if ("try-error" %in% class(report_active_df)) {
+      showNotification("Failed to load layer to load report layer.", type = "error")
+      return()
+    }
+
+    report_active_df
+  })
+
+  # select columns to use in report
+  observe({
+    req(report_active_df())
+    df <- report_active_df()
+    choices <- colnames(df)
+
+    choices <- choices[choices != "geom"]
+    choices <- choices[choices != "geometry"]
+
+    updateSelectInput(session,
+      "report_vars",
+      choices = choices
+    )
+  })
+
+  # select group by columns to display in report
+  observe({
+    req(report_active_df())
+
+    df <- report_active_df()
+    choices <- colnames(df)
+
+    choices <- choices[choices != "geom"]
+    choices <- choices[choices != "geometry"]
+    choices <- choices[!choices %in% input$report_vars]
+
+    updateSelectInput(session,
+      "report_group_vars",
+      choices = choices
+    )
+  })
+
+  # preview chart
+  observeEvent(input$report_preview_chart, {
+    req(input$report_vars)
+
+    # get layer to chart
+    chart_df <- report_active_df() %>%
+      dplyr::select(tidyselect::all_of(c(
+        input$report_vars[1], input$report_group_vars
+      )))
+
+    # generate summary table
+    summary_df <- group_by_summarise(
+      chart_df,
+      input$report_group_vars,
+      input$report_vars[1]
+    )
+
+    if (ncol(summary_df) == 2) {
+      col_chart_df <- data.frame(summary_df[, 1], summary_df[, 2])
+    } else if (input$report_bar_plot_type == "count_records") {
+      col_chart_df <- data.frame(summary_df[, 1], summary_df[, 4])
+    } else if (input$report_bar_plot_type == "mean") {
+      col_chart_df <- data.frame(summary_df[, 1], summary_df[, 2])
+    } else if (input$report_bar_plot_type == "sum_values") {
+      col_chart_df <- data.frame(summary_df[, 1], summary_df[, 3])
+    }
+
+    gg_chart <-
+      ggplot2::ggplot(data = col_chart_df, ggplot2::aes(col_chart_df[, 1], col_chart_df[, 2])) +
+      ggplot2::geom_col(color = "#000000", fill = "#000000") +
+      ggplot2::xlab(input$report_x_lab) +
+      ggplot2::ylab(input$report_y_lab) +
+      ggplot2::theme(
+        plot.background = ggplot2::element_rect(fill = NA, colour = NA),
+        panel.background = ggplot2::element_rect(fill = NA, colour = "#000000"),
+        axis.text.x = ggplot2::element_text(
+          angle = -90,
+          vjust = 1,
+          hjust = 0,
+          size = input$report_font
+        ),
+        axis.text.y = ggplot2::element_text(size = input$report_font),
+        axis.title.x = ggplot2::element_text(size = input$report_font),
+        axis.title.y = ggplot2::element_text(size = input$report_font)
+      )
+
+    output$chart_view <- renderPlot(gg_chart)
+
+    # preview chart
+    showModal(modalDialog(
+      title = "Chart Preview",
+      size = "l",
+      plotOutput("chart_view")
+    ))
+  })
+
+  # generate reports
+  observeEvent(input$generate_report, {
+    req(input$report_vars)
+
+    tryCatch(
+      error = function(cnd) {
+        showNotification("Could not generate report.", type = "error")
+      },
+      {
+
+        report_waiter$show()
+
+        if ("sf" %in% class(report_active_df())) {
+          app_data$report_raw_table <- report_active_df() %>%
+            sf::st_drop_geometry() %>%
+            as.data.frame()
+        }
+
+        # generate outputs
+        app_data$report_raw_table_dir <- NULL
+        tmp_report_table_dir <- paste0(tempdir(), "/report_raw_data_table.csv")
+        app_data$report_raw_table_dir <- tmp_report_table_dir
+
+        readr::write_csv(
+          app_data$report_raw_table,
+          tmp_report_table_dir
+        )
+
+        # make maps
+        # get layer to map
+        map_df <- report_active_df() %>%
+          dplyr::select(tidyselect::all_of(input$report_vars))
+
+        app_data$report_raw_gpkg <- map_df
+
+        # generate outputs
+        app_data$report_raw_gpkg_dir <- NULL
+        tmp_report_gpkg_dir <- paste0(tempdir(), "/report_raw_spatial_data.gpkg")
+        app_data$report_raw_gpkg_dir <- tmp_report_gpkg_dir
+
+        sf::st_write(
+          app_data$report_raw_gpkg,
+          tmp_report_gpkg_dir,
+          delete_dsn = TRUE
+        )
+
+        # remove paths to previous saved charts
+        app_data$report_chart <- NULL
+        # remove paths to previous saved summary tables
+        app_data$report_summary_table <- NULL
+
+        for (i in seq_along(input$report_vars)) {
+          report_var <- input$report_vars[i]
+
+          # make charts
+          # get layer to chart
+          if (input$make_report_chart == TRUE) {
+            chart_df <- report_active_df() %>%
+              dplyr::select(tidyselect::all_of(c(
+                report_var, input$report_group_vars
+              )))
+
+            # generate summary table
+            summary_df <- group_by_summarise(
+              chart_df,
+              input$report_group_vars,
+              report_var
+            )
+
+            if (ncol(summary_df) == 2) {
+              col_chart_df <- data.frame(summary_df[, 1], summary_df[, 2])
+            } else if (input$report_bar_plot_type == "count_records") {
+              col_chart_df <- data.frame(summary_df[, 1], summary_df[, 4])
+            } else if (input$report_bar_plot_type == "mean") {
+              col_chart_df <- data.frame(summary_df[, 1], summary_df[, 2])
+            } else if (input$report_bar_plot_type == "sum_values") {
+              col_chart_df <- data.frame(summary_df[, 1], summary_df[, 3])
+            }
+
+            gg_chart <-
+              ggplot2::ggplot(data = col_chart_df, ggplot2::aes(col_chart_df[, 1], col_chart_df[, 2])) +
+              ggplot2::geom_col(color = "#000000", fill = "#000000") +
+              ggplot2::xlab(input$report_x_lab) +
+              ggplot2::ylab(input$report_y_lab) +
+              ggplot2::theme(
+                plot.background = ggplot2::element_rect(fill = NA, colour = NA),
+                panel.background = ggplot2::element_rect(fill = NA, colour = "#000000"),
+                axis.text.x = ggplot2::element_text(
+                  angle = -90,
+                  vjust = 1,
+                  hjust = 0,
+                  size = input$report_font
+                ),
+                axis.text.y = ggplot2::element_text(size = input$report_font),
+                axis.title.x = ggplot2::element_text(size = input$report_font),
+                axis.title.y = ggplot2::element_text(size = input$report_font)
+              )
+
+            tmp_chart_dir <- paste0(tempdir(), "/", report_var, "_report_chart.png")
+            ggplot2::ggsave(
+              tmp_chart_dir,
+              gg_chart,
+              dpi = 300,
+              units = "cm",
+              width = 30,
+              height = 20
+            )
+
+
+            app_data$report_chart <- c(app_data$report_chart, tmp_chart_dir)
+
+            # save summary table
+
+            tmp_sum_table_dir <- paste0(tempdir(), "/", report_var, "_summary_table.csv")
+            app_data$report_summary_table_dir <- c(app_data$report_summary_table_dir, tmp_sum_table_dir)
+
+            readr::write_csv(
+              summary_df,
+              tmp_sum_table_dir
+            )
+          }
+        }
+
+        report_waiter$hide()
+
+      })
+  })
+
+  # download reports
+  output$download_report <- downloadHandler(
+    filename = function() {
+      paste("report_", dt(), ".zip", sep = "")
+    },
+    content = function(file) {
+      raw_table <- app_data$report_raw_table_dir
+      gpkg <- app_data$report_raw_gpkg_dir
+
+      if (input$make_report_chart == TRUE) {
+        chart <- app_data$report_chart
+        summary_table <- app_data$report_summary_table_dir
+        zip(
+          zipfile = file,
+          files = c(summary_table, raw_table, chart, gpkg),
+          flags = "-r9Xj"
+        )
+      } else {
+        zip(
+          zipfile = file,
+          files = c(raw_table, gpkg),
+          flags = "-r9Xj"
+        )
+      }
+    },
+    contentType = "application/zip"
+  )
+
 
   # END ---------------------------------------------------------------------
 }

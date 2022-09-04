@@ -45,7 +45,6 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
     geometry_type <- as.character(sf::st_geometry_type(map_df, by_geometry = FALSE))
 
     if (geometry_type %in% supported_geometries) {
-
       waiter$show()
 
       # get bounding box for the map
@@ -61,7 +60,6 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
 
       # draw polygon layers
       if (geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON") {
-
         if (geometry_type == "MULTIPOLYGON") {
           # cast MULTIPOLYGON to POLYGON as leafgl does not support multi*
           map_df <- sf::st_cast(map_df, "POLYGON")
@@ -80,7 +78,6 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
           ) %>%
           leaflet::flyToBounds(bbox[1], bbox[2], bbox[3], bbox[4])
       } else if (geometry_type == "LINESTRING" | geometry_type == "MULTILINESTRING") {
-
         if (geometry_type == "MULTILINESTRING") {
           # cast MULTILINESTRING to LINESTRING as leafgl does not support multi*
           map_df <- sf::st_cast(map_df, "LINESTRING")
@@ -119,10 +116,6 @@ add_layers_leaflet <- function(map_object, map_active_df, map_var, map_colour, w
       waiter$hide()
 
       proxy_map
-
     }
-
   }
-
-
 }

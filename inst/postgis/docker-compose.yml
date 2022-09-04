@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+
+  postgis:
+    image: postgis/postgis
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: operations_db
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: test # set to something secret
+    ports:
+      - 5432:5432
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  postgis_data:

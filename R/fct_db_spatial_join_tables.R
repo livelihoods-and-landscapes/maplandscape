@@ -1,3 +1,13 @@
+#' Spatial join of two layers.
+#'
+#' Spatial join of two layers based on largest intersection using PostGIS.
+#'
+#' @param con connection object to PostGIS database
+#' @param left_names columns in left table to retain
+#' @param left_table_name name of left table created in PostGIS
+#' @param right_names columns in right table to retains
+#' @param right_table_name name of right table created in PostGIS
+#'
 #' @export
 
 db_spatial_join_tables <- function(con, left_names, right_names, left_table_name, right_table_name) {
