@@ -47,16 +47,15 @@ Imports:
     xfun,
     grid,
     DBI,
-    RPostgres,
-    leaflet
+    RPostgres
 Remotes:
     livelihoods-and-landscapes/leafgl,
     livelihoods-and-landscapes/qfieldcloudR
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1
 Suggests: 
     testthat (>= 3.0.0),
-    knitr
-    usethis
+    knitr,
+    usethis,
     devtools
 Config/testthat/edition: 3
 VignetteBuilder: knitr

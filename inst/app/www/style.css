@@ -39,7 +39,7 @@ on the element*/
 }
 
 #table-options {
-  background-color: #f8f9fa;
+  background-color: #f9f8fc;
   z-index: 900;
 }
 
@@ -89,7 +89,7 @@ on the element*/
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #f8f9fa
+  background-color: #f9f8fc
 }
 
 .leaflet-map-pane {
@@ -97,7 +97,7 @@ on the element*/
 }
 
 #map-options {
-  background-color: #f8f9fa;
+  background-color: #f9f8fc;
   z-index: 900;
 }
 
@@ -107,24 +107,6 @@ on the element*/
   overflow-x: scroll;
 }
 
-/* docs tab
-
-.docs {
-  padding-top: 10px;
-  padding-right: 10px;
-  padding-bottom: 10px;
-  padding-left: 10px;
-}
-
-.docs_image {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 5px;
-  border: thin silver solid;
-}
-
-*/
 
 /* Misc */
 /* purple horizontal rule*/
