@@ -170,182 +170,169 @@ navbarPage(
 
   tabPanel(
     "Table",
-      id = "data_tables",
-      type = "tabs",
-      fluidRow(
-        column(
-          4,
-          # Select active layer
-          h4("Active layer"),
-          selectInput(
-            "active_layer",
-            "Select active layer:",
-            choices = NULL,
+    sidebarLayout(
+      sidebarPanel(
+        class = "sidePanelStyle",
+        h4("Active layer"),
+        selectInput(
+          "active_layer",
+          "Select active layer:",
+          choices = NULL,
+        ),
+        hr(),
+        h4("Summary tables"),
+        mod_multiple_input_UI(
+          id = "grouping_var",
+          label = "Grouping variable(s):"
+        ),
+        mod_multiple_input_UI(
+          id = "summarising_var",
+          label = "Summarising variable(s):"
+        ),
+        hr(),
+        h4("Table analysis"),
+        selectInput(
+          "table_analysis",
+          "Select table analysis:",
+          choices = c(
+            "Filter",
+            "Add column",
+            "Join layers"
           ),
-          checkboxInput(
-            "table_options",
-            htmltools::HTML("<b>Table analysis options &#8595;</b>"),
-            FALSE
+        ),
+          conditionalPanel(
+            class = "p-2",
+            condition = "input.table_analysis == 'Filter'",
+            h4("Filter rows"),
+            selectInput(
+              "table_filter",
+              label = "Select layer to filter:",
+              choices = NULL
+            ),
+            div(
+              class = "d-flex justify-content-center",
+              actionButton(
+                "filter",
+                "Filter rows options",
+                class = "btn btn-block m-2"
+              ),
+            )
           ),
           conditionalPanel(
             class = "p-2",
-            condition = "input.table_options == true",
+            condition = "input.table_analysis == 'Add column'",
+            h4("Add new column"),
             selectInput(
-              "table_analysis",
-              "Table analysis:",
-              choices = c(
-                "Filter",
-                "Add column",
-                "Join layers"
-              ),
+              "table_mutate",
+              label = "Select layer to add new column:",
+              choices = NULL
             ),
-            conditionalPanel(
-              class = "p-2",
-              condition = "input.table_analysis == 'Filter'",
-              h4("Filter rows"),
-              selectInput(
-                "table_filter",
-                label = "Select layer to filter:",
-                choices = NULL
+            div(
+              class = "d-flex justify-content-center",
+              actionButton(
+                "add_column",
+                "Add column options",
+                class = "btn btn-block m-2"
               ),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "filter",
-                  "Filter rows options",
-                  class = "btn btn-block m-2"
-                ),
-              )
-            ),
-            conditionalPanel(
-              class = "p-2",
-              condition = "input.table_analysis == 'Add column'",
-              h4("Add new column"),
-              selectInput(
-                "table_mutate",
-                label = "Select layer to add new column:",
-                choices = NULL
-              ),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "add_column",
-                  "Add column options",
-                  class = "btn btn-block m-2"
-                ),
-              )
-            ),
-            conditionalPanel(
-              class = "p-2",
-              condition = "input.table_analysis == 'Join layers'",
-              h4("Join layers"),
-              selectInput(
-                "table_left",
-                label = "Select left layer in join:",
-                choices = NULL
-              ),
-              selectInput(
-                "table_right",
-                label =
-                  "Select right layer in join:",
-                choices = NULL
-              ),
-              mod_multiple_input_UI(
-                id = "joining_p_key_left",
-                label = "Select primary key(s) - left layer:"
-              ),
-              mod_multiple_input_UI(
-                id = "joining_f_key_right",
-                label = "Select foreign key(s) - right layer:"
-              ),
-              radioButtons(
-                "key_join_type",
-                "Join Type:",
-                c(
-                  "column - inner" = "col_inner",
-                  "column - left" = "col_left"
-                ),
-                selected = NULL
-              ),
-              textInput(
-                "join_tbl_name",
-                "Layer name:",
-                value = "",
-                placeholder = "enter layer name for output"
-              ),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "table_join_button",
-                  "Apply join",
-                  class = "btn btn-block m-2"
-                ),
-              ),
-              hr(),
-              h4("Join spatial layers"),
-              selectInput(
-                "spatial_table_left",
-                label = "Select left layer in join:",
-                choices = NULL
-              ),
-              selectInput(
-                "spatial_table_right",
-                label = "Select right layer in join:",
-                choices = NULL
-              ),
-              textInput(
-                "spjoin_tbl_name",
-                "Layer name:",
-                value = "",
-                placeholder = "enter layer name for output"
-              ),
-              div(
-                class = "d-flex justify-content-center",
-                actionButton(
-                  "spatial_join_button",
-                  "Apply spatial join",
-                  class = "btn btn-block m-2"
-                ),
-              ),
-            ), # table analysis
+            )
           ),
-        ),
-        column(
-          4,
-          h4("Summary tables"),
-          mod_multiple_input_UI(
-            id = "grouping_var",
-            label = "Grouping variable(s):"
-          ),
-          mod_multiple_input_UI(
-            id = "summarising_var",
-            label = "Summarising variable(s):"
-          ),
-        ),
-        column(4, ),
-      ),
-      fluidRow(
-        class = "m-1",
-        tabsetPanel(
-          id = "data_tables",
-          type = "tabs",
-          tabPanel(
-            "Data: Raw",
-            downloadButton(
-              "download_data_raw",
-              "Download data",
-              class = "btn mt-4 mb-1"
+          conditionalPanel(
+            class = "p-2",
+            condition = "input.table_analysis == 'Join layers'",
+            h4("Join layers"),
+            selectInput(
+              "table_left",
+              label = "Select left layer in join:",
+              choices = NULL
             ),
-            mod_render_dt_UI(id = "data_raw"),
-          ),
-          tabPanel(
-            "Data: Summary",
-            downloadButton(
-              "download_data_summarised",
-              "Download Summarised Data",
-              class = "btn mt-2 mb-1"
+            selectInput(
+              "table_right",
+              label =
+                "Select right layer in join:",
+              choices = NULL
             ),
-            mod_render_dt_UI(id = "data_summary")
+            mod_multiple_input_UI(
+              id = "joining_p_key_left",
+              label = "Select primary key(s) - left layer:"
+            ),
+            mod_multiple_input_UI(
+              id = "joining_f_key_right",
+              label = "Select foreign key(s) - right layer:"
+            ),
+            radioButtons(
+              "key_join_type",
+              "Join Type:",
+              c(
+                "column - inner" = "col_inner",
+                "column - left" = "col_left"
+              ),
+              selected = NULL
+            ),
+            textInput(
+              "join_tbl_name",
+              "Layer name:",
+              value = "",
+              placeholder = "enter layer name for output"
+            ),
+            div(
+              class = "d-flex justify-content-center",
+              actionButton(
+                "table_join_button",
+                "Apply join",
+                class = "btn btn-block m-2"
+              ),
+            ),
+            hr(),
+            h4("Join spatial layers"),
+            selectInput(
+              "spatial_table_left",
+              label = "Select left layer in join:",
+              choices = NULL
+            ),
+            selectInput(
+              "spatial_table_right",
+              label = "Select right layer in join:",
+              choices = NULL
+            ),
+            textInput(
+              "spjoin_tbl_name",
+              "Layer name:",
+              value = "",
+              placeholder = "enter layer name for output"
+            ),
+            div(
+              class = "d-flex justify-content-center",
+              actionButton(
+                "spatial_join_button",
+                "Apply spatial join",
+                class = "btn btn-block m-2"
+              ),
+            ),
+          ), # table analysis
+        ), # sidebar
+        mainPanel(
+          class = "mainPanelStyle",
+          tabsetPanel(
+            id = "data_tables",
+            type = "tabs",
+            tabPanel(
+              "Data: Raw",
+              downloadButton(
+                "download_data_raw",
+                "Download data",
+                class = "btn mt-4 mb-1"
+              ),
+              mod_render_dt_UI(id = "data_raw"),
+            ),
+            tabPanel(
+              "Data: Summary",
+              downloadButton(
+                "download_data_summarised",
+                "Download Summarised Data",
+                class = "btn mt-2 mb-1"
+              ),
+              mod_render_dt_UI(id = "data_summary")
+            ),
           ),
         ),
       ),

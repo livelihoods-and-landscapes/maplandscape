@@ -27,6 +27,7 @@ on the element*/
 
 .sidePanelStyle {
   max-height: calc(100vh - 105px);
+  min-height: calc(100vh - 105px);
   overflow-y:scroll;
   padding: 5px;
 }
