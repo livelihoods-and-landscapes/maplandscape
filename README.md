@@ -49,4 +49,4 @@ shiny::runApp("inst/app")
 
 ### Docker and deploy to the cloud
 
-
+You can also deploy maplandscape to the cloud using Shiny Proxy, docker, and docker swarm by following the instructions [here](https://github.com/livelihoods-and-landscapes/deploy-maplandscape).
