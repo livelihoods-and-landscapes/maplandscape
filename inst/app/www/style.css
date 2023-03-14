@@ -18,6 +18,7 @@
 /* class for scrollable fluidPage*/
 .scrollPage {
   overflow-y: scroll;
+  min-height: 100vh !important;
 }
 
 /* sidebar and main panel layouts -
@@ -26,6 +27,7 @@ on the element*/
 
 .sidePanelStyle {
   max-height: calc(100vh - 105px);
+  min-height: calc(100vh - 105px);
   overflow-y:scroll;
   padding: 5px;
 }
@@ -35,6 +37,17 @@ on the element*/
   overflow-y: scroll;
   overflow-x: scroll;
   padding: 0px;
+}
+
+#table-options {
+  background-color: #f9f8fc;
+  z-index: 900;
+}
+
+#table-options-conditions {
+  max-height: calc(100vh - 200px);
+  overflow-y: scroll;
+  overflow-x: scroll;
 }
 
 /* Shiny */
@@ -67,40 +80,34 @@ on the element*/
 /* Leaflet */
 
 #web_map {
-  min-height: calc(100vh - 105px);
-  position: relative;
+  min-height: calc(100vh - 75px);
+  position: fixed;
   right: 0;
   bottom: 0;
   padding-right: 10px;
   overflow: hidden;
+  z-index: 300;
 }
 
 .leaflet-popup-content-wrapper {
-  background-color: #f8f9fa
+  background-color: #f9f8fc
 }
 
 .leaflet-map-pane {
-  z-index: auto;
+  z-index: 300;
 }
 
-/* docs tab
-
-.docs {
-  padding-top: 10px;
-  padding-right: 10px;
-  padding-bottom: 10px;
-  padding-left: 10px;
+#map-options {
+  background-color: #f9f8fc;
+  z-index: 900;
 }
 
-.docs_image {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  padding: 5px;
-  border: thin silver solid;
+#map-options-conditions {
+  max-height: calc(100vh - 200px);
+  overflow-y: scroll;
+  overflow-x: scroll;
 }
 
-*/
 
 /* Misc */
 /* purple horizontal rule*/

@@ -25,6 +25,6 @@ a summary table as a data frame (\code{s_df}) object.
 \description{
 Perform group by and summarise operations on selected grouping columns and
 compute summary statistics within each group. This function uses dplyr's
-\link[dplyr]{group_by} function for creating groups within the data frame and
+\link[dplyr]{group_by} function for creating groups and
 \link[dplyr]{summarise} for computing summary statistics.
 }

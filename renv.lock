@@ -1,6 +1,10 @@
 {
   "R": {
+<<<<<<< HEAD
     "Version": "4.2.2",
+=======
+    "Version": "4.2.1",
+>>>>>>> 7b201741e8f2c318849213f9c8b59654826121be
     "Repositories": [
       {
         "Name": "CRAN",

@@ -1,4 +1,4 @@
-FROM jmad1v07/maplandscape-base-4.1.2
+FROM jmad1v07/maplandscape-base
 
 ## install required R packages
 RUN R -e 'install.packages(c("devtools"), \
@@ -7,7 +7,6 @@ RUN R -e 'install.packages(c("devtools"), \
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/qfieldcloudR")'
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/maplandscape")'
 RUN R -e 'devtools::install_github("livelihoods-and-landscapes/leafgl")'
-RUN R -e 'devtools::install_github("rstudio/leaflet")' # use development version to display point markers
 
 # copy necessary files
 RUN mkdir /root/app

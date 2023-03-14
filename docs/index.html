@@ -11,8 +11,8 @@
     application or incorporate these functions in a custom Shiny app.">
 <title>Shiny application to explore and visualise GeoPackage data • maplandscape</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.1.0/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.1.0/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="deps/bootstrap-5.1.3/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.1.3/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.rawgit.com/afeld/bootstrap-toc/v1.0.1/dist/bootstrap-toc.min.js"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Shiny application to explore and visualise GeoPackage data">
 <meta property="og:description" content="A Shiny application to explore, visualise, and 
@@ -69,18 +69,17 @@
 <div class="section level2">
 <h2 id="overview">Overview<a class="anchor" aria-label="anchor" href="#overview"></a>
 </h2>
-<p>A package that provides functions for building <a href="https://shiny.rstudio.com" class="external-link">Shiny</a> dashboard applications to explore and visualise spatial layers in GeoPackages. In particular, it focuses on providing browser-based tools for analysing data stored in GeoPackages in QFieldCloud.</p>
+<p>A package that provides functions for building <a href="https://shiny.rstudio.com" class="external-link">Shiny</a> dashboard applications to explore and visualise layers (tables) in GeoPackages. It focuses on providing tools for quick analysis of data collected in-the-field using the <a href="https://qfield.org" class="external-link">QField</a> mobile GIS application and stored in GeoPackages in QFieldCloud.</p>
 <p>A pre-built <a href="https://shiny.rstudio.com" class="external-link">Shiny</a> application is provided with this package which uses these functions and provides tools for:</p>
 <ul>
-<li>Syncing data stored in multiple GeoPackages.</li>
 <li>Exploring GeoPackage layers in interactive tables, web maps, and charts.</li>
 <li>Customising and styling charts and web maps.</li>
 <li>Combining layers using spatial and non-spatial joins.</li>
 <li>Generating summary tables through group-by and summarise operations.</li>
 <li>Generating new layers and add new columns to existing layers.</li>
-<li>Authenticated access to GeoPackages stored in QFieldCloud and Google Cloud Storage.</li>
+<li>Authenticated access to GeoPackages stored in QFieldCloud.</li>
 </ul>
-<p>This package was developed as part of the <a href="https://livelihoods-and-landscapes.com" class="external-link">Livelihoods and Landscapes</a> project which is developing tools and approaches to map diverse agricultural landscapes. The initial motivation for developing the package and Shiny application was to provide analysts with tools to analyse and visualise geospatial data collected in-the-field using the <a href="https://qfield.org" class="external-link">QField</a> mobile GIS application.</p>
+<p>This package was developed as part of the <a href="https://livelihoods-and-landscapes.com" class="external-link">Livelihoods and Landscapes</a> project which is developing tools and approaches to map diverse agricultural landscapes.</p>
 </div>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
@@ -88,65 +87,22 @@
 <div class="section level3">
 <h3 id="local-r-package">Local R Package<a class="anchor" aria-label="anchor" href="#local-r-package"></a>
 </h3>
-<p>Install as an R package:</p>
-<pre><code><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/remote-reexports.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"livelihoods-and-landscapes/maplandscape"</span><span class="op">)</span></code></pre>
-<p>Build and customise your own Shiny application using functions provided by maplandscape or launch a pre-built application:</p>
-<pre><code><span class="va">dir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"app"</span>, package <span class="op">=</span> <span class="st">"maplandscape"</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/base/getwd.html" class="external-link">setwd</a></span><span class="op">(</span><span class="va">dir</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/livelihoods-and-landscapes/maplandscape" class="external-link">maplandscape</a></span><span class="op">)</span>
-<span class="fu">shiny</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/shiny/man/shinyApp.html" class="external-link">shinyAppDir</a></span><span class="op">(</span><span class="st">"."</span><span class="op">)</span></code></pre>
-<p>To build the package use tools provided by the <a href="https://github.com/r-lib/devtools" class="external-link">devtools</a> package:</p>
-<pre><code><span class="co"># get package dependencies</span>
-<span class="fu">renv</span><span class="fu">::</span><span class="fu"><a href="https://rstudio.github.io/renv/reference/restore.html" class="external-link">restore</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># check package</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/check.html" class="external-link">check</a></span><span class="op">(</span><span class="op">)</span>
-
-<span class="co"># update NAMESPACE file for exports</span>
-<span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span> 
-
-<span class="co"># build docs</span>
-<span class="fu">pkgdown</span><span class="fu">::</span><span class="fu"><a href="https://pkgdown.r-lib.org/reference/build_site.html" class="external-link">build_site</a></span><span class="op">(</span><span class="op">)</span></code></pre>
-<p>The will launch a pre-built Shiny application to explore data in GeoPackages from the <code>inst/app</code> sub-directory of the package.</p>
+<p>Clone the maplandscape repo:</p>
+<pre><code>git clone https://github.com/livelihoods-and-landscapes/maplandscape.git</code></pre>
+<p>Move into the maplandscape directory:</p>
+<pre><code>cd maplandscape</code></pre>
+<p>maplandscape requires an instance of PostGIS. Deploy a local PostGIS instance using docker:</p>
+<pre><code>cd inst/postgis
+docker compose up -d</code></pre>
+<p>Make sure the PostGIS configuration in <code>inst/app/config</code> matches what is specified in the <code>docker-compose.yml</code> file.</p>
+<p>Move the root of the maplandscape repo. Launch the app:</p>
+<pre><code>cd ../..
+shiny::runApp("inst/app")</code></pre>
 </div>
 <div class="section level3">
-<h3 id="shinyappsio">shinyapps.io<a class="anchor" aria-label="anchor" href="#shinyappsio"></a>
+<h3 id="docker-and-deploy-to-the-cloud">Docker and deploy to the cloud<a class="anchor" aria-label="anchor" href="#docker-and-deploy-to-the-cloud"></a>
 </h3>
-<p>RStudio offers a free-tier hosting service for Shiny apps. Sign up at <a href="https://www.shinyapps.io" class="external-link">shinyapps.io</a>.</p>
-<p>Follow the above commands to launch maplandscape (or your custom Shiny application). In the top-right of the application window you will see a <em>Publish</em> button, click this button and follow the prompts to deploy the application to <a href="https://www.shinyapps.io" class="external-link">shinyapps.io</a>.</p>
-<p><img src="reference/figures/shiny-publish.png" width="40%" style="display: block; margin: auto;"></p>
-<p>RStudio provide a detailed tutorial for deploying apps to shinyapps.io <a href="https://shiny.rstudio.com/articles/shinyapps.html" class="external-link">here</a>.</p>
-</div>
-<div class="section level3">
-<h3 id="docker-and-host-in-the-cloud">Docker and host in the cloud<a class="anchor" aria-label="anchor" href="#docker-and-host-in-the-cloud"></a>
-</h3>
-<p>This requires installing <a href="https://git-scm.com/downloads" class="external-link">git</a> and <a href="https://www.docker.com" class="external-link">docker</a>. Clone the maplandscape GitHub repo:</p>
-<pre><code>git clone https://github.com/livelihoods-and-landscapes/maplandscape.git
-
-cd maplandscape</code></pre>
-<div class="section level4">
-<h4 id="docker-and-shiny-server">Docker and Shiny Server<a class="anchor" aria-label="anchor" href="#docker-and-shiny-server"></a>
-</h4>
-<p>There is a sub-directory named <code>docker-shiny-server</code>. This contains a <code>Dockerfile</code> that lists instructions that are used to build a docker image.</p>
-<pre><code>cd /inst/docker-shiny-server
-
-docker build -t maplandscape -f ShinyServer.Dockerfile .</code></pre>
-<p>The image is based on the <code>rocker/shiny:latest</code> image which includes <a href="https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044" class="external-link">Shiny Server</a> to host the maplandscape Shiny application. Shiny Server serves apps out of the <code>srv/shiny-server/</code> directory; building the docker image will install all the R packages required to run maplandscape, install the maplandscape package from github, and copy an <code>app.R</code> script into <code>srv/shiny-server/app</code> which contains the commands to launch maplandscape.</p>
-<p>A customised <code>shiny-customised.config</code> file is used to set the <code>app_dir</code> to the app directory where Shiny Server will launch and serve the app from.</p>
-<p>Launch the docker container:</p>
-<pre><code>docker run -p 3838:3838 maplandscape</code></pre>
-<p>You can find more information about <a href="https://www.rstudio.com/products/shiny/shiny-server/?_ga=2.240850435.1437924050.1628840494-908324396.1627896044" class="external-link">Shiny Server</a> <a href="https://shiny.rstudio.com/articles/shiny-server.html" class="external-link">here</a>, at its <a href="https://github.com/rstudio/shiny-server" class="external-link">GitHub repo</a>, and following this <a href="https://deanattali.com/2015/05/09/setup-rstudio-shiny-server-digital-ocean/" class="external-link">tutorial</a>.</p>
-<p>Please see the vignette Deploy: Google Cloud for a tutorial demonstrating how to deploy a containerised Shiny application on Google Cloud Run.</p>
-</div>
-<div class="section level4">
-<h4 id="docker">Docker<a class="anchor" aria-label="anchor" href="#docker"></a>
-</h4>
-<p>To deploy as a containerised Shiny application without Shiny Server (e.g. if deploying using Shiny Proxy) use the <code>Dockerfile</code> in the <code>/inst/</code> directory. This <code>Dockerfile</code> is based of a generic <code>maplandscape-base</code> image which is pre-built on top of Ubuntu 20.04 LTS and the rocker r-ver 4.1.2 image. It contains the system libraries and main R package dependencies used to build maplandscape.</p>
-<pre><code>docker build -t maplandscape .</code></pre>
-<p>And to run:</p>
-<pre><code>docker run -p 3838:3838 maplandscape</code></pre>
-</div>
+<p>You can also deploy maplandscape to the cloud using Shiny Proxy, docker, and docker swarm by following the instructions <a href="https://github.com/livelihoods-and-landscapes/deploy-maplandscape" class="external-link">here</a>.</p>
 </div>
 </div>
 </div>
@@ -194,7 +150,7 @@ docker build -t maplandscape -f ShinyServer.Dockerfile .</code></pre>
 
 <div class="pkgdown-footer-right">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
     </footer>
